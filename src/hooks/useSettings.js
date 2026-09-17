@@ -9,8 +9,11 @@ const DEFAULT_SETTINGS = {
     longBreak: 15 * 60,
   },
   modePreference: 'SSC CGL',
+  clockColor: '#ffffff',
   textColor: '#ffffff',
+  autoClockColor: false,
   subjectColor: '#06b6d4',
+  clockFont: "'Inter', system-ui, sans-serif",
   targets: [
     { id: '1', name: 'SSC CGL', subjects: ['Quant', 'English', 'GK', 'Reasoning'] }
   ],
@@ -28,6 +31,8 @@ export const useSettings = () => {
         setSettings((prev) => ({
           ...DEFAULT_SETTINGS,
           ...data,
+          clockColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.clockColor,
+          textColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.textColor,
           durations: {
             ...DEFAULT_SETTINGS.durations,
             ...(data.durations || {}),
@@ -41,9 +46,12 @@ export const useSettings = () => {
 
   const updateSettings = useCallback(
     async (updates) => {
+      const color = updates.clockColor || updates.textColor || settings.clockColor || settings.textColor;
       const merged = {
         ...settings,
         ...updates,
+        clockColor: color,
+        textColor: color,
         durations: {
           ...settings.durations,
           ...(updates.durations || {}),

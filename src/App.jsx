@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { WallpaperProvider } from './contexts/WallpaperContext';
 import { ToastProvider } from './components/Toast/ToastProvider';
+import { AudioProvider } from './contexts/AudioContext';
 import SplashScreen from './components/SplashScreen';
 import AppShell from './components/Layout/AppShell';
 
@@ -26,7 +27,9 @@ const AppInner = () => {
 
   return (
     <WallpaperProvider>
-      <AppShell />
+      <AudioProvider>
+        <AppShell />
+      </AudioProvider>
     </WallpaperProvider>
   );
 };

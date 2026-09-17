@@ -1,17 +1,21 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallpaper } from '../../contexts/WallpaperContext';
+import { useAudio } from '../../contexts/AudioContext';
 import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks, IconImage, IconSettings, IconUser } from '../Icons';
+import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones } from '../Icons';
 import { getBrightness } from '../../utils/imageUtils';
+import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
+import LofiPlayer from '../Audio/LofiPlayer';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
 const WallpaperPicker = lazy(() => import('../WallpaperPicker'));
 const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
 const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
+const AudioDrawer = lazy(() => import('../Audio/AudioDrawer'));
 
 const FallbackLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'rgba(255,255,255,0.5)' }}>
@@ -23,11 +27,13 @@ const AppShell = () => {
   const { currentUser, signOut } = useAuth();
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
+  const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
 
   useEffect(() => {
     const applyClockColor = async () => {
-      const autoColor = settings?.autoClockColor ?? true;
-      let finalColor = 'var(--text-primary)'; // default white
+      const autoColor = settings?.autoClockColor ?? false;
+      const customColor = settings?.clockColor || settings?.textColor || '#ffffff';
+      let finalColor = customColor;
 
       if (autoColor && wallpaper) {
         const brightness = await getBrightness(wallpaper);
@@ -35,12 +41,10 @@ const AppShell = () => {
           // If average brightness is > 160 (light), use black text
           finalColor = brightness > 160 ? '#000000' : '#ffffff';
         } else {
-          finalColor = settings?.textColor || '#ffffff';
+          finalColor = customColor;
         }
-      } else if (!autoColor && settings?.textColor) {
-        finalColor = settings.textColor;
-      } else if (!autoColor) {
-        finalColor = '#ffffff';
+      } else {
+        finalColor = customColor;
       }
 
       document.documentElement.style.setProperty('--clock-text-color', finalColor);
@@ -59,10 +63,9 @@ const AppShell = () => {
     } else {
       document.documentElement.style.setProperty('--clock-font-family', "'Inter', system-ui, sans-serif");
     }
-  }, [settings?.textColor, settings?.autoClockColor, settings?.subjectColor, settings?.clockFont, wallpaper]);
+  }, [settings?.clockColor, settings?.textColor, settings?.autoClockColor, settings?.subjectColor, settings?.clockFont, wallpaper]);
 
   const [activeTab, setActiveTab] = useState('timer');
-  const [prevTab, setPrevTab] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
@@ -80,7 +83,6 @@ const AppShell = () => {
   }, []);
 
   const handleTabChange = (tab) => {
-    setPrevTab(activeTab);
     setActiveTab(tab);
   };
 
@@ -137,8 +139,21 @@ const AppShell = () => {
 
         {/* Bottom Right Floating Controls */}
         <div className="floating-controls" ref={menuRef}>
-          {/* Horizontal group for Wallpaper, Settings, and User */}
+          {/* Horizontal group for Audio, Wallpaper, Settings, and User */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {/* Audio & Ambience button */}
+            <button
+              className="floating-icon-btn"
+              onClick={() => setShowAudioDrawer(true)}
+              aria-label="Ambience and Lofi Radio"
+              id="audio-drawer-btn"
+              title="Ambience & Lofi Radio"
+              style={{ position: 'relative' }}
+            >
+              <IconHeadphones size={18} />
+              {isAnyPlaying && <span className="audio-badge-active" />}
+            </button>
+
             {/* Wallpaper change button */}
             <button
               className="floating-icon-btn"
@@ -191,6 +206,17 @@ const AppShell = () => {
               <button
                 className="user-menu-item"
                 onClick={() => {
+                  setShowAudioDrawer(true);
+                  setShowUserMenu(false);
+                }}
+                role="menuitem"
+                id="menu-open-ambience"
+              >
+                <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Music
+              </button>
+              <button
+                className="user-menu-item"
+                onClick={() => {
                   setShowPicker(true);
                   setShowUserMenu(false);
                 }}
@@ -224,6 +250,12 @@ const AppShell = () => {
           </div>
         </main>
 
+        {/* Floating Mini Player Pill (when soundscape/lofi is playing) */}
+        <FloatingAudioWidget />
+
+        {/* Persistent Background Lofi Radio Player */}
+        <LofiPlayer inDrawer={false} />
+
         {/* Bottom Tab Bar */}
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
@@ -239,6 +271,7 @@ const AppShell = () => {
           />
         )}
         {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
+        {showAudioDrawer && <AudioDrawer onClose={() => setShowAudioDrawer(false)} />}
       </Suspense>
 
       <style>{`

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '../Toast/ToastProvider';
 import { IconSettings, IconFocus, IconInfo, IconBook } from '../Icons';
 
@@ -39,10 +39,19 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
   const [notifyOnComplete, setNotifyOnComplete]     = useState(settings?.notifyOnComplete ?? true);
   
   // Customization
-  const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
-  const [textColor, setTextColor]                   = useState(settings?.textColor || '#ffffff');
+  const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? false);
+  const [clockColor, setClockColor]                 = useState(settings?.clockColor || settings?.textColor || '#ffffff');
   const [subjectColor, setSubjectColor]             = useState(settings?.subjectColor || '#06b6d4');
-  const [clockFont, setClockFont]                   = useState(settings?.clockFont || 'Inter, system-ui, sans-serif');
+  const [clockFont, setClockFont]                   = useState(settings?.clockFont || "'Inter', system-ui, sans-serif");
+
+  useEffect(() => {
+    if (settings) {
+      if (settings.autoClockColor !== undefined) setAutoClockColor(settings.autoClockColor);
+      if (settings.clockColor || settings.textColor) setClockColor(settings.clockColor || settings.textColor);
+      if (settings.subjectColor) setSubjectColor(settings.subjectColor);
+      if (settings.clockFont) setClockFont(settings.clockFont);
+    }
+  }, [settings]);
 
   // Study Targets
   const defaultTargets = [{ id: '1', name: 'SSC CGL', subjects: ['Quant', 'English', 'GK', 'Reasoning'] }];
@@ -87,7 +96,8 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
       soundEnabled,
       notifyOnComplete,
       autoClockColor,
-      textColor,
+      clockColor,
+      textColor: clockColor,
       subjectColor,
       clockFont,
       targets: finalTargets,
@@ -259,37 +269,38 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
         <div className="settings-section">
           <div className="settings-section-title"><IconSettings size={14} /> Customization</div>
 
+          <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <label className="setting-label" htmlFor="setting-clock-color" style={{ marginBottom: 0 }}>
+              Clock Color
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                id="setting-clock-color"
+                type="color"
+                value={clockColor}
+                onChange={(e) => {
+                  setClockColor(e.target.value);
+                  if (autoClockColor) setAutoClockColor(false);
+                }}
+                style={{ 
+                  width: '32px', height: '32px', padding: '0', 
+                  border: 'none', borderRadius: '4px', cursor: 'pointer',
+                  background: 'none'
+                }}
+              />
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                {clockColor.toUpperCase()}
+              </span>
+            </div>
+          </div>
+
           <Toggle
             id="toggle-auto-clock-color"
             checked={autoClockColor}
             onChange={setAutoClockColor}
             label="Auto-adjust Clock Color"
-            sub="Change clock color based on wallpaper brightness"
+            sub="Change clock color (black/white) based on wallpaper brightness"
           />
-
-          {!autoClockColor && (
-            <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <label className="setting-label" htmlFor="setting-text-color" style={{ marginBottom: 0 }}>
-                Main Clock Text Color
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  id="setting-text-color"
-                  type="color"
-                  value={textColor}
-                  onChange={(e) => setTextColor(e.target.value)}
-                  style={{ 
-                    width: '32px', height: '32px', padding: '0', 
-                    border: 'none', borderRadius: '4px', cursor: 'pointer',
-                    background: 'none'
-                  }}
-                />
-                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                  {textColor.toUpperCase()}
-                </span>
-              </div>
-            </div>
-          )}
 
           <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <label className="setting-label" htmlFor="setting-subject-color" style={{ marginBottom: 0 }}>

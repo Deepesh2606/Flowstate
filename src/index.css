@@ -1756,7 +1756,7 @@ input {
   text-shadow: 0 0 40px color-mix(in srgb, var(--clock-text-color, #ffffff) 15%, transparent);
   user-select: none;
   font-variant-numeric: tabular-nums;
-  transition: text-shadow 0.3s ease;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .flocus-timer-digits.active {
