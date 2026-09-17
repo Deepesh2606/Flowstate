@@ -64,15 +64,13 @@ const WallpaperPicker = () => {
       <div className="modal" role="dialog" aria-label="Wallpaper Picker">
         <div className="modal-header">
           <h2 className="modal-title">Choose Wallpaper</h2>
-          {wallpaper && (
-            <button
-              className="drawer-close"
-              onClick={() => setShowPicker(false)}
-              aria-label="Close wallpaper picker"
-            >
-              ✕
-            </button>
-          )}
+          <button
+            className="drawer-close"
+            onClick={() => setShowPicker(false)}
+            aria-label="Close wallpaper picker"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="modal-tabs" role="tablist">
