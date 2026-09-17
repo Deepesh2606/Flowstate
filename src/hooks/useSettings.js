@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
     longBreak: 15 * 60,
   },
   modePreference: 'SSC CGL',
+  textColor: '#f8fafc',
 };
 
 export const useSettings = () => {

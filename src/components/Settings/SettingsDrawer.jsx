@@ -37,6 +37,9 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
   const [autoStartPomodoros, setAutoStartPomodoros] = useState(settings?.autoStartPomodoros ?? false);
   const [soundEnabled, setSoundEnabled]             = useState(settings?.soundEnabled ?? true);
   const [notifyOnComplete, setNotifyOnComplete]     = useState(settings?.notifyOnComplete ?? true);
+  
+  // Customization
+  const [textColor, setTextColor]                   = useState(settings?.textColor || '#f8fafc');
 
   const handleSave = async () => {
     await onSave({
@@ -51,6 +54,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
       autoStartPomodoros,
       soundEnabled,
       notifyOnComplete,
+      textColor,
     });
     toast('Settings saved!', 'success');
     onClose();
@@ -184,6 +188,33 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
             label="Toast Notifications"
             sub="Show alerts for session events"
           />
+        </div>
+
+        {/* ── Customization ── */}
+        <div className="settings-section">
+          <div className="settings-section-title"><IconSettings size={14} /> Customization</div>
+
+          <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <label className="setting-label" htmlFor="setting-text-color" style={{ marginBottom: 0 }}>
+              Primary Text Color
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                id="setting-text-color"
+                type="color"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+                style={{ 
+                  width: '32px', height: '32px', padding: '0', 
+                  border: 'none', borderRadius: '4px', cursor: 'pointer',
+                  background: 'none'
+                }}
+              />
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                {textColor.toUpperCase()}
+              </span>
+            </div>
+          </div>
         </div>
 
         <button className="save-btn" onClick={handleSave} id="settings-save-btn">

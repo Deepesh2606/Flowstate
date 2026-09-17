@@ -23,6 +23,14 @@ const AppShell = () => {
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
 
+  useEffect(() => {
+    if (settings?.textColor) {
+      document.documentElement.style.setProperty('--text-primary', settings.textColor);
+    } else {
+      document.documentElement.style.setProperty('--text-primary', '#f8fafc');
+    }
+  }, [settings?.textColor]);
+
   const [activeTab, setActiveTab] = useState('timer');
   const [prevTab, setPrevTab] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
