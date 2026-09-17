@@ -17,7 +17,8 @@ const TimerDisplay = ({ timeLeft, isRunning, mode }) => {
   }
 
   return (
-    <div className="flocus-timer-wrapper">
+    <div className="flocus-timer-wrapper" style={{ position: 'relative' }}>
+      <div className="liquid-orb"></div>
       <div
         className={`flocus-timer-digits ${isRunning ? 'active' : ''}`}
         aria-live="polite"
