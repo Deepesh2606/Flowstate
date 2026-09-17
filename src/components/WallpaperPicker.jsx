@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useWallpaper } from '../contexts/WallpaperContext';
-import { useAuth } from '../contexts/AuthContext';
-import { uploadWallpaper } from '../firebase/storage';
+import { uploadWallpaper } from '../cloudinary';
 
 const PRESET_WALLPAPERS = [
   {
@@ -48,7 +47,6 @@ const PRESET_WALLPAPERS = [
 
 const WallpaperPicker = () => {
   const { wallpaper, setWallpaper, setShowPicker } = useWallpaper();
-  const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -65,14 +63,18 @@ const WallpaperPicker = () => {
       setUploadError('Please select an image file.');
       return;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('File too large. Max 10MB.');
+      return;
+    }
     setUploading(true);
     setUploadError('');
     try {
-      const url = await uploadWallpaper(currentUser.uid, file);
+      const url = await uploadWallpaper(file);
       await setWallpaper(url);
     } catch (err) {
       console.error(err);
-      setUploadError('Upload failed. Check Firebase Storage rules.');
+      setUploadError(err.message || 'Upload failed. Check Cloudinary config.');
     } finally {
       setUploading(false);
     }
