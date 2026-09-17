@@ -7,7 +7,7 @@ import { IconBook } from '../Icons';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 
-const TimerTab = ({ settings }) => {
+const TimerTab = ({ settings, hasWallpaper }) => {
   const { toast } = useToast();
 
   const {
@@ -66,6 +66,7 @@ const TimerTab = ({ settings }) => {
         timeLeft={timeLeft}
         mode={mode}
         isRunning={isRunning}
+        hasWallpaper={hasWallpaper}
       />
 
       {/* Subject chip + session counter row */}

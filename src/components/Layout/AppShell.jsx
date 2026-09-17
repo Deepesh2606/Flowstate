@@ -49,7 +49,7 @@ const AppShell = () => {
   const renderTab = () => {
     switch (activeTab) {
       case 'timer':
-        return <TimerTab settings={settings} onOpenSettings={() => setShowSettings(true)} />;
+        return <TimerTab settings={settings} onOpenSettings={() => setShowSettings(true)} hasWallpaper={!!wallpaper} />;
       case 'stats':
         return (
           <Suspense fallback={<FallbackLoader />}>
@@ -75,7 +75,7 @@ const AppShell = () => {
         style={{ backgroundImage: wallpaper ? `url(${wallpaper})` : undefined }}
         aria-hidden="true"
       />
-      <div className="wallpaper-overlay" aria-hidden="true" />
+      {!wallpaper && <div className="wallpaper-overlay" aria-hidden="true" />}
 
       {/* App Shell */}
       <div className="app-shell">
@@ -108,35 +108,38 @@ const AppShell = () => {
             <IconTasks size={18} />
           </button>
 
-          {/* Settings button */}
-          <button
-            className="floating-icon-btn"
-            onClick={() => setShowSettings(true)}
-            aria-label="Open settings"
-            id="settings-btn"
-            title="Settings"
-          >
-            <IconSettings size={18} />
-          </button>
-
-          {/* User avatar */}
-          {currentUser?.photoURL ? (
-            <img
-              src={currentUser.photoURL}
-              alt={currentUser.displayName || 'User'}
-              className="user-avatar"
-              onClick={() => setShowUserMenu((v) => !v)}
-              id="user-avatar"
-            />
-          ) : (
+          {/* Horizontal group for Settings and User */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {/* Settings button */}
             <button
               className="floating-icon-btn"
-              onClick={() => setShowUserMenu((v) => !v)}
-              id="user-avatar-fallback"
+              onClick={() => setShowSettings(true)}
+              aria-label="Open settings"
+              id="settings-btn"
+              title="Settings"
             >
-              <IconUser size={18} />
+              <IconSettings size={18} />
             </button>
-          )}
+
+            {/* User avatar */}
+            {currentUser?.photoURL ? (
+              <img
+                src={currentUser.photoURL}
+                alt={currentUser.displayName || 'User'}
+                className="user-avatar"
+                onClick={() => setShowUserMenu((v) => !v)}
+                id="user-avatar"
+              />
+            ) : (
+              <button
+                className="floating-icon-btn"
+                onClick={() => setShowUserMenu((v) => !v)}
+                id="user-avatar-fallback"
+              >
+                <IconUser size={18} />
+              </button>
+            )}
+          </div>
 
           {/* User dropdown menu */}
           {showUserMenu && (

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TimerDisplay = ({ timeLeft, isRunning, mode }) => {
+const TimerDisplay = ({ timeLeft, isRunning, mode, hasWallpaper }) => {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   
@@ -18,7 +18,7 @@ const TimerDisplay = ({ timeLeft, isRunning, mode }) => {
 
   return (
     <div className="flocus-timer-wrapper" style={{ position: 'relative' }}>
-      <div className="liquid-orb"></div>
+      {!hasWallpaper && <div className="liquid-orb"></div>}
       <div
         className={`flocus-timer-digits ${isRunning ? 'active' : ''}`}
         aria-live="polite"
