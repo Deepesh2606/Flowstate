@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import TabBar from './TabBar';
@@ -9,6 +8,7 @@ import { IconTasks, IconImage, IconSettings, IconUser } from '../Icons';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
+const WallpaperPicker = lazy(() => import('../WallpaperPicker'));
 const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
 const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
 
@@ -19,9 +19,8 @@ const FallbackLoader = () => (
 );
 
 const AppShell = () => {
-  const navigate = useNavigate();
   const { currentUser, signOut } = useAuth();
-  const { wallpaper } = useWallpaper();
+  const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
 
   const [activeTab, setActiveTab] = useState('timer');
@@ -105,7 +104,7 @@ const AppShell = () => {
             {/* Wallpaper change button */}
             <button
               className="floating-icon-btn"
-              onClick={() => navigate('/presets')}
+              onClick={() => setShowPicker(true)}
               aria-label="Change wallpaper"
               id="wallpaper-change-btn"
               title="Change wallpaper"
@@ -154,7 +153,7 @@ const AppShell = () => {
               <button
                 className="user-menu-item"
                 onClick={() => {
-                  navigate('/presets');
+                  setShowPicker(true);
                   setShowUserMenu(false);
                 }}
                 role="menuitem"
@@ -193,6 +192,7 @@ const AppShell = () => {
 
       {/* Modals & Drawers */}
       <Suspense fallback={null}>
+        {showPicker && <WallpaperPicker />}
         {showSettings && (
           <SettingsDrawer
             settings={settings}

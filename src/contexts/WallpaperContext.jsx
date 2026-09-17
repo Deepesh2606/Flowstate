@@ -15,12 +15,15 @@ export const WallpaperProvider = ({ children }) => {
   const [wallpaper, setWallpaperState] = useState(null);
   const [customWallpapers, setCustomWallpapers] = useState([]);
   const [hiddenCurated, setHiddenCurated] = useState([]);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     if (!currentUser) return;
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
       if (settings?.wallpaper) {
         setWallpaperState(settings.wallpaper);
+      } else {
+        setShowPicker(true);
       }
       if (settings?.customWallpapers) {
         setCustomWallpapers(settings.customWallpapers);
@@ -35,6 +38,7 @@ export const WallpaperProvider = ({ children }) => {
   const setWallpaper = useCallback(
     async (url) => {
       setWallpaperState(url);
+      setShowPicker(false);
       if (currentUser) {
         await saveSettings(currentUser.uid, { wallpaper: url });
       }
@@ -88,7 +92,9 @@ export const WallpaperProvider = ({ children }) => {
         addCustomWallpaper, 
         removeCustomWallpaper,
         hiddenCurated,
-        hideCuratedWallpaper
+        hideCuratedWallpaper,
+        showPicker,
+        setShowPicker
       }}
     >
       {children}
