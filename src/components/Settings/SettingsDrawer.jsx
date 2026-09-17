@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '../Toast/ToastProvider';
+import { IconSettings, IconFocus, IconInfo } from '../Icons';
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
@@ -25,7 +26,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
   const d = settings?.durations || {};
 
   // Timer durations
-  const [pomodoro, setPomodoro]       = useState(Math.round((d.pomodoro   || 1500) / 60));
+  const [pomodoro, setPomodoro]       = useState(Math.round((d.pomodoro   || 2700) / 60));
   const [shortBreak, setShortBreak]   = useState(Math.round((d.shortBreak || 300)  / 60));
   const [longBreak, setLongBreak]     = useState(Math.round((d.longBreak  || 900)  / 60));
   const [longBreakInterval, setLongBreakInterval] = useState(settings?.longBreakInterval || 4);
@@ -51,7 +52,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
       soundEnabled,
       notifyOnComplete,
     });
-    toast('Settings saved! ✓', 'success');
+    toast('Settings saved!', 'success');
     onClose();
   };
 
@@ -67,7 +68,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
 
         {/* ── Timer Durations ── */}
         <div className="settings-section">
-          <div className="settings-section-title">⏱ Timer Durations</div>
+          <div className="settings-section-title"><IconSettings size={14} /> Timer Durations</div>
 
           <div className="setting-item">
             <label className="setting-label" htmlFor="setting-pomodoro">Focus (minutes)</label>
@@ -130,7 +131,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           </div>
 
           <div className="setting-item">
-            <label className="setting-label" htmlFor="setting-goal">Daily Session Goal 🎯</label>
+            <label className="setting-label" htmlFor="setting-goal">Daily Session Goal</label>
             <div className="setting-input-row">
               <button className="setting-stepper" onClick={() => setDailyGoal(Math.max(1, dailyGoal - 1))}>−</button>
               <input
@@ -147,7 +148,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
 
         {/* ── Behaviour ── */}
         <div className="settings-section">
-          <div className="settings-section-title">⚡ Behaviour</div>
+          <div className="settings-section-title"><IconFocus size={14} /> Behaviour</div>
 
           <Toggle
             id="toggle-auto-breaks"
@@ -167,7 +168,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
 
         {/* ── Sound & Notifications ── */}
         <div className="settings-section">
-          <div className="settings-section-title">🔔 Sound & Notifications</div>
+          <div className="settings-section-title"><IconInfo size={14} /> Sound & Notifications</div>
 
           <Toggle
             id="toggle-sound"

@@ -8,14 +8,16 @@ export const useToast = () => {
   return ctx;
 };
 
+import { IconCheck, IconInfo, IconWarning, IconError, IconFocus, IconBreak, IconLongBreak } from '../Icons';
+
 const ICONS = {
-  success: '✓',
-  info: 'ℹ',
-  warning: '⚠',
-  error: '✕',
-  focus: '🍅',
-  break: '☕',
-  longbreak: '🌙',
+  success: <IconCheck size={18} />,
+  info: <IconInfo size={18} />,
+  warning: <IconWarning size={18} />,
+  error: <IconError size={18} />,
+  focus: <IconFocus size={18} />,
+  break: <IconBreak size={18} />,
+  longbreak: <IconLongBreak size={18} />,
 };
 
 const COLORS = {

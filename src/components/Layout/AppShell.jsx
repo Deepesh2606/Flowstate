@@ -7,7 +7,9 @@ import StatsTab from '../Stats/StatsTab';
 import HistoryTab from '../History/HistoryTab';
 import WallpaperPicker from '../WallpaperPicker';
 import SettingsDrawer from '../Settings/SettingsDrawer';
+import TasksDrawer from '../Tasks/TasksDrawer';
 import { useSettings } from '../../hooks/useSettings';
+import { IconTasks } from '../Icons';
 
 const AppShell = () => {
   const { currentUser, signOut } = useAuth();
@@ -18,6 +20,7 @@ const AppShell = () => {
   const [prevTab, setPrevTab] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTasks, setShowTasks] = useState(false);
   const menuRef = useRef(null);
 
   // Close menu on outside click
@@ -63,7 +66,11 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
+          {/* Left spacer (mirrors right controls width for perfect centering) */}
+          <div />
+
           <span className="topbar-logo">FLOWSTATE</span>
+
           <div className="topbar-right" ref={menuRef}>
             {/* Wallpaper change button */}
             <button
@@ -74,6 +81,16 @@ const AppShell = () => {
               title="Change wallpaper"
             >
               🖼
+            </button>
+
+            <button
+              className="topbar-icon-btn"
+              onClick={() => setShowTasks(true)}
+              aria-label="Open tasks"
+              id="tasks-btn"
+              title="Tasks & Notes"
+            >
+              <IconTasks size={18} />
             </button>
 
             {/* Settings button */}
@@ -163,6 +180,7 @@ const AppShell = () => {
           onClose={() => setShowSettings(false)}
         />
       )}
+      {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
 
       <style>{`
         @keyframes tabFadeIn {

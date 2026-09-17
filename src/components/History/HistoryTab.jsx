@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStats } from '../../hooks/useStats';
 import { deleteSession } from '../../firebase/firestore';
+import { IconHistory, IconTrash } from '../Icons';
 
 const formatTime = (seconds) => {
   if (!seconds) return '0m';
@@ -122,7 +123,7 @@ const HistoryTab = () => {
       {/* Session List */}
       {filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📋</div>
+          <div className="empty-state-icon"><IconHistory size={32} /></div>
           <div className="empty-state-text">
             {sessions.length === 0
               ? 'No sessions yet. Complete a Pomodoro to see history!'
@@ -151,7 +152,7 @@ const HistoryTab = () => {
                 aria-label={`Delete session: ${session.subject}`}
                 id={`delete-session-${session.id}`}
               >
-                {deleting === session.id ? '…' : '🗑'}
+                {deleting === session.id ? '…' : <IconTrash size={16} />}
               </button>
             </div>
           ))}

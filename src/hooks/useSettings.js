@@ -4,7 +4,7 @@ import { saveSettings, subscribeSettings } from '../firebase/firestore';
 
 const DEFAULT_SETTINGS = {
   durations: {
-    pomodoro: 25 * 60,
+    pomodoro: 45 * 60,
     shortBreak: 5 * 60,
     longBreak: 15 * 60,
   },

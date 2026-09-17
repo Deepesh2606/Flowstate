@@ -17,9 +17,10 @@ export const useStats = () => {
 
   useEffect(() => {
     if (!currentUser) return;
-    const unsub = subscribeSessions(currentUser.uid, (data) => {
-      setSessions(data);
+    const unsub = subscribeSessions(currentUser.uid, (data, err) => {
+      setSessions(data || []);
       setLoading(false);
+      if (err) console.error('Stats loading error:', err);
     });
     return unsub;
   }, [currentUser]);

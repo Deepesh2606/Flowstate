@@ -53,9 +53,55 @@ export const deleteSession = async (uid, sessionId) => {
 
 export const subscribeSessions = (uid, callback) => {
   const ref = collection(db, 'users', uid, 'sessions');
-  const q = query(ref, orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => {
-    const sessions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    callback(sessions);
+  const q = query(ref, orderBy('timestamp', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const sessions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      callback(sessions, null);
+    },
+    (err) => {
+      console.error('Firestore subscribe error:', err);
+      callback([], err); // Pass empty array and error to avoid stuck loading
+    }
+  );
+};
+
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+
+export const addTask = async (uid, text) => {
+  const ref = collection(db, 'users', uid, 'tasks');
+  const docRef = await addDoc(ref, {
+    text,
+    completed: false,
+    createdAt: serverTimestamp(),
+    timestamp: Date.now(),
   });
+  return docRef.id;
+};
+
+export const updateTask = async (uid, taskId, updates) => {
+  const ref = doc(db, 'users', uid, 'tasks', taskId);
+  await updateDoc(ref, updates);
+};
+
+export const deleteTask = async (uid, taskId) => {
+  const ref = doc(db, 'users', uid, 'tasks', taskId);
+  await deleteDoc(ref);
+};
+
+export const subscribeTasks = (uid, callback) => {
+  const ref = collection(db, 'users', uid, 'tasks');
+  const q = query(ref, orderBy('timestamp', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const tasks = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      callback(tasks, null);
+    },
+    (err) => {
+      console.error('Firestore tasks error:', err);
+      callback([], err);
+    }
+  );
 };

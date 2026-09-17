@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconBook } from '../Icons';
 
 const formatTime = (seconds) => {
   if (seconds === 0) return '0m';
@@ -12,7 +13,7 @@ const SubjectBreakdown = ({ subjectBreakdown }) => {
   if (!subjectBreakdown || subjectBreakdown.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-state-icon">📚</div>
+        <div className="empty-state-icon"><IconBook size={32} /></div>
         <div className="empty-state-text">No sessions yet. Start studying!</div>
       </div>
     );

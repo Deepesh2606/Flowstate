@@ -38,12 +38,12 @@ const StatsTab = () => {
         <div className="stat-card">
           <div className="stat-card-label">Total Sessions</div>
           <div className="stat-card-value">{totalSessions}</div>
-          <div className="stat-card-sub">all time 🍅</div>
+          <div className="stat-card-sub">all time</div>
         </div>
         <div className="stat-card">
           <div className="stat-card-label">Current Streak</div>
           <div className="stat-card-value">{currentStreak}d</div>
-          <div className="stat-card-sub">🔥 days in a row</div>
+          <div className="stat-card-sub">days in a row</div>
         </div>
         <div className="stat-card">
           <div className="stat-card-label">Longest Streak</div>

@@ -6,10 +6,11 @@ const MODES = {
   pomodoro: 'pomodoro',
   shortBreak: 'shortBreak',
   longBreak: 'longBreak',
+  stopwatch: 'stopwatch',
 };
 
 const DEFAULT_DURATIONS = {
-  pomodoro: 25 * 60,
+  pomodoro: 45 * 60,
   shortBreak: 5 * 60,
   longBreak: 15 * 60,
 };
@@ -60,7 +61,11 @@ export const useTimer = (settings, toast) => {
   sessionCountRef.current = sessionCount;
 
   useEffect(() => {
-    setTimeLeft(durations[mode]);
+    if (mode === MODES.stopwatch) {
+      setTimeLeft(0); // Stopwatch starts at 0
+    } else {
+      setTimeLeft(durations[mode]);
+    }
     setIsRunning(false);
     clearInterval(intervalRef.current);
   }, [mode, durations.pomodoro, durations.shortBreak, durations.longBreak]);
@@ -70,13 +75,13 @@ export const useTimer = (settings, toast) => {
     const currentMode = modeRef.current;
     const currentCount = sessionCountRef.current;
 
-    if (currentMode === MODES.pomodoro) {
+    if (currentMode === MODES.pomodoro || currentMode === MODES.stopwatch) {
       // Save to Firestore
       if (currentUser) {
         try {
           await addSession(currentUser.uid, {
             subject,
-            duration: durations.pomodoro,
+            duration: currentMode === MODES.stopwatch ? sessionCountRef.currentElapsed : durations.pomodoro,
             mode: studyMode,
             date: new Date().toISOString().split('T')[0],
             timestamp: Date.now(),
@@ -86,21 +91,26 @@ export const useTimer = (settings, toast) => {
         }
       }
 
+      if (currentMode === MODES.stopwatch) {
+        toast?.(`Stopwatch session saved.`, 'success', 4000);
+        return; // Stopwatch just stops and saves, doesn't auto switch
+      }
+
       const newCount = currentCount + 1;
       setSessionCount(newCount);
       sessionCountRef.current = newCount;
 
       if (newCount % longBreakInterval === 0) {
-        toast?.(`🍅 ${newCount} sessions done! Time for a long break 🌙`, 'longbreak', 5000);
+        toast?.(`${newCount} sessions done! Time for a long break.`, 'longbreak', 5000);
         setMode(MODES.longBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       } else {
-        toast?.(`🍅 Session complete! Take a short break ☕`, 'focus', 4000);
+        toast?.(`Session complete! Take a short break.`, 'focus', 4000);
         setMode(MODES.shortBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       }
     } else {
-      toast?.('Break over — back to work! 🎯', 'info', 4000);
+      toast?.('Break over — back to focus!', 'info', 4000);
       setMode(MODES.pomodoro);
       if (autoStartPomodoros) setTimeout(() => setIsRunning(true), 800);
     }
@@ -111,11 +121,15 @@ export const useTimer = (settings, toast) => {
       setSessionStart(Date.now());
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => {
+          if (modeRef.current === MODES.stopwatch) {
+            sessionCountRef.currentElapsed = prev + 1; // track for saving
+            return prev + 1; // Count up
+          }
           if (prev <= 1) {
             clearInterval(intervalRef.current);
             setIsRunning(false);
             handleSessionComplete();
-            return 0;
+            return 0; // Count down to 0
           }
           return prev - 1;
         });
@@ -131,7 +145,8 @@ export const useTimer = (settings, toast) => {
 
   const reset = useCallback(() => {
     setIsRunning(false);
-    setTimeLeft(durations[modeRef.current]);
+    if (modeRef.current === MODES.stopwatch) setTimeLeft(0);
+    else setTimeLeft(durations[modeRef.current]);
   }, [durations]);
 
   const skip = useCallback(() => {
@@ -144,8 +159,8 @@ export const useTimer = (settings, toast) => {
     setMode(newMode);
   }, []);
 
-  const totalDuration = durations[mode];
-  const progress = (totalDuration - timeLeft) / totalDuration;
+  const totalDuration = durations[mode] || 1;
+  const progress = mode === MODES.stopwatch ? 0 : (totalDuration - timeLeft) / totalDuration;
 
   return {
     mode, timeLeft, isRunning, sessionCount,
