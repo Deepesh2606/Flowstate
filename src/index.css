@@ -99,15 +99,14 @@ input {
 /* ─── Topbar ─────────────────────────────────────────────────────────────────── */
 .topbar {
   height: var(--topbar-height);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: center;
   padding: 0 16px;
-  backdrop-filter: blur(20px) brightness(0.7);
-  -webkit-backdrop-filter: blur(20px) brightness(0.7);
-  background: var(--glass-bg);
-  border-bottom: 1px solid var(--glass-border);
+  background: transparent;
+  border: none;
   flex-shrink: 0;
+  pointer-events: none;
 }
 
 .topbar-logo {
@@ -122,44 +121,53 @@ input {
   text-transform: uppercase;
 }
 
-.topbar-right {
+/* Bottom Right Floating Controls */
+.floating-controls {
+  position: fixed;
+  bottom: max(32px, env(safe-area-inset-bottom, 32px));
+  right: 24px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
+  z-index: 100;
+  filter: url('#goo');
 }
 
-.topbar-icon-btn {
-  width: 36px;
-  height: 36px;
+.floating-icon-btn {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--glass-bg-strong);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
+  color: #fff;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  pointer-events: auto;
 }
 
-.topbar-icon-btn:hover {
-  color: var(--text-primary);
-  background: var(--glass-bg-strong);
-  border-color: var(--glass-border-strong);
-  transform: scale(1.05);
+.floating-icon-btn:hover {
+  background: var(--accent);
+  color: #081226;
+  transform: scale(1.1);
 }
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 2px solid var(--accent);
   object-fit: cover;
   cursor: pointer;
-  transition: box-shadow var(--transition-fast);
+  pointer-events: auto;
+  transition: transform 0.2s ease;
 }
 
 .user-avatar:hover {
-  box-shadow: 0 0 12px var(--accent-glow);
+  transform: scale(1.05);
 }
 
 /* ─── Content Area ───────────────────────────────────────────────────────────── */
@@ -231,6 +239,7 @@ input {
   z-index: 50;
   padding: 0 20px;
   padding-bottom: env(safe-area-inset-bottom, 0);
+  filter: url('#goo');
 }
 
 .tab-btn {

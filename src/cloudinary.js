@@ -33,6 +33,6 @@ export const uploadWallpaper = async (file) => {
   }
 
   const data = await res.json();
-  // Return a web-optimized URL: auto format + quality, max 1920px wide
-  return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1920/');
+  // Return a web-optimized URL: auto format + quality, max 3840px wide for 4K
+  return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_3840/');
 };

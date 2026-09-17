@@ -1,9 +1,10 @@
 import React from 'react';
+import { IconTimer, IconStats, IconHistory } from '../Icons';
 
 const TABS = [
-  { id: 'timer', label: 'Timer', icon: '⏱' },
-  { id: 'stats', label: 'Stats', icon: '📊' },
-  { id: 'history', label: 'History', icon: '📋' },
+  { id: 'timer', label: 'Timer', icon: <IconTimer size={20} /> },
+  { id: 'stats', label: 'Stats', icon: <IconStats size={20} /> },
+  { id: 'history', label: 'History', icon: <IconHistory size={20} /> },
 ];
 
 const TabBar = ({ activeTab, onTabChange }) => {

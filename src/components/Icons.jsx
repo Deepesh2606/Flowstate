@@ -114,3 +114,19 @@ export const IconImage = ({ size = 16, color = 'currentColor', className = '' })
     <polyline points="21 15 16 10 5 21"/>
   </svg>
 );
+
+export const IconTimer = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="14" r="8"/>
+    <polyline points="12 10 12 14 14 16"/>
+    <line x1="12" x2="12" y1="2" y2="4"/>
+    <line x1="9" x2="15" y1="2" y2="2"/>
+  </svg>
+);
+
+export const IconUser = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);

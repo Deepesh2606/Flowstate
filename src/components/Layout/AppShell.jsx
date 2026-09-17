@@ -9,7 +9,7 @@ import WallpaperPicker from '../WallpaperPicker';
 import SettingsDrawer from '../Settings/SettingsDrawer';
 import TasksDrawer from '../Tasks/TasksDrawer';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks } from '../Icons';
+import { IconTasks, IconImage, IconSettings, IconUser } from '../Icons';
 
 const AppShell = () => {
   const { currentUser, signOut } = useAuth();
@@ -66,93 +66,92 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
-          {/* Left spacer (mirrors right controls width for perfect centering) */}
-          <div />
-
           <span className="topbar-logo">FLOWSTATE</span>
-
-          <div className="topbar-right" ref={menuRef}>
-            {/* Wallpaper change button */}
-            <button
-              className="topbar-icon-btn"
-              onClick={() => setShowPicker(true)}
-              aria-label="Change wallpaper"
-              id="wallpaper-change-btn"
-              title="Change wallpaper"
-            >
-              🖼
-            </button>
-
-            <button
-              className="topbar-icon-btn"
-              onClick={() => setShowTasks(true)}
-              aria-label="Open tasks"
-              id="tasks-btn"
-              title="Tasks & Notes"
-            >
-              <IconTasks size={18} />
-            </button>
-
-            {/* Settings button */}
-            <button
-              className="topbar-icon-btn"
-              onClick={() => setShowSettings(true)}
-              aria-label="Open settings"
-              id="settings-btn"
-              title="Settings"
-            >
-              ⚙
-            </button>
-
-            {/* User avatar */}
-            {currentUser?.photoURL ? (
-              <img
-                src={currentUser.photoURL}
-                alt={currentUser.displayName || 'User'}
-                className="user-avatar"
-                onClick={() => setShowUserMenu((v) => !v)}
-                id="user-avatar"
-              />
-            ) : (
-              <button
-                className="topbar-icon-btn"
-                onClick={() => setShowUserMenu((v) => !v)}
-                id="user-avatar-fallback"
-              >
-                👤
-              </button>
-            )}
-
-            {/* User dropdown menu */}
-            {showUserMenu && (
-              <div className="user-menu" role="menu">
-                <div className="user-menu-info">
-                  <div className="user-menu-name">{currentUser?.displayName || 'User'}</div>
-                  <div className="user-menu-email">{currentUser?.email}</div>
-                </div>
-                <button
-                  className="user-menu-item"
-                  onClick={() => {
-                    setShowPicker(true);
-                    setShowUserMenu(false);
-                  }}
-                  role="menuitem"
-                  id="menu-change-wallpaper"
-                >
-                  🖼 Change Wallpaper
-                </button>
-                <button
-                  className="user-menu-item danger"
-                  onClick={signOut}
-                  role="menuitem"
-                  id="menu-sign-out"
-                >
-                  🚪 Sign Out
-                </button>
-              </div>
-            )}
-          </div>
         </header>
+
+        {/* Tab Content */}
+        {/* Bottom Right Floating Controls */}
+        <div className="floating-controls" ref={menuRef}>
+          {/* Wallpaper change button */}
+          <button
+            className="floating-icon-btn"
+            onClick={() => setShowPicker(true)}
+            aria-label="Change wallpaper"
+            id="wallpaper-change-btn"
+            title="Change wallpaper"
+          >
+            <IconImage size={18} />
+          </button>
+
+          <button
+            className="floating-icon-btn"
+            onClick={() => setShowTasks(true)}
+            aria-label="Open tasks"
+            id="tasks-btn"
+            title="Tasks & Notes"
+          >
+            <IconTasks size={18} />
+          </button>
+
+          {/* Settings button */}
+          <button
+            className="floating-icon-btn"
+            onClick={() => setShowSettings(true)}
+            aria-label="Open settings"
+            id="settings-btn"
+            title="Settings"
+          >
+            <IconSettings size={18} />
+          </button>
+
+          {/* User avatar */}
+          {currentUser?.photoURL ? (
+            <img
+              src={currentUser.photoURL}
+              alt={currentUser.displayName || 'User'}
+              className="user-avatar"
+              onClick={() => setShowUserMenu((v) => !v)}
+              id="user-avatar"
+            />
+          ) : (
+            <button
+              className="floating-icon-btn"
+              onClick={() => setShowUserMenu((v) => !v)}
+              id="user-avatar-fallback"
+            >
+              <IconUser size={18} />
+            </button>
+          )}
+
+          {/* User dropdown menu */}
+          {showUserMenu && (
+            <div className="user-menu" role="menu">
+              <div className="user-menu-info">
+                <div className="user-menu-name">{currentUser?.displayName || 'User'}</div>
+                <div className="user-menu-email">{currentUser?.email}</div>
+              </div>
+              <button
+                className="user-menu-item"
+                onClick={() => {
+                  setShowPicker(true);
+                  setShowUserMenu(false);
+                }}
+                role="menuitem"
+                id="menu-change-wallpaper"
+              >
+                <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
+              </button>
+              <button
+                className="user-menu-item danger"
+                onClick={signOut}
+                role="menuitem"
+                id="menu-sign-out"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Tab Content */}
         <main className="content-area" id={`panel-${activeTab}`}>
