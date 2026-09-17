@@ -1756,7 +1756,6 @@ input {
   display: flex;
   justify-content: center;
   gap: 16px;
-  filter: url('#goo');
 }
 
 .flocus-ctrl-btn {
