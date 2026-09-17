@@ -1,15 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
-import StatsTab from '../Stats/StatsTab';
-import HistoryTab from '../History/HistoryTab';
-import WallpaperPicker from '../WallpaperPicker';
-import SettingsDrawer from '../Settings/SettingsDrawer';
-import TasksDrawer from '../Tasks/TasksDrawer';
 import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser } from '../Icons';
+
+const StatsTab = lazy(() => import('../Stats/StatsTab'));
+const HistoryTab = lazy(() => import('../History/HistoryTab'));
+const WallpaperPicker = lazy(() => import('../WallpaperPicker'));
+const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
+const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
+
+const FallbackLoader = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'rgba(255,255,255,0.5)' }}>
+    Loading...
+  </div>
+);
 
 const AppShell = () => {
   const { currentUser, signOut } = useAuth();
@@ -44,9 +51,17 @@ const AppShell = () => {
       case 'timer':
         return <TimerTab settings={settings} onOpenSettings={() => setShowSettings(true)} />;
       case 'stats':
-        return <StatsTab />;
+        return (
+          <Suspense fallback={<FallbackLoader />}>
+            <StatsTab />
+          </Suspense>
+        );
       case 'history':
-        return <HistoryTab />;
+        return (
+          <Suspense fallback={<FallbackLoader />}>
+            <HistoryTab />
+          </Suspense>
+        );
       default:
         return null;
     }
@@ -171,15 +186,17 @@ const AppShell = () => {
       </div>
 
       {/* Modals & Drawers */}
-      {showPicker && <WallpaperPicker />}
-      {showSettings && (
-        <SettingsDrawer
-          settings={settings}
-          onSave={updateSettings}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
-      {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
+      <Suspense fallback={null}>
+        {showPicker && <WallpaperPicker />}
+        {showSettings && (
+          <SettingsDrawer
+            settings={settings}
+            onSave={updateSettings}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
+        {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
+      </Suspense>
 
       <style>{`
         @keyframes tabFadeIn {

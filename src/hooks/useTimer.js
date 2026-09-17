@@ -15,26 +15,36 @@ const DEFAULT_DURATIONS = {
   longBreak: 15 * 60,
 };
 
-// Web Audio API chime
+// Singleton Web Audio API Context to prevent memory leaks
+let audioCtx = null;
+
 const playChime = (muted = false) => {
   if (muted) return;
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
     const frequencies = [523.25, 659.25, 783.99, 1046.5];
     frequencies.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(audioCtx.destination);
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.18);
-      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.18 + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.5);
-      osc.start(ctx.currentTime + i * 0.18);
-      osc.stop(ctx.currentTime + i * 0.18 + 0.6);
+      gain.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.18);
+      gain.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + i * 0.18 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.18 + 0.5);
+      osc.start(audioCtx.currentTime + i * 0.18);
+      osc.stop(audioCtx.currentTime + i * 0.18 + 0.6);
     });
-  } catch (e) {}
+  } catch (e) {
+    console.error('Audio chime failed:', e);
+  }
 };
 
 export const useTimer = (settings, toast) => {
@@ -56,13 +66,16 @@ export const useTimer = (settings, toast) => {
   const intervalRef = useRef(null);
   const modeRef = useRef(mode);
   const sessionCountRef = useRef(sessionCount);
+  const timeLeftRef = useRef(timeLeft);
+  const targetTimeRef = useRef(null); // Stores the absolute timestamp for calculation
 
   modeRef.current = mode;
   sessionCountRef.current = sessionCount;
+  timeLeftRef.current = timeLeft;
 
   useEffect(() => {
     if (mode === MODES.stopwatch) {
-      setTimeLeft(0); // Stopwatch starts at 0
+      setTimeLeft(0);
     } else {
       setTimeLeft(durations[mode]);
     }
@@ -70,6 +83,9 @@ export const useTimer = (settings, toast) => {
     clearInterval(intervalRef.current);
   }, [mode, durations.pomodoro, durations.shortBreak, durations.longBreak]);
 
+  // We must define play before handleSessionComplete if handleSessionComplete calls play
+  // However, handleSessionComplete can just use setTimeout(() => setIsRunning(true), 800)
+  // which works with our useEffect that listens to isRunning.
   const handleSessionComplete = useCallback(async () => {
     playChime(!soundEnabled);
     const currentMode = modeRef.current;
@@ -93,7 +109,7 @@ export const useTimer = (settings, toast) => {
 
       if (currentMode === MODES.stopwatch) {
         toast?.(`Stopwatch session saved.`, 'success', 4000);
-        return; // Stopwatch just stops and saves, doesn't auto switch
+        return; // Stopwatch just stops and saves
       }
 
       const newCount = currentCount + 1;
@@ -116,31 +132,47 @@ export const useTimer = (settings, toast) => {
     }
   }, [currentUser, subject, studyMode, durations, longBreakInterval, autoStartBreaks, autoStartPomodoros, soundEnabled, toast]);
 
+  const play = useCallback(() => {
+    setIsRunning(true);
+  }, []);
+
   useEffect(() => {
     if (isRunning) {
+      // Initialize Web Audio API context on first user interaction if needed
+      if (soundEnabled && !audioCtx) {
+         try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+      }
+
       setSessionStart(Date.now());
+      if (modeRef.current === MODES.stopwatch) {
+        targetTimeRef.current = Date.now() - (timeLeftRef.current * 1000);
+      } else {
+        targetTimeRef.current = Date.now() + (timeLeftRef.current * 1000);
+      }
+
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (modeRef.current === MODES.stopwatch) {
-            sessionCountRef.currentElapsed = prev + 1; // track for saving
-            return prev + 1; // Count up
-          }
-          if (prev <= 1) {
+        const now = Date.now();
+        if (modeRef.current === MODES.stopwatch) {
+          const elapsed = Math.floor((now - targetTimeRef.current) / 1000);
+          sessionCountRef.currentElapsed = elapsed;
+          setTimeLeft(elapsed);
+        } else {
+          const remaining = Math.max(0, Math.ceil((targetTimeRef.current - now) / 1000));
+          setTimeLeft(remaining);
+          
+          if (remaining <= 0) {
             clearInterval(intervalRef.current);
             setIsRunning(false);
             handleSessionComplete();
-            return 0; // Count down to 0
           }
-          return prev - 1;
-        });
-      }, 1000);
+        }
+      }, 250); // High precision tick
     } else {
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, handleSessionComplete]);
+  }, [isRunning, handleSessionComplete, soundEnabled]);
 
-  const play = useCallback(() => setIsRunning(true), []);
   const pause = useCallback(() => setIsRunning(false), []);
 
   const reset = useCallback(() => {
