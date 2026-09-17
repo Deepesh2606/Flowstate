@@ -29,15 +29,15 @@ const TimerTab = ({ settings }) => {
 
   const handlePlay = () => {
     play();
-    if (mode === 'pomodoro') toast(`Focusing on ${subject || 'session'} — Let's go!`, 'focus');
-    else if (mode === 'shortBreak') toast('Break started — breathe!', 'break');
-    else if (mode === 'longBreak') toast('Long break — you earned it', 'longbreak');
-    else toast('Stopwatch started', 'focus');
+    if (mode === 'pomodoro') toast(subject ? `Focusing on ${subject}` : 'Focus session started', 'focus');
+    else if (mode === 'shortBreak') toast('Short break started', 'break');
+    else if (mode === 'longBreak') toast('Long break started', 'longbreak');
+    else toast('Stopwatch active', 'focus');
   };
 
   const handlePause = () => {
     pause();
-    toast('Timer paused', 'info');
+    // User requested no toast on pause
   };
 
   const handleReset = () => {

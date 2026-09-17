@@ -111,17 +111,15 @@ input {
 }
 
 .topbar-logo {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.5rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.6rem;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: -0.06em;
+  color: #fff;
   text-align: center;
   grid-column: 2;
   user-select: none;
+  text-transform: lowercase;
 }
 
 .topbar-right {
