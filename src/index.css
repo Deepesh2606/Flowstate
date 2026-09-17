@@ -1165,8 +1165,8 @@ input {
 /* ─── User Menu ──────────────────────────────────────────────────────────────── */
 .user-menu {
   position: absolute;
-  top: calc(var(--topbar-height) + 8px);
-  right: 16px;
+  bottom: calc(100% + 12px);
+  right: 0;
   background: rgba(14, 14, 26, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
