@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useWallpaper } from '../contexts/WallpaperContext';
 import { uploadWallpaper } from '../cloudinary';
+import { IconImage, IconCheck, IconTrash } from './Icons';
 
 const PRESET_WALLPAPERS = [
   {
@@ -46,7 +47,14 @@ const PRESET_WALLPAPERS = [
 ];
 
 const WallpaperPicker = () => {
-  const { wallpaper, setWallpaper, setShowPicker } = useWallpaper();
+  const { 
+    wallpaper, 
+    setWallpaper, 
+    setShowPicker, 
+    customWallpapers, 
+    addCustomWallpaper, 
+    removeCustomWallpaper 
+  } = useWallpaper();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -71,7 +79,9 @@ const WallpaperPicker = () => {
     setUploadError('');
     try {
       const url = await uploadWallpaper(file);
+      await addCustomWallpaper(url);
       await setWallpaper(url);
+      setActiveTab('presets');
     } catch (err) {
       console.error(err);
       setUploadError(err.message || 'Upload failed. Check Cloudinary config.');
@@ -119,32 +129,93 @@ const WallpaperPicker = () => {
 
         <div className="modal-body">
           {activeTab === 'presets' && (
-            <div className="wallpaper-grid">
-              {PRESET_WALLPAPERS.map((wp) => (
-                <button
-                  key={wp.id}
-                  id={`wallpaper-${wp.id}`}
-                  className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
-                  style={{ backgroundImage: `url(${wp.url})` }}
-                  onClick={() => handlePresetSelect(wp.url)}
-                  title={wp.label}
-                  aria-label={`Select ${wp.label} wallpaper`}
-                >
-                  {wallpaper === wp.url && (
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'rgba(0,200,150,0.3)',
-                      borderRadius: 'inherit',
-                    }}>
-                      <span style={{ fontSize: '24px' }}>✓</span>
-                    </div>
-                  )}
-                </button>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {customWallpapers && customWallpapers.length > 0 && (
+                <div>
+                  <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>My Uploads</h3>
+                  <div className="wallpaper-grid">
+                    {customWallpapers.map((url, i) => (
+                      <div key={`custom-${i}`} style={{ position: 'relative' }}>
+                        <button
+                          className={`wallpaper-thumb ${wallpaper === url ? 'selected' : ''}`}
+                          style={{ backgroundImage: `url(${url})`, width: '100%' }}
+                          onClick={() => handlePresetSelect(url)}
+                          aria-label={`Select custom wallpaper ${i+1}`}
+                        >
+                          {wallpaper === url && (
+                            <div style={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'var(--accent-glow)',
+                              borderRadius: 'inherit',
+                              backdropFilter: 'blur(4px)',
+                            }}>
+                              <IconCheck size={28} color="#081226" />
+                            </div>
+                          )}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeCustomWallpaper(url); }}
+                          style={{
+                            position: 'absolute',
+                            top: '6px',
+                            right: '6px',
+                            background: 'rgba(0,0,0,0.65)',
+                            color: '#ff5050',
+                            borderRadius: '50%',
+                            width: '26px',
+                            height: '26px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            zIndex: 10
+                          }}
+                          aria-label="Delete custom wallpaper"
+                          title="Delete preset"
+                        >
+                          <IconTrash size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Curated</h3>
+                <div className="wallpaper-grid">
+                  {PRESET_WALLPAPERS.map((wp) => (
+                    <button
+                      key={wp.id}
+                      id={`wallpaper-${wp.id}`}
+                      className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
+                      style={{ backgroundImage: `url(${wp.url})` }}
+                      onClick={() => handlePresetSelect(wp.url)}
+                      title={wp.label}
+                      aria-label={`Select ${wp.label} wallpaper`}
+                    >
+                      {wallpaper === wp.url && (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'var(--accent-glow)',
+                          borderRadius: 'inherit',
+                          backdropFilter: 'blur(4px)',
+                        }}>
+                          <IconCheck size={28} color="#081226" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -157,7 +228,9 @@ const WallpaperPicker = () => {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && fileRef.current?.click()}
               >
-                <div className="upload-icon">🖼️</div>
+                <div className="upload-icon" style={{ marginBottom: '8px' }}>
+                  <IconImage size={32} color="var(--text-secondary)" />
+                </div>
                 <div className="upload-text">
                   {uploading ? 'Uploading…' : 'Click to upload your image'}
                 </div>

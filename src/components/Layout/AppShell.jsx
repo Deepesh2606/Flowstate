@@ -97,22 +97,21 @@ const AppShell = () => {
           </button>
         </div>
 
-        {/* Tab Content */}
         {/* Bottom Right Floating Controls */}
         <div className="floating-controls" ref={menuRef}>
-          {/* Wallpaper change button */}
-          <button
-            className="floating-icon-btn"
-            onClick={() => setShowPicker(true)}
-            aria-label="Change wallpaper"
-            id="wallpaper-change-btn"
-            title="Change wallpaper"
-          >
-            <IconImage size={18} />
-          </button>
-
-          {/* Horizontal group for Settings and User */}
+          {/* Horizontal group for Wallpaper, Settings, and User */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {/* Wallpaper change button */}
+            <button
+              className="floating-icon-btn"
+              onClick={() => setShowPicker(true)}
+              aria-label="Change wallpaper"
+              id="wallpaper-change-btn"
+              title="Change wallpaper"
+            >
+              <IconImage size={18} />
+            </button>
+
             {/* Settings button */}
             <button
               className="floating-icon-btn"

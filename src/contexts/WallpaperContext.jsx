@@ -13,6 +13,7 @@ export const useWallpaper = () => {
 export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [wallpaper, setWallpaperState] = useState(null);
+  const [customWallpapers, setCustomWallpapers] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
@@ -23,6 +24,9 @@ export const WallpaperProvider = ({ children }) => {
       } else {
         // First load — show picker
         setShowPicker(true);
+      }
+      if (settings?.customWallpapers) {
+        setCustomWallpapers(settings.customWallpapers);
       }
     });
     return unsub;
@@ -39,8 +43,44 @@ export const WallpaperProvider = ({ children }) => {
     [currentUser]
   );
 
+  const addCustomWallpaper = useCallback(
+    async (url) => {
+      const updated = [url, ...customWallpapers];
+      setCustomWallpapers(updated);
+      if (currentUser) {
+        await saveSettings(currentUser.uid, { customWallpapers: updated });
+      }
+    },
+    [currentUser, customWallpapers]
+  );
+
+  const removeCustomWallpaper = useCallback(
+    async (url) => {
+      const updated = customWallpapers.filter((w) => w !== url);
+      setCustomWallpapers(updated);
+      if (currentUser) {
+        await saveSettings(currentUser.uid, { customWallpapers: updated });
+      }
+      // If the removed wallpaper is the active one, revert to default
+      if (wallpaper === url) {
+        await setWallpaper(null);
+      }
+    },
+    [currentUser, customWallpapers, wallpaper, setWallpaper]
+  );
+
   return (
-    <WallpaperContext.Provider value={{ wallpaper, setWallpaper, showPicker, setShowPicker }}>
+    <WallpaperContext.Provider 
+      value={{ 
+        wallpaper, 
+        setWallpaper, 
+        customWallpapers, 
+        addCustomWallpaper, 
+        removeCustomWallpaper, 
+        showPicker, 
+        setShowPicker 
+      }}
+    >
       {children}
     </WallpaperContext.Provider>
   );
