@@ -14,6 +14,7 @@ export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [wallpaper, setWallpaperState] = useState(null);
   const [customWallpapers, setCustomWallpapers] = useState([]);
+  const [hiddenCurated, setHiddenCurated] = useState([]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -23,6 +24,9 @@ export const WallpaperProvider = ({ children }) => {
       }
       if (settings?.customWallpapers) {
         setCustomWallpapers(settings.customWallpapers);
+      }
+      if (settings?.hiddenCurated) {
+        setHiddenCurated(settings.hiddenCurated);
       }
     });
     return unsub;
@@ -64,6 +68,17 @@ export const WallpaperProvider = ({ children }) => {
     [currentUser, customWallpapers, wallpaper, setWallpaper]
   );
 
+  const hideCuratedWallpaper = useCallback(
+    async (id) => {
+      const updated = [...hiddenCurated, id];
+      setHiddenCurated(updated);
+      if (currentUser) {
+        await saveSettings(currentUser.uid, { hiddenCurated: updated });
+      }
+    },
+    [currentUser, hiddenCurated]
+  );
+
   return (
     <WallpaperContext.Provider 
       value={{ 
@@ -71,7 +86,9 @@ export const WallpaperProvider = ({ children }) => {
         setWallpaper, 
         customWallpapers, 
         addCustomWallpaper, 
-        removeCustomWallpaper 
+        removeCustomWallpaper,
+        hiddenCurated,
+        hideCuratedWallpaper
       }}
     >
       {children}

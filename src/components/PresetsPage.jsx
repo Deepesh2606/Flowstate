@@ -22,7 +22,9 @@ const PresetsPage = () => {
     setWallpaper, 
     customWallpapers, 
     addCustomWallpaper, 
-    removeCustomWallpaper 
+    removeCustomWallpaper,
+    hiddenCurated,
+    hideCuratedWallpaper
   } = useWallpaper();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
@@ -152,8 +154,8 @@ const PresetsPage = () => {
                 Curated Presets
               </h3>
               <div className="wallpaper-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
-                {PRESET_WALLPAPERS.map((wp) => (
-                  <div key={wp.id} style={{ height: '160px' }}>
+                {PRESET_WALLPAPERS.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => (
+                  <div key={wp.id} style={{ position: 'relative', height: '160px' }}>
                     <button
                       className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
                       style={{ backgroundImage: `url(${wp.url})`, width: '100%', height: '100%', borderRadius: 'var(--radius-lg)' }}
@@ -169,6 +171,20 @@ const PresetsPage = () => {
                           <IconCheck size={36} color="#081226" />
                         </div>
                       )}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); hideCuratedWallpaper(wp.id); }}
+                      style={{
+                        position: 'absolute', top: '10px', right: '10px',
+                        background: 'rgba(0,0,0,0.65)', color: '#ff5050',
+                        borderRadius: '50%', width: '32px', height: '32px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: '1px solid rgba(255,255,255,0.15)', zIndex: 10, cursor: 'pointer'
+                      }}
+                      aria-label="Delete curated preset"
+                      title="Hide curated preset"
+                    >
+                      <IconTrash size={16} />
                     </button>
                   </div>
                 ))}
