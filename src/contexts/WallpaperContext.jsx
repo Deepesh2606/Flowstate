@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { saveSettings, subscribeSettings } from '../firebase/firestore';
+import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated } from '../firebase/firestore';
 
 const WallpaperContext = createContext(null);
 
@@ -16,6 +16,7 @@ export const WallpaperProvider = ({ children }) => {
   const [customWallpapers, setCustomWallpapers] = useState([]);
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
+  const [globalCurated, setGlobalCurated] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -32,7 +33,30 @@ export const WallpaperProvider = ({ children }) => {
         setHiddenCurated(settings.hiddenCurated);
       }
     });
-    return unsub;
+
+    const unsubGlobal = subscribeGlobalCurated((curatedList) => {
+      if (curatedList) {
+        setGlobalCurated(curatedList);
+      } else {
+        // Database is empty, seed it with defaults
+        const PRESET_WALLPAPERS = [
+          { id: 'forest', label: 'Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80' },
+          { id: 'aurora', label: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80' },
+          { id: 'mountains', label: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80' },
+          { id: 'galaxy', label: 'Galaxy', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600&q=80' },
+          { id: 'ocean', label: 'Ocean', url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1600&q=80' },
+          { id: 'desert', label: 'Desert Dunes', url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80' },
+          { id: 'neon-city', label: 'Neon City', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1600&q=80' },
+          { id: 'abstract', label: 'Abstract', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1600&q=80' },
+        ];
+        seedGlobalCurated(PRESET_WALLPAPERS);
+      }
+    });
+
+    return () => {
+      unsub();
+      unsubGlobal();
+    };
   }, [currentUser]);
 
   const setWallpaper = useCallback(
@@ -83,6 +107,16 @@ export const WallpaperProvider = ({ children }) => {
     [currentUser, hiddenCurated]
   );
 
+  const uploadToGlobalCurated = useCallback(
+    async (url) => {
+      if (currentUser) {
+        const id = `user-curated-${Date.now()}`;
+        await addGlobalCurated({ id, label: 'User Upload', url });
+      }
+    },
+    [currentUser]
+  );
+
   return (
     <WallpaperContext.Provider 
       value={{ 
@@ -94,7 +128,9 @@ export const WallpaperProvider = ({ children }) => {
         hiddenCurated,
         hideCuratedWallpaper,
         showPicker,
-        setShowPicker
+        setShowPicker,
+        globalCurated,
+        uploadToGlobalCurated
       }}
     >
       {children}

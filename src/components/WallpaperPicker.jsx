@@ -3,16 +3,7 @@ import { useWallpaper } from '../contexts/WallpaperContext';
 import { uploadWallpaper } from '../cloudinary';
 import { IconImage, IconCheck, IconTrash } from './Icons';
 
-const PRESET_WALLPAPERS = [
-  { id: 'forest', label: 'Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80' },
-  { id: 'aurora', label: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80' },
-  { id: 'mountains', label: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80' },
-  { id: 'galaxy', label: 'Galaxy', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600&q=80' },
-  { id: 'ocean', label: 'Ocean', url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1600&q=80' },
-  { id: 'desert', label: 'Desert Dunes', url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80' },
-  { id: 'neon-city', label: 'Neon City', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1600&q=80' },
-  { id: 'abstract', label: 'Abstract', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1600&q=80' },
-];
+// Presets are now fetched from Firebase via globalCurated
 
 const WallpaperPicker = () => {
   const { 
@@ -23,10 +14,13 @@ const WallpaperPicker = () => {
     addCustomWallpaper, 
     removeCustomWallpaper,
     hiddenCurated,
-    hideCuratedWallpaper
+    hideCuratedWallpaper,
+    globalCurated,
+    uploadToGlobalCurated
   } = useWallpaper();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
+  const [uploadAsCurated, setUploadAsCurated] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const fileRef = useRef(null);
 
@@ -49,9 +43,14 @@ const WallpaperPicker = () => {
     setUploadError('');
     try {
       const url = await uploadWallpaper(file);
-      await addCustomWallpaper(url);
+      if (uploadAsCurated) {
+        await uploadToGlobalCurated(url);
+      } else {
+        await addCustomWallpaper(url);
+      }
       await setWallpaper(url);
       setActiveTab('presets');
+      setUploadAsCurated(false);
     } catch (err) {
       console.error(err);
       setUploadError(err.message || 'Upload failed. Check Cloudinary config.');
@@ -141,10 +140,11 @@ const WallpaperPicker = () => {
                 </div>
               )}
 
-              <div>
-                <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Curated</h3>
-                <div className="wallpaper-grid">
-                  {PRESET_WALLPAPERS.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => (
+              {globalCurated && globalCurated.length > 0 && (
+                <div>
+                  <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Curated</h3>
+                  <div className="wallpaper-grid">
+                    {globalCurated.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => (
                     <div key={wp.id} style={{ position: 'relative' }}>
                       <button
                         className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
@@ -180,6 +180,7 @@ const WallpaperPicker = () => {
                   ))}
                 </div>
               </div>
+              )}
             </div>
           )}
 
@@ -213,6 +214,19 @@ const WallpaperPicker = () => {
                   {uploadError}
                 </p>
               )}
+              
+              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <input 
+                  type="checkbox" 
+                  id="curated-checkbox" 
+                  checked={uploadAsCurated}
+                  onChange={(e) => setUploadAsCurated(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--accent-glow)' }}
+                />
+                <label htmlFor="curated-checkbox" style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  Upload as a Global Curated Preset (visible to all users)
+                </label>
+              </div>
             </div>
           )}
         </div>

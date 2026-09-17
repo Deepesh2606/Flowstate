@@ -35,6 +35,34 @@ export const subscribeSettings = (uid, callback) => {
   });
 };
 
+// ─── Global App Data ──────────────────────────────────────────────────────────
+
+export const subscribeGlobalCurated = (callback) => {
+  const ref = doc(db, 'appData', 'wallpapers');
+  return onSnapshot(ref, (snap) => {
+    if (snap.exists() && snap.data().curated) {
+      callback(snap.data().curated);
+    } else {
+      callback(null);
+    }
+  });
+};
+
+export const addGlobalCurated = async (preset) => {
+  const ref = doc(db, 'appData', 'wallpapers');
+  const snap = await getDoc(ref);
+  let current = [];
+  if (snap.exists() && snap.data().curated) {
+    current = snap.data().curated;
+  }
+  await setDoc(ref, { curated: [preset, ...current] }, { merge: true });
+};
+
+export const seedGlobalCurated = async (presets) => {
+  const ref = doc(db, 'appData', 'wallpapers');
+  await setDoc(ref, { curated: presets }, { merge: true });
+};
+
 // ─── Sessions ─────────────────────────────────────────────────────────────────
 
 export const addSession = async (uid, session) => {
