@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconStar } from '../Icons';
 
 const SessionCounter = ({ count }) => {
   const cycleCount = count % 4;
@@ -9,10 +10,10 @@ const SessionCounter = ({ count }) => {
       {Array.from({ length: 4 }, (_, i) => (
         <span
           key={i}
-          className={`tomato ${i < completed ? 'filled' : 'empty'}`}
+          className={`session-star ${i < completed ? 'filled' : 'empty'}`}
           title={i < completed ? 'Completed' : 'Remaining'}
         >
-          🍅
+          <IconStar size={20} />
         </span>
       ))}
     </div>

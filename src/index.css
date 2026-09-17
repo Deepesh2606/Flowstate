@@ -460,18 +460,21 @@ input {
   gap: 6px;
 }
 
-.tomato {
-  font-size: 20px;
-  transition: transform var(--transition-fast), filter var(--transition-fast);
+.session-star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
 }
 
-.tomato.filled {
-  filter: none;
+.session-star.filled {
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
   transform: scale(1.1);
 }
 
-.tomato.empty {
-  filter: grayscale(1) opacity(0.35);
+.session-star.empty {
+  color: rgba(255, 255, 255, 0.2);
 }
 
 /* ─── Subject Selector ───────────────────────────────────────────────────────── */
