@@ -84,6 +84,19 @@ const AppShell = () => {
           <span className="topbar-logo">FLOWSTATE</span>
         </header>
 
+        {/* Top Right Controls (Notes/Tasks) */}
+        <div className="top-right-controls">
+          <button
+            className="floating-icon-btn"
+            onClick={() => setShowTasks(true)}
+            aria-label="Open tasks"
+            id="tasks-btn"
+            title="Tasks & Notes"
+          >
+            <IconTasks size={18} />
+          </button>
+        </div>
+
         {/* Tab Content */}
         {/* Bottom Right Floating Controls */}
         <div className="floating-controls" ref={menuRef}>
@@ -96,16 +109,6 @@ const AppShell = () => {
             title="Change wallpaper"
           >
             <IconImage size={18} />
-          </button>
-
-          <button
-            className="floating-icon-btn"
-            onClick={() => setShowTasks(true)}
-            aria-label="Open tasks"
-            id="tasks-btn"
-            title="Tasks & Notes"
-          >
-            <IconTasks size={18} />
           </button>
 
           {/* Horizontal group for Settings and User */}

@@ -130,7 +130,17 @@ input {
   flex-direction: column;
   gap: 12px;
   z-index: 100;
-  filter: url('#goo');
+  align-items: flex-end;
+}
+
+/* Top Right Controls */
+.top-right-controls {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top, 24px));
+  right: 24px;
+  display: flex;
+  gap: 12px;
+  z-index: 100;
 }
 
 .floating-icon-btn {
