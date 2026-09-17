@@ -15,10 +15,11 @@ const DEFAULT_DURATIONS = {
 };
 
 // Web Audio API chime
-const playChime = () => {
+const playChime = (muted = false) => {
+  if (muted) return;
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const frequencies = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    const frequencies = [523.25, 659.25, 783.99, 1046.5];
     frequencies.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -32,21 +33,23 @@ const playChime = () => {
       osc.start(ctx.currentTime + i * 0.18);
       osc.stop(ctx.currentTime + i * 0.18 + 0.6);
     });
-  } catch (e) {
-    // Silently fail if audio not supported
-  }
+  } catch (e) {}
 };
 
-export const useTimer = (settings) => {
+export const useTimer = (settings, toast) => {
   const { currentUser } = useAuth();
   const durations = settings?.durations || DEFAULT_DURATIONS;
+  const longBreakInterval = settings?.longBreakInterval || 4;
+  const autoStartBreaks = settings?.autoStartBreaks ?? false;
+  const autoStartPomodoros = settings?.autoStartPomodoros ?? false;
+  const soundEnabled = settings?.soundEnabled ?? true;
 
   const [mode, setMode] = useState(MODES.pomodoro);
   const [timeLeft, setTimeLeft] = useState(durations.pomodoro);
   const [isRunning, setIsRunning] = useState(false);
-  const [sessionCount, setSessionCount] = useState(0); // completed pomodoros in current cycle (0–3)
+  const [sessionCount, setSessionCount] = useState(0);
   const [subject, setSubject] = useState('Quant');
-  const [studyMode, setStudyMode] = useState('SSC CGL'); // 'SSC CGL' | 'General'
+  const [studyMode, setStudyMode] = useState('SSC CGL');
   const [sessionStart, setSessionStart] = useState(null);
 
   const intervalRef = useRef(null);
@@ -56,7 +59,6 @@ export const useTimer = (settings) => {
   modeRef.current = mode;
   sessionCountRef.current = sessionCount;
 
-  // Sync duration when mode or durations change
   useEffect(() => {
     setTimeLeft(durations[mode]);
     setIsRunning(false);
@@ -64,18 +66,17 @@ export const useTimer = (settings) => {
   }, [mode, durations.pomodoro, durations.shortBreak, durations.longBreak]);
 
   const handleSessionComplete = useCallback(async () => {
-    playChime();
+    playChime(!soundEnabled);
     const currentMode = modeRef.current;
     const currentCount = sessionCountRef.current;
 
     if (currentMode === MODES.pomodoro) {
-      // Save completed session to Firestore
-      if (currentUser && sessionStart) {
-        const duration = durations.pomodoro;
+      // Save to Firestore
+      if (currentUser) {
         try {
           await addSession(currentUser.uid, {
             subject,
-            duration,
+            duration: durations.pomodoro,
             mode: studyMode,
             date: new Date().toISOString().split('T')[0],
             timestamp: Date.now(),
@@ -89,17 +90,21 @@ export const useTimer = (settings) => {
       setSessionCount(newCount);
       sessionCountRef.current = newCount;
 
-      // After 4 pomodoros → long break, else short break
-      if (newCount % 4 === 0) {
+      if (newCount % longBreakInterval === 0) {
+        toast?.(`🍅 ${newCount} sessions done! Time for a long break 🌙`, 'longbreak', 5000);
         setMode(MODES.longBreak);
+        if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       } else {
+        toast?.(`🍅 Session complete! Take a short break ☕`, 'focus', 4000);
         setMode(MODES.shortBreak);
+        if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       }
     } else {
-      // Break ended → back to pomodoro
+      toast?.('Break over — back to work! 🎯', 'info', 4000);
       setMode(MODES.pomodoro);
+      if (autoStartPomodoros) setTimeout(() => setIsRunning(true), 800);
     }
-  }, [currentUser, sessionStart, subject, studyMode, durations]);
+  }, [currentUser, subject, studyMode, durations, longBreakInterval, autoStartBreaks, autoStartPomodoros, soundEnabled, toast]);
 
   useEffect(() => {
     if (isRunning) {
@@ -143,20 +148,8 @@ export const useTimer = (settings) => {
   const progress = (totalDuration - timeLeft) / totalDuration;
 
   return {
-    mode,
-    timeLeft,
-    isRunning,
-    sessionCount,
-    subject,
-    setSubject,
-    studyMode,
-    setStudyMode,
-    progress,
-    play,
-    pause,
-    reset,
-    skip,
-    switchMode,
-    MODES,
+    mode, timeLeft, isRunning, sessionCount,
+    subject, setSubject, studyMode, setStudyMode,
+    progress, play, pause, reset, skip, switchMode, MODES,
   };
 };
