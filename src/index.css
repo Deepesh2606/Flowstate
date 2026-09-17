@@ -239,7 +239,6 @@ input {
   z-index: 50;
   padding: 0 20px;
   padding-bottom: env(safe-area-inset-bottom, 0);
-  filter: url('#goo');
 }
 
 .tab-btn {
