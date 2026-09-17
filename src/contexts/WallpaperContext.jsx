@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated } from '../firebase/firestore';
+import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated, removeGlobalCurated } from '../firebase/firestore';
 
 const WallpaperContext = createContext(null);
 
@@ -117,6 +117,15 @@ export const WallpaperProvider = ({ children }) => {
     [currentUser]
   );
 
+  const deleteGlobalCurated = useCallback(
+    async (id) => {
+      if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+        await removeGlobalCurated(id);
+      }
+    },
+    [currentUser]
+  );
+
   return (
     <WallpaperContext.Provider 
       value={{ 
@@ -130,7 +139,8 @@ export const WallpaperProvider = ({ children }) => {
         showPicker,
         setShowPicker,
         globalCurated,
-        uploadToGlobalCurated
+        uploadToGlobalCurated,
+        deleteGlobalCurated
       }}
     >
       {children}

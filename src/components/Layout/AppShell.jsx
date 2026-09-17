@@ -5,6 +5,7 @@ import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
 import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser } from '../Icons';
+import { getBrightness } from '../../utils/imageUtils';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
@@ -24,12 +25,41 @@ const AppShell = () => {
   const { settings, updateSettings } = useSettings();
 
   useEffect(() => {
-    if (settings?.textColor) {
-      document.documentElement.style.setProperty('--text-primary', settings.textColor);
+    const applyClockColor = async () => {
+      const autoColor = settings?.autoClockColor ?? true;
+      let finalColor = 'var(--text-primary)'; // default white
+
+      if (autoColor && wallpaper) {
+        const brightness = await getBrightness(wallpaper);
+        if (brightness !== null) {
+          // If average brightness is > 160 (light), use black text
+          finalColor = brightness > 160 ? '#000000' : '#ffffff';
+        } else {
+          finalColor = settings?.textColor || '#ffffff';
+        }
+      } else if (!autoColor && settings?.textColor) {
+        finalColor = settings.textColor;
+      } else if (!autoColor) {
+        finalColor = '#ffffff';
+      }
+
+      document.documentElement.style.setProperty('--clock-text-color', finalColor);
+    };
+
+    applyClockColor();
+
+    if (settings?.subjectColor) {
+      document.documentElement.style.setProperty('--subject-color', settings.subjectColor);
     } else {
-      document.documentElement.style.setProperty('--text-primary', '#f8fafc');
+      document.documentElement.style.setProperty('--subject-color', 'var(--accent)');
     }
-  }, [settings?.textColor]);
+
+    if (settings?.clockFont) {
+      document.documentElement.style.setProperty('--clock-font-family', settings.clockFont);
+    } else {
+      document.documentElement.style.setProperty('--clock-font-family', "'Inter', system-ui, sans-serif");
+    }
+  }, [settings?.textColor, settings?.autoClockColor, settings?.subjectColor, settings?.clockFont, wallpaper]);
 
   const [activeTab, setActiveTab] = useState('timer');
   const [prevTab, setPrevTab] = useState(null);

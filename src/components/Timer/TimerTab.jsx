@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import TimerDisplay from './TimerDisplay';
 import ModePills from './ModePills';
 import SubjectSelector from './SubjectSelector';
 import SessionCounter from './SessionCounter';
-import { IconBook } from '../Icons';
+import { IconBook, IconMaximize, IconMinimize } from '../Icons';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 
@@ -53,6 +53,26 @@ const TimerTab = ({ settings, hasWallpaper }) => {
   const handleSwitchMode = (newMode) => {
     switchMode(newMode);
     // User requested NO toast when switching mode manually
+  };
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.warn('Error attempting to enable fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
   };
 
   return (
@@ -106,6 +126,14 @@ const TimerTab = ({ settings, hasWallpaper }) => {
             ⏭
           </button>
         )}
+        <button
+          className="flocus-ctrl-btn"
+          onClick={toggleFullscreen}
+          aria-label="Toggle Fullscreen"
+          style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          {isFullscreen ? <IconMinimize size={20} /> : <IconMaximize size={20} />}
+        </button>
       </div>
 
       {/* Subject Selector */}
@@ -114,6 +142,7 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         setSubject={setSubject}
         studyMode={studyMode}
         setStudyMode={setStudyMode}
+        targets={settings?.targets || []}
       />
     </div>
   );

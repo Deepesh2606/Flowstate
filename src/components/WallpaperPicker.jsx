@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useWallpaper } from '../contexts/WallpaperContext';
 import { uploadWallpaper } from '../cloudinary';
 import { IconImage, IconCheck, IconTrash } from './Icons';
@@ -16,8 +17,10 @@ const WallpaperPicker = () => {
     hiddenCurated,
     hideCuratedWallpaper,
     globalCurated,
-    uploadToGlobalCurated
+    uploadToGlobalCurated,
+    deleteGlobalCurated
   } = useWallpaper();
+  const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
   const [uploadAsCurated, setUploadAsCurated] = useState(false);
@@ -160,20 +163,22 @@ const WallpaperPicker = () => {
                           </div>
                         )}
                       </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); hideCuratedWallpaper(wp.id); }}
-                        style={{
-                          position: 'absolute', top: '6px', right: '6px',
-                          background: 'rgba(0,0,0,0.65)', color: '#ff5050',
-                          borderRadius: '50%', width: '26px', height: '26px',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          border: '1px solid rgba(255,255,255,0.15)', zIndex: 10
-                        }}
-                        aria-label="Delete curated preset"
-                        title="Hide curated preset"
-                      >
-                        <IconTrash size={14} />
-                      </button>
+                      {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteGlobalCurated(wp.id); }}
+                          style={{
+                            position: 'absolute', top: '6px', right: '6px',
+                            background: 'rgba(0,0,0,0.65)', color: '#ff5050',
+                            borderRadius: '50%', width: '26px', height: '26px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: '1px solid rgba(255,255,255,0.15)', zIndex: 10
+                          }}
+                          aria-label="Delete curated preset completely"
+                          title="Delete preset for everyone"
+                        >
+                          <IconTrash size={14} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

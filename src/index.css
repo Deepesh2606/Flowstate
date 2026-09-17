@@ -404,7 +404,7 @@ input {
   font-size: 3.2rem;
   font-weight: 700;
   letter-spacing: -0.04em;
-  color: var(--text-primary);
+  color: var(--clock-text-color, var(--text-primary));
   line-height: 1;
 }
 
@@ -508,16 +508,16 @@ input {
   border-radius: 100px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-secondary);
   transition: all var(--transition-fast);
 }
 
 .mode-toggle-btn.active {
-  background: var(--accent);
+  background: var(--subject-color, var(--accent));
   color: #0A0A0F;
-  font-weight: 600;
-  box-shadow: 0 0 14px var(--accent-glow);
+  font-weight: 800;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--subject-color, var(--accent)) 40%, transparent);
 }
 
 .subject-chips {
@@ -531,7 +531,7 @@ input {
   padding: 6px 16px;
   border-radius: 100px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--text-secondary);
@@ -545,9 +545,9 @@ input {
 }
 
 .subject-chip.active {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-  color: var(--accent);
+  background: color-mix(in srgb, var(--subject-color, var(--accent)) 15%, transparent);
+  border-color: var(--subject-color, var(--accent));
+  color: var(--subject-color, var(--accent));
 }
 
 .subject-input {
@@ -1747,20 +1747,20 @@ input {
 }
 
 .flocus-timer-digits {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--clock-font-family, 'Inter', system-ui, sans-serif);
   font-size: clamp(6rem, 18vw, 15rem);
   font-weight: 900;
   line-height: 1;
-  color: #ffffff;
+  color: var(--clock-text-color, #ffffff);
   letter-spacing: -0.04em;
-  text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+  text-shadow: 0 0 40px color-mix(in srgb, var(--clock-text-color, #ffffff) 15%, transparent);
   user-select: none;
   font-variant-numeric: tabular-nums;
   transition: text-shadow 0.3s ease;
 }
 
 .flocus-timer-digits.active {
-  text-shadow: 0 0 60px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--clock-text-color, #ffffff) 30%, transparent);
 }
 
 /* Minimalist control buttons matching Flocus */
@@ -1839,3 +1839,18 @@ input {
   }
 }
 
+
+/* Fullscreen Mode - Hide extra UI */
+:fullscreen .topbar,
+:fullscreen .floating-controls,
+:fullscreen .top-right-controls,
+:fullscreen .tab-bar {
+  display: none !important;
+}
+
+:fullscreen .content-area {
+  padding-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

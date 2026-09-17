@@ -1,20 +1,22 @@
 import React from 'react';
 
-const SSC_SUBJECTS = ['Quant', 'English', 'GK', 'Reasoning'];
+const SubjectSelector = ({ subject, setSubject, studyMode, setStudyMode, targets }) => {
+  const currentTarget = targets.find(t => t.name === studyMode);
 
-const SubjectSelector = ({ subject, setSubject, studyMode, setStudyMode }) => {
   return (
     <div className="subject-selector glass-card">
       {/* Mode Toggle */}
       <div className="mode-toggle" role="group" aria-label="Study mode">
-        <button
-          className={`mode-toggle-btn ${studyMode === 'SSC CGL' ? 'active' : ''}`}
-          onClick={() => setStudyMode('SSC CGL')}
-          id="mode-ssc"
-          aria-pressed={studyMode === 'SSC CGL'}
-        >
-          SSC CGL
-        </button>
+        {targets.map(t => (
+          <button
+            key={t.id}
+            className={`mode-toggle-btn ${studyMode === t.name ? 'active' : ''}`}
+            onClick={() => setStudyMode(t.name)}
+            aria-pressed={studyMode === t.name}
+          >
+            {t.name}
+          </button>
+        ))}
         <button
           className={`mode-toggle-btn ${studyMode === 'General' ? 'active' : ''}`}
           onClick={() => setStudyMode('General')}
@@ -25,13 +27,12 @@ const SubjectSelector = ({ subject, setSubject, studyMode, setStudyMode }) => {
         </button>
       </div>
 
-      {/* SSC CGL Subject Chips */}
-      {studyMode === 'SSC CGL' && (
+      {/* Subject Chips */}
+      {currentTarget && currentTarget.subjects.length > 0 && (
         <div className="subject-chips" role="group" aria-label="Select subject">
-          {SSC_SUBJECTS.map((s) => (
+          {currentTarget.subjects.map((s) => (
             <button
               key={s}
-              id={`subject-${s.toLowerCase()}`}
               className={`subject-chip ${subject === s ? 'active' : ''}`}
               onClick={() => setSubject(s)}
               aria-pressed={subject === s}

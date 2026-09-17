@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '../Toast/ToastProvider';
-import { IconSettings, IconFocus, IconInfo } from '../Icons';
+import { IconSettings, IconFocus, IconInfo, IconBook } from '../Icons';
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
@@ -39,9 +39,41 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
   const [notifyOnComplete, setNotifyOnComplete]     = useState(settings?.notifyOnComplete ?? true);
   
   // Customization
-  const [textColor, setTextColor]                   = useState(settings?.textColor || '#f8fafc');
+  const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
+  const [textColor, setTextColor]                   = useState(settings?.textColor || '#ffffff');
+  const [subjectColor, setSubjectColor]             = useState(settings?.subjectColor || '#06b6d4');
+  const [clockFont, setClockFont]                   = useState(settings?.clockFont || 'Inter, system-ui, sans-serif');
+
+  // Study Targets
+  const defaultTargets = [{ id: '1', name: 'SSC CGL', subjects: ['Quant', 'English', 'GK', 'Reasoning'] }];
+  const [targetsRaw, setTargetsRaw] = useState((settings?.targets || defaultTargets).map(t => ({
+    ...t,
+    subjectsStr: t.subjects.join(', ')
+  })));
+
+  const handleUpdateTarget = (index, field, value) => {
+    const newTargets = [...targetsRaw];
+    newTargets[index][field] = value;
+    setTargetsRaw(newTargets);
+  };
+
+  const handleAddTarget = () => {
+    setTargetsRaw([...targetsRaw, { id: Date.now().toString(), name: 'New Target', subjectsStr: '' }]);
+  };
+
+  const handleRemoveTarget = (index) => {
+    const newTargets = [...targetsRaw];
+    newTargets.splice(index, 1);
+    setTargetsRaw(newTargets);
+  };
 
   const handleSave = async () => {
+    const finalTargets = targetsRaw.map(t => ({
+      id: t.id,
+      name: t.name,
+      subjects: t.subjectsStr.split(',').map(s => s.trim()).filter(s => s)
+    }));
+
     await onSave({
       durations: {
         pomodoro:   Math.max(1, Number(pomodoro))   * 60,
@@ -54,7 +86,11 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
       autoStartPomodoros,
       soundEnabled,
       notifyOnComplete,
+      autoClockColor,
       textColor,
+      subjectColor,
+      clockFont,
+      targets: finalTargets,
     });
     toast('Settings saved!', 'success');
     onClose();
@@ -150,6 +186,35 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           </div>
         </div>
 
+        {/* ── Study Targets ── */}
+        <div className="settings-section">
+          <div className="settings-section-title"><IconBook size={14} /> Study Targets</div>
+          {targetsRaw.map((t, i) => (
+            <div key={t.id} className="setting-item" style={{ background: 'var(--glass-bg-strong)', padding: '12px', borderRadius: '8px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <input
+                  className="setting-input"
+                  style={{ flex: 1, marginRight: '8px', fontWeight: 'bold' }}
+                  value={t.name}
+                  onChange={e => handleUpdateTarget(i, 'name', e.target.value)}
+                  placeholder="Target Name (e.g. UPSC)"
+                />
+                <button className="drawer-close" style={{ position: 'static' }} onClick={() => handleRemoveTarget(i)} aria-label="Remove Target">✕</button>
+              </div>
+              <input
+                className="setting-input"
+                style={{ width: '100%' }}
+                value={t.subjectsStr}
+                onChange={e => handleUpdateTarget(i, 'subjectsStr', e.target.value)}
+                placeholder="Subjects (comma separated)"
+              />
+            </div>
+          ))}
+          <button className="pill" style={{ width: '100%', marginTop: '4px' }} onClick={handleAddTarget}>
+            + Add Target
+          </button>
+        </div>
+
         {/* ── Behaviour ── */}
         <div className="settings-section">
           <div className="settings-section-title"><IconFocus size={14} /> Behaviour</div>
@@ -194,16 +259,48 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
         <div className="settings-section">
           <div className="settings-section-title"><IconSettings size={14} /> Customization</div>
 
+          <Toggle
+            id="toggle-auto-clock-color"
+            checked={autoClockColor}
+            onChange={setAutoClockColor}
+            label="Auto-adjust Clock Color"
+            sub="Change clock color based on wallpaper brightness"
+          />
+
+          {!autoClockColor && (
+            <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <label className="setting-label" htmlFor="setting-text-color" style={{ marginBottom: 0 }}>
+                Main Clock Text Color
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  id="setting-text-color"
+                  type="color"
+                  value={textColor}
+                  onChange={(e) => setTextColor(e.target.value)}
+                  style={{ 
+                    width: '32px', height: '32px', padding: '0', 
+                    border: 'none', borderRadius: '4px', cursor: 'pointer',
+                    background: 'none'
+                  }}
+                />
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                  {textColor.toUpperCase()}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <label className="setting-label" htmlFor="setting-text-color" style={{ marginBottom: 0 }}>
-              Primary Text Color
+            <label className="setting-label" htmlFor="setting-subject-color" style={{ marginBottom: 0 }}>
+              Subject Highlight Color
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input
-                id="setting-text-color"
+                id="setting-subject-color"
                 type="color"
-                value={textColor}
-                onChange={(e) => setTextColor(e.target.value)}
+                value={subjectColor}
+                onChange={(e) => setSubjectColor(e.target.value)}
                 style={{ 
                   width: '32px', height: '32px', padding: '0', 
                   border: 'none', borderRadius: '4px', cursor: 'pointer',
@@ -211,9 +308,27 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                 }}
               />
               <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                {textColor.toUpperCase()}
+                {subjectColor.toUpperCase()}
               </span>
             </div>
+          </div>
+
+          <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <label className="setting-label" htmlFor="setting-clock-font" style={{ marginBottom: 0 }}>
+              Clock Font
+            </label>
+            <select
+              id="setting-clock-font"
+              className="setting-input"
+              style={{ width: '150px', padding: '6px' }}
+              value={clockFont}
+              onChange={(e) => setClockFont(e.target.value)}
+            >
+              <option value="'Inter', system-ui, sans-serif">Inter (Default)</option>
+              <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+              <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+              <option value="'Playfair Display', serif">Playfair Display</option>
+            </select>
           </div>
         </div>
 

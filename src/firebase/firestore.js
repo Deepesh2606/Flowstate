@@ -58,6 +58,16 @@ export const addGlobalCurated = async (preset) => {
   await setDoc(ref, { curated: [preset, ...current] }, { merge: true });
 };
 
+export const removeGlobalCurated = async (presetId) => {
+  const ref = doc(db, 'appData', 'wallpapers');
+  const snap = await getDoc(ref);
+  if (snap.exists() && snap.data().curated) {
+    const current = snap.data().curated;
+    const updated = current.filter(p => p.id !== presetId);
+    await setDoc(ref, { curated: updated }, { merge: true });
+  }
+};
+
 export const seedGlobalCurated = async (presets) => {
   const ref = doc(db, 'appData', 'wallpapers');
   await setDoc(ref, { curated: presets }, { merge: true });

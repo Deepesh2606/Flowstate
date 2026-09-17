@@ -9,7 +9,11 @@ const DEFAULT_SETTINGS = {
     longBreak: 15 * 60,
   },
   modePreference: 'SSC CGL',
-  textColor: '#f8fafc',
+  textColor: '#ffffff',
+  subjectColor: '#06b6d4',
+  targets: [
+    { id: '1', name: 'SSC CGL', subjects: ['Quant', 'English', 'GK', 'Reasoning'] }
+  ],
 };
 
 export const useSettings = () => {
