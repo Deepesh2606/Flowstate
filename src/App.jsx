@@ -4,6 +4,8 @@ import { WallpaperProvider } from './contexts/WallpaperContext';
 import { ToastProvider } from './components/Toast/ToastProvider';
 import SplashScreen from './components/SplashScreen';
 import AppShell from './components/Layout/AppShell';
+import PresetsPage from './components/PresetsPage';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 const AppInner = () => {
   const { currentUser, signInWithGoogle } = useAuth();
@@ -25,9 +27,15 @@ const AppInner = () => {
   }
 
   return (
-    <WallpaperProvider>
-      <AppShell />
-    </WallpaperProvider>
+    <BrowserRouter>
+      <WallpaperProvider>
+        <Routes>
+          <Route path="/" element={<AppShell />} />
+          <Route path="/presets" element={<PresetsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </WallpaperProvider>
+    </BrowserRouter>
   );
 };
 
