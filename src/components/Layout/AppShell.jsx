@@ -5,7 +5,7 @@ import { useAudio } from '../../contexts/AudioContext';
 import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconMac } from '../Icons';
+import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones } from '../Icons';
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import LofiPlayer from '../Audio/LofiPlayer';
@@ -40,6 +40,11 @@ const AppShell = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
+
+  useEffect(() => {
+    const currentTheme = settings?.theme || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+  }, [settings?.theme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,7 +146,10 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
-          <span className="topbar-logo">FLOWSTATE</span>
+          <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <img src="/favicon.svg" alt="Flowstate" style={{ width: 18, height: 18, borderRadius: 4 }} />
+            FLOWSTATE
+          </span>
         </header>
 
         {/* Top Right Controls (Notes/Tasks) */}
@@ -196,17 +204,6 @@ const AppShell = () => {
               <IconSettings size={18} />
             </button>
 
-            {/* Add to Mac Dock / Install button */}
-            <button
-              className="floating-icon-btn"
-              onClick={() => setShowInstallModal(true)}
-              aria-label="Add to Mac Dock or Install App"
-              id="mac-dock-btn"
-              title="Add to Mac Dock / Install App"
-            >
-              <IconMac size={18} />
-            </button>
-
             {/* User avatar */}
             {currentUser?.photoURL ? (
               <img
@@ -255,17 +252,6 @@ const AppShell = () => {
                 id="menu-change-wallpaper"
               >
                 <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
-              </button>
-              <button
-                className="user-menu-item"
-                onClick={() => {
-                  setShowInstallModal(true);
-                  setShowUserMenu(false);
-                }}
-                role="menuitem"
-                id="menu-install-dock"
-              >
-                <IconMac size={14} style={{ marginRight: 8, color: 'var(--accent)' }} /> Add to Mac Dock / Install
               </button>
               <button
                 className="user-menu-item"

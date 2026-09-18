@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
-import { IconSettings, IconFocus, IconInfo, IconBook, IconMac } from '../Icons';
+import { IconSettings, IconFocus, IconInfo, IconBook, IconMac, IconSun, IconMoon } from '../Icons';
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
@@ -47,6 +47,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
   const [clockColor, setClockColor]                 = useState(settings?.clockColor || settings?.textColor || '#ffffff');
   const [clockFont, setClockFont]                   = useState(settings?.clockFont || "'Inter', system-ui, sans-serif");
+  const [theme, setTheme]                           = useState(settings?.theme || 'dark');
   
   // Track original settings for cleanup if cancelled
   const originalSettingsRef = useRef({
@@ -64,6 +65,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       if (settings.showSeconds !== undefined) setShowSeconds(settings.showSeconds);
       if (settings.clockColor || settings.textColor) setClockColor(settings.clockColor || settings.textColor);
       if (settings.clockFont) setClockFont(settings.clockFont);
+      if (settings.theme) setTheme(settings.theme);
     }
   }, [settings]);
 
@@ -173,6 +175,13 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
     applyRealtime({ [field]: val });
   };
 
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    onSave({ theme: nextTheme });
+  };
+
   const handleSave = async () => {
     const finalTargets = targetsRaw.map(t => ({
       id: t.id,
@@ -198,6 +207,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       clockColor,
       textColor: clockColor,
       clockFont,
+      theme,
       targets: finalTargets,
     });
     toast('Settings updated', 'success', 2200);
@@ -211,7 +221,20 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
 
         <div className="drawer-header">
           <h2 className="drawer-title">Settings</h2>
-          <button className="drawer-close" onClick={onClose} aria-label="Close settings">✕</button>
+          <div className="drawer-header-actions">
+            <button
+              type="button"
+              className="drawer-theme-toggle"
+              onClick={handleToggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              id="settings-theme-toggle-btn"
+            >
+              {theme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </button>
+            <button className="drawer-close" onClick={onClose} aria-label="Close settings">✕</button>
+          </div>
         </div>
 
         {/* ── Timer Durations ── */}
@@ -546,7 +569,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
               }}
               id="settings-install-dock-btn"
             >
-              <IconMac size={16} color="var(--accent)" /> Add FLOWSTATE to Mac Dock
+              <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
             </button>
             <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center' }}>
               Pin to your Mac Dock & launch as a native standalone app

@@ -12,6 +12,11 @@ const SplashScreen = ({ onSignIn, loading }) => {
 
       {/* Logo block — centered hero */}
       <div className="splash-hero">
+        <img
+          src="/favicon.svg"
+          alt="Flowstate Logo"
+          style={{ width: 68, height: 68, borderRadius: 18, marginBottom: 16, filter: "drop-shadow(0 10px 24px rgba(6, 182, 212, 0.4))" }}
+        />
         <h1 className="splash-logo">FLOWSTATE</h1>
         <p className="splash-tagline">Study smarter. Track deeper. Flow further.</p>
       </div>

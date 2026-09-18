@@ -64,8 +64,8 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
         <div className="install-modal-card">
           <div className="install-modal-header">
             <div className="install-modal-badge-group">
-              <div className="install-mac-icon-badge">
-                <IconMac size={20} color="var(--accent)" />
+              <div className="install-mac-icon-badge" style={{ display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <img src="/favicon.svg" alt="App Icon" style={{ width: 28, height: 28, borderRadius: 6 }} />
               </div>
               <div>
                 <h3 id="install-modal-title" className="install-modal-title">

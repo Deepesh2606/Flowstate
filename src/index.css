@@ -1199,6 +1199,35 @@ input {
   justify-content: space-between;
 }
 
+.drawer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.drawer-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border-strong);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all var(--transition-fast);
+}
+
+.drawer-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
 .drawer-title {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.5rem;
@@ -2568,7 +2597,7 @@ input {
   align-self: baseline;
 }
 
-/* ─── 3D Mechanical Flip Clock ────────────────────────────────────────────── */
+/* ─── 3D Liquid Flip Clock ────────────────────────────────────────────────── */
 .flip-clock-container {
   display: flex;
   align-items: center;
@@ -2591,8 +2620,27 @@ input {
   height: clamp(88px, 15vw, 165px);
   perspective: 1000px;
   transform-style: preserve-3d;
-  border-radius: 14px;
-  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  /* Substantially lessened box-shadow: clean, ambient, not heavy */
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.22),
+              0 3px 8px -2px rgba(0, 0, 0, 0.12),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Liquid curved gloss highlight on the card surface */
+.flip-card-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.05) 45%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 12;
 }
 
 .flip-flap {
@@ -2601,10 +2649,17 @@ input {
   width: 100%;
   height: 50%;
   overflow: hidden;
-  background: rgba(12, 14, 24, 0.92);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--glass-border-strong);
+  /* Liquid design: translucent multi-gradient with refractive saturation and subtle aquatic glass tint */
+  background: linear-gradient(
+    168deg,
+    rgba(255, 255, 255, 0.24) 0%,
+    rgba(255, 255, 255, 0.09) 35%,
+    rgba(255, 255, 255, 0.04) 65%,
+    rgba(255, 255, 255, 0.16) 100%
+  ), rgba(15, 23, 42, 0.38);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   display: flex;
@@ -2624,7 +2679,7 @@ input {
   font-weight: 800;
   line-height: 1;
   color: var(--clock-text-color, #ffffff);
-  text-shadow: var(--clock-text-shadow, 0 0 40px rgba(0, 0, 0, 0.5));
+  text-shadow: var(--clock-text-shadow, 0 2px 14px rgba(0, 0, 0, 0.3));
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
 }
@@ -2632,9 +2687,11 @@ input {
 .flip-top-static,
 .flip-leaf-top {
   top: 0;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.55),
+              inset 0 -1px 2px 0 rgba(0, 0, 0, 0.08);
   transform-origin: bottom center;
 }
 
@@ -2646,9 +2703,11 @@ input {
 .flip-bottom-static,
 .flip-leaf-bottom {
   bottom: 0;
-  border-bottom-left-radius: 14px;
-  border-bottom-right-radius: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.22),
+              inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.35);
   transform-origin: top center;
 }
 
@@ -2657,7 +2716,7 @@ input {
   bottom: 0;
 }
 
-/* Card divider groove */
+/* Liquid Card divider seam */
 .flip-divider-seam {
   position: absolute;
   left: 0;
@@ -2665,8 +2724,8 @@ input {
   top: 50%;
   height: 2px;
   margin-top: -1px;
-  background: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15), 0 -1px 1px rgba(255, 255, 255, 0.25);
   z-index: 10;
   pointer-events: none;
 }
@@ -2701,7 +2760,7 @@ input {
   }
   49.9% {
     transform: rotateX(-90deg);
-    filter: brightness(0.65);
+    filter: brightness(0.85);
     opacity: 1;
   }
   50%, 100% {
@@ -2713,12 +2772,12 @@ input {
 @keyframes flipBottomAnimation {
   0%, 50% {
     transform: rotateX(90deg);
-    filter: brightness(0.65);
+    filter: brightness(0.85);
     opacity: 0;
   }
   50.1% {
     transform: rotateX(90deg);
-    filter: brightness(0.7);
+    filter: brightness(0.88);
     opacity: 1;
   }
   100% {
@@ -2733,9 +2792,9 @@ input {
   font-size: clamp(2.2rem, 5vw, 5rem);
   font-weight: 800;
   color: var(--clock-text-color, #ffffff);
-  text-shadow: var(--clock-text-shadow, 0 0 30px rgba(0, 0, 0, 0.5));
+  text-shadow: var(--clock-text-shadow, 0 2px 10px rgba(0, 0, 0, 0.25));
   line-height: 1;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .flip-card-label {
@@ -3173,3 +3232,176 @@ input {
   line-height: 1.4;
 }
 
+/* ─── Light Mode Theme Tokens & Overrides ────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base: #f1f5f9;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-strong: rgba(0, 0, 0, 0.15);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --shadow-glow: 0 0 24px rgba(6, 182, 212, 0.2);
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme="light"] .wallpaper-overlay {
+  background: rgba(241, 245, 249, 0.45);
+}
+
+[data-theme="light"] .topbar-logo {
+  color: #0f172a;
+}
+
+[data-theme="light"] .drawer {
+  background: rgba(255, 255, 255, 0.88);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .drawer-overlay {
+  background: rgba(15, 23, 42, 0.25);
+}
+
+[data-theme="light"] .drawer-theme-toggle {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+[data-theme="light"] .drawer-theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.09);
+  border-color: var(--accent);
+}
+
+[data-theme="light"] .drawer-close {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #475569;
+}
+
+[data-theme="light"] .drawer-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+[data-theme="light"] .user-menu {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.14);
+}
+
+[data-theme="light"] .user-menu-item {
+  color: #334155;
+}
+
+[data-theme="light"] .user-menu-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
+[data-theme="light"] .setting-stepper {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+[data-theme="light"] .setting-preset-pill {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #475569;
+}
+
+[data-theme="light"] .setting-preset-pill.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+[data-theme="light"] .setting-segmented {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .setting-segmented-btn {
+  color: #64748b;
+}
+
+[data-theme="light"] .setting-segmented-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .tab-bar {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .tab-btn {
+  color: #64748b;
+}
+
+[data-theme="light"] .tab-btn.active {
+  color: var(--accent);
+}
+
+[data-theme="light"] .tab-btn.active .tab-icon {
+  background: rgba(6, 182, 212, 0.12);
+}
+
+[data-theme="light"] .flip-card-wrapper {
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12),
+              0 2px 6px -1px rgba(0, 0, 0, 0.06),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .flip-card-wrapper::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 45%,
+    transparent 70%
+  );
+}
+
+[data-theme="light"] .flip-flap {
+  background: linear-gradient(
+    168deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.65) 45%,
+    rgba(255, 255, 255, 0.55) 70%,
+    rgba(255, 255, 255, 0.82) 100%
+  ), rgba(241, 245, 249, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .flip-top-static,
+[data-theme="light"] .flip-leaf-top {
+  box-shadow: inset 0 1.5px 1.5px 0 #ffffff,
+              inset 0 -1px 2px 0 rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .flip-bottom-static,
+[data-theme="light"] .flip-leaf-bottom {
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.6),
+              inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .flip-divider-seam {
+  background: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 1px rgba(255, 255, 255, 0.8), 0 -1px 1px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .flip-card-wrapper.flip-ms-wrapper {
+  opacity: 0.95;
+}
