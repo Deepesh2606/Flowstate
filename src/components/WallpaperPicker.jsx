@@ -25,6 +25,8 @@ const WallpaperPicker = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [justUploaded, setJustUploaded] = useState(false);
   const [uploadAsCurated, setUploadAsCurated] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -45,16 +47,29 @@ const WallpaperPicker = () => {
       setUploadError('File too large. Max 10MB.');
       return;
     }
+
+    const preview = URL.createObjectURL(file);
+    setPreviewUrl(preview);
     setUploading(true);
+    setUploadProgress(10);
     setUploadError('');
+
     try {
-      const url = await uploadWallpaper(file);
+      const url = await uploadWallpaper(file, (percent) => {
+        setUploadProgress(percent);
+      });
+      setUploadProgress(100);
+
       if (uploadAsCurated) {
         await uploadToGlobalCurated(url);
       } else {
         await addCustomWallpaper(url);
       }
       await setWallpaper(url);
+
+      // Brief pause to display the completed fill before switching to success state
+      await new Promise((resolve) => setTimeout(resolve, 350));
+
       setJustUploaded(true);
       toast('Wallpaper uploaded and set successfully!', 'success', 3000);
       setUploadAsCurated(false);
@@ -66,6 +81,11 @@ const WallpaperPicker = () => {
       setUploadError(err.message || 'Upload failed. Check Cloudinary config.');
     } finally {
       setUploading(false);
+      setUploadProgress(0);
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+      setPreviewUrl(null);
     }
   };
 
@@ -295,19 +315,64 @@ const WallpaperPicker = () => {
               )}
 
               <div
-                className="upload-area"
-                onClick={() => fileRef.current?.click()}
+                className={`upload-area ${uploading ? 'is-uploading' : ''}`}
+                onClick={() => !uploading && fileRef.current?.click()}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && fileRef.current?.click()}
+                onKeyDown={(e) => !uploading && e.key === 'Enter' && fileRef.current?.click()}
+                style={{
+                  minHeight: '190px',
+                  justifyContent: 'center',
+                }}
+                id="wallpaper-upload-area"
               >
-                <div className="upload-icon" style={{ marginBottom: '8px' }}>
-                  <IconImage size={32} color="var(--text-secondary)" />
+                {/* Background image preview if available during upload */}
+                {previewUrl && (
+                  <div
+                    className="upload-preview-backdrop"
+                    style={{ backgroundImage: `url(${previewUrl})` }}
+                  />
+                )}
+
+                {/* Filling layer that fills the component upwards as upload progresses */}
+                {uploading && (
+                  <div
+                    className="upload-progress-fill"
+                    style={{ height: `${uploadProgress}%` }}
+                  />
+                )}
+
+                {/* Content layer */}
+                <div className="upload-content-layer">
+                  {uploading ? (
+                    <>
+                      <div className="upload-spinner-ring" />
+                      <div className="upload-progress-badge">
+                        <span>Uploading</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="upload-mini-track">
+                        <div
+                          className="upload-mini-bar"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <div className="upload-sub" style={{ color: 'var(--text-secondary)' }}>
+                        Optimizing & applying wallpaper...
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="upload-icon" style={{ marginBottom: '4px' }}>
+                        <IconImage size={36} color="var(--accent)" />
+                      </div>
+                      <div className="upload-text">
+                        Click to upload your image
+                      </div>
+                      <div className="upload-sub">JPG, PNG, WEBP — max 10MB</div>
+                    </>
+                  )}
                 </div>
-                <div className="upload-text">
-                  {uploading ? 'Uploading…' : 'Click to upload your image'}
-                </div>
-                <div className="upload-sub">JPG, PNG, WEBP — max 10MB</div>
               </div>
               <input
                 ref={fileRef}

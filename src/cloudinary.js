@@ -10,29 +10,55 @@
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-export const uploadWallpaper = async (file) => {
-  if (!CLOUD_NAME || !UPLOAD_PRESET) {
-    throw new Error(
-      'Cloudinary env vars missing. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to .env.local'
-    );
-  }
+export const uploadWallpaper = (file, onProgress) => {
+  return new Promise((resolve, reject) => {
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+      return reject(
+        new Error(
+          'Cloudinary env vars missing. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to .env.local'
+        )
+      );
+    }
 
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
-  formData.append('folder', 'flowstate/wallpapers');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'flowstate/wallpapers');
 
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
-  );
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'Cloudinary upload failed');
-  }
+    if (xhr.upload && onProgress) {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          // Reserve 5-90% for network transfer
+          const percent = Math.round((event.loaded / event.total) * 90);
+          onProgress(Math.max(5, percent));
+        }
+      };
+    }
 
-  const data = await res.json();
-  // Return a web-optimized URL: auto format + quality, max 3840px wide for 4K
-  return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_3840/');
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (onProgress) onProgress(100);
+        try {
+          const data = JSON.parse(xhr.responseText);
+          // Return a web-optimized URL: auto format + quality, max 3840px wide for 4K
+          resolve(data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_3840/'));
+        } catch (err) {
+          reject(new Error('Invalid response from Cloudinary'));
+        }
+      } else {
+        let errMessage = 'Cloudinary upload failed';
+        try {
+          const errData = JSON.parse(xhr.responseText);
+          if (errData.error?.message) errMessage = errData.error.message;
+        } catch {}
+        reject(new Error(errMessage));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(formData);
+  });
 };

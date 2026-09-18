@@ -129,7 +129,15 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
-          <span className="topbar-logo">FLOWSTATE</span>
+          <div className="topbar-brand">
+            <span className="topbar-brand-mark" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            </span>
+            <span className="topbar-logo">FLOWSTATE</span>
+          </div>
         </header>
 
         {/* Top Right Controls (Notes/Tasks) */}
