@@ -412,8 +412,9 @@ const WallpaperPicker = () => {
                 </p>
               )}
               
-              <div className={`curated-toggle-card ${uploadAsCurated ? 'active' : ''}`}>
-                <div className="curated-toggle-content">
+              {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+                <div className={`curated-toggle-card ${uploadAsCurated ? 'active' : ''}`}>
+                  <div className="curated-toggle-content">
                   <div className="curated-toggle-header">
                     <div className="curated-globe-icon" aria-hidden="true">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -470,6 +471,7 @@ const WallpaperPicker = () => {
                   </div>
                 )}
               </div>
+              )}
             </div>
           )}
         </div>

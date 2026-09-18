@@ -130,7 +130,7 @@ export const WallpaperProvider = ({ children }) => {
 
   const uploadToGlobalCurated = useCallback(
     async (url, label = 'Curated') => {
-      if (currentUser) {
+      if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
         const id = `user-curated-${Date.now()}`;
         const finalLabel = label?.trim() || 'Curated';
         await addGlobalCurated({ id, label: finalLabel, url });
