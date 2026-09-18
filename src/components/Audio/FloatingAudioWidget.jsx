@@ -7,6 +7,9 @@ const FloatingAudioWidget = () => {
     isAnyPlaying,
     activeAmbientLabels,
     lofiPlaying,
+    spotifyActive,
+    selectedSpotifyId,
+    SPOTIFY_PLAYLISTS,
     stopAll,
     setShowAudioDrawer,
     showAudioDrawer,
@@ -20,7 +23,13 @@ const FloatingAudioWidget = () => {
 
   // Construct label text
   let label = '';
-  if (lofiPlaying && activeAmbientLabels.length > 0) {
+  const currentSpotify = SPOTIFY_PLAYLISTS?.find((p) => p.id === selectedSpotifyId)?.title || 'Spotify Player';
+
+  if (spotifyActive && activeAmbientLabels.length > 0) {
+    label = `🟢 ${currentSpotify} + ${activeAmbientLabels[0]}`;
+  } else if (spotifyActive) {
+    label = `🟢 Spotify: ${currentSpotify}`;
+  } else if (lofiPlaying && activeAmbientLabels.length > 0) {
     label = `Lofi Radio + ${activeAmbientLabels[0]}${
       activeAmbientLabels.length > 1 ? ` (+${activeAmbientLabels.length - 1})` : ''
     }`;

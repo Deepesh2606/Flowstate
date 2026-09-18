@@ -13,8 +13,10 @@ import {
   IconWind,
   IconThunder,
   IconRadio,
+  IconSpotify,
 } from '../Icons';
 import LofiPlayer from './LofiPlayer';
+import SpotifyPlayer from './SpotifyPlayer';
 import './AudioDrawer.css';
 
 const ICON_MAP = {
@@ -30,6 +32,7 @@ const AudioDrawer = ({ onClose }) => {
   const {
     AMBIENT_SOUNDS,
     LOFI_STREAMS,
+    SPOTIFY_PLAYLISTS,
     SOUND_PRESETS,
     tracks,
     toggleTrack,
@@ -48,10 +51,25 @@ const AudioDrawer = ({ onClose }) => {
     customVideoId,
     setCustomVideoId,
     extractVideoId,
+    streamStatus,
+    refreshStreamStatuses,
+    filterAvailableOnly,
+    setFilterAvailableOnly,
+    spotifyActive,
+    setSpotifyActive,
+    selectedSpotifyId,
+    setSelectedSpotifyId,
+    spotifyType,
+    setSpotifyType,
+    customSpotifyInput,
+    setCustomSpotifyInput,
+    extractSpotifyDetails,
   } = useAudio();
 
-  const [activeSubTab, setActiveSubTab] = useState('ambient'); // 'ambient' | 'lofi'
+  const [activeSubTab, setActiveSubTab] = useState('ambient'); // 'ambient' | 'lofi' | 'spotify'
   const [customInput, setCustomInput] = useState(customVideoId);
+  const [spotifyUrlInput, setSpotifyUrlInput] = useState('');
+  const [isRefreshingStreams, setIsRefreshingStreams] = useState(false);
 
   const handleCustomSubmit = (e) => {
     e.preventDefault();
@@ -61,6 +79,22 @@ const AudioDrawer = ({ onClose }) => {
       setSelectedStreamId('custom');
       setLofiPlaying(true);
     }
+  };
+
+  const handleSpotifySubmit = (e) => {
+    e.preventDefault();
+    const details = extractSpotifyDetails(spotifyUrlInput);
+    if (details) {
+      setSelectedSpotifyId(details.id);
+      setSpotifyType(details.type);
+      setSpotifyActive(true);
+    }
+  };
+
+  const handleRefreshStreams = async () => {
+    setIsRefreshingStreams(true);
+    await refreshStreamStatuses();
+    setIsRefreshingStreams(false);
   };
 
   return (
@@ -97,7 +131,7 @@ const AudioDrawer = ({ onClose }) => {
             onClick={() => setActiveSubTab('ambient')}
             id="tab-ambient-mixer"
           >
-            <IconVolume size={15} /> Ambient Mixer
+            <IconVolume size={15} /> Ambient
           </button>
           <button
             className={`audio-nav-tab ${activeSubTab === 'lofi' ? 'active' : ''}`}
@@ -105,6 +139,16 @@ const AudioDrawer = ({ onClose }) => {
             id="tab-lofi-radio"
           >
             <IconRadio size={15} /> Lofi Radio
+          </button>
+          <button
+            className={`audio-nav-tab ${activeSubTab === 'spotify' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSubTab('spotify');
+              setSpotifyActive(true);
+            }}
+            id="tab-spotify"
+          >
+            <IconSpotify size={15} color="#1DB954" /> Spotify
           </button>
         </div>
 
@@ -200,7 +244,6 @@ const AudioDrawer = ({ onClose }) => {
                         onChange={(e) => {
                           const val = parseFloat(e.target.value) / 100;
                           setTrackVolume(sound.id, val);
-                          // Auto play track if user slides volume up from zero
                           if (!isPlaying && val > 0) {
                             toggleTrack(sound.id);
                           }
@@ -268,12 +311,40 @@ const AudioDrawer = ({ onClose }) => {
               </div>
             )}
 
-            {/* Stream Presets List */}
+            {/* Stream Presets Header with Filter & Refresh */}
             <div className="audio-presets-section">
-              <span className="section-label-small">Select Radio Channel</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="section-label-small">Radio Channels</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    type="button"
+                    className={`stream-filter-btn ${filterAvailableOnly ? 'active' : ''}`}
+                    onClick={() => setFilterAvailableOnly(!filterAvailableOnly)}
+                    title={filterAvailableOnly ? 'Show all streams' : 'Show available streams only'}
+                    id="filter-available-streams-btn"
+                  >
+                    {filterAvailableOnly ? '● Available Only' : 'All Streams'}
+                  </button>
+                  <button
+                    type="button"
+                    className="stream-refresh-btn"
+                    onClick={handleRefreshStreams}
+                    title="Check streams availability"
+                    disabled={isRefreshingStreams}
+                  >
+                    {isRefreshingStreams ? 'Checking…' : '↻'}
+                  </button>
+                </div>
+              </div>
+
               <div className="lofi-streams-list">
-                {LOFI_STREAMS.map((stream) => {
+                {LOFI_STREAMS.filter((s) => {
+                  if (!filterAvailableOnly) return true;
+                  if (s.id === 'custom') return true;
+                  return streamStatus[s.id] !== 'offline';
+                }).map((stream) => {
                   const isSelected = selectedStreamId === stream.id;
+                  const status = streamStatus[stream.id]; // 'available' | 'offline' | 'checking'
                   return (
                     <div
                       key={stream.id}
@@ -287,7 +358,22 @@ const AudioDrawer = ({ onClose }) => {
                       id={`stream-card-${stream.id}`}
                     >
                       <div className="stream-info">
-                        <div className="stream-title">{stream.title}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="stream-title">{stream.title}</span>
+                          {stream.id !== 'custom' && (
+                            <span
+                              className={`stream-badge ${
+                                status === 'available'
+                                  ? 'badge-available'
+                                  : status === 'offline'
+                                  ? 'badge-offline'
+                                  : 'badge-checking'
+                              }`}
+                            >
+                              {status === 'available' ? 'Live' : status === 'offline' ? 'Offline' : 'Checking'}
+                            </span>
+                          )}
+                        </div>
                         <div className="stream-subtitle">{stream.subtitle}</div>
                       </div>
                       {isSelected && (
@@ -331,6 +417,81 @@ const AudioDrawer = ({ onClose }) => {
                 )}
               </form>
             )}
+          </div>
+        )}
+
+        {/* ── SPOTIFY TAB ── */}
+        {activeSubTab === 'spotify' && (
+          <div className="spotify-section">
+            {/* Spotify Player Embed */}
+            <SpotifyPlayer />
+
+            {/* Curated Spotify Playlists */}
+            <div className="audio-presets-section">
+              <span className="section-label-small">Curated Spotify Playlists</span>
+              <div className="lofi-streams-list">
+                {SPOTIFY_PLAYLISTS.map((playlist) => {
+                  const isSelected = selectedSpotifyId === playlist.id;
+                  return (
+                    <div
+                      key={playlist.id}
+                      className={`stream-card spotify-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedSpotifyId(playlist.id);
+                        setSpotifyType(playlist.type || 'playlist');
+                        setSpotifyActive(true);
+                      }}
+                      id={`spotify-playlist-${playlist.id}`}
+                    >
+                      <div className="stream-info">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <IconSpotify size={14} color={isSelected ? '#1DB954' : 'var(--text-secondary)'} />
+                          <span className="stream-title">{playlist.title}</span>
+                        </div>
+                        <div className="stream-subtitle">{playlist.subtitle}</div>
+                      </div>
+                      {isSelected && (
+                        <div
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#1DB954',
+                            boxShadow: '0 0 8px #1DB954',
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Spotify URL Input */}
+            <form className="custom-stream-box" onSubmit={handleSpotifySubmit}>
+              <span className="section-label-small">Connect Custom Spotify Link</span>
+              <div className="custom-stream-input-group">
+                <input
+                  type="text"
+                  placeholder="Paste Spotify playlist, album, or track URL"
+                  value={spotifyUrlInput}
+                  onChange={(e) => setSpotifyUrlInput(e.target.value)}
+                  className="custom-stream-input"
+                  id="custom-spotify-input"
+                />
+                <button
+                  type="submit"
+                  className="custom-stream-btn"
+                  style={{ background: '#1DB954', color: '#fff' }}
+                  id="load-custom-spotify-btn"
+                >
+                  Load
+                </button>
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                Supports open.spotify.com/playlist/... or album/track links
+              </span>
+            </form>
           </div>
         )}
       </aside>

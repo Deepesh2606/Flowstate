@@ -137,14 +137,26 @@ export const IconMaximize = ({ size = 20, color = 'currentColor' }) => (
   </svg>
 );
 
+export const IconAudioWave = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4" />
+  </svg>
+);
+
+export const IconSpotify = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill={color}>
+    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.674.464-1.027.249-2.815-1.72-6.357-2.109-10.531-1.155-.403.093-.807-.158-.9-.561-.093-.404.158-.808.561-.901 4.57-1.045 8.489-.607 11.648 1.341.353.215.464.674.249 1.027zm1.467-3.26c-.27.441-.849.58-1.29.31-3.223-1.981-8.136-2.553-11.948-1.396-.499.152-1.031-.133-1.183-.632-.152-.499.133-1.031.632-1.183 4.364-1.324 9.776-.684 13.479 1.591.441.27.58.849.31 1.29zm.126-3.41c-3.865-2.295-10.244-2.508-13.941-1.385-.593.18-1.223-.156-1.403-.749-.18-.593.156-1.223.749-1.403 4.25-1.29 11.295-1.043 15.753 1.604.533.316.708 1.009.392 1.542-.316.533-1.009.708-1.542.392z"/>
+  </svg>
+);
+
 export const IconMinimize = ({ size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
   </svg>
 );
 
-export const IconStar = ({ size = 16, color = 'currentColor', className = '' }) => (
-  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const IconStar = ({ size = 16, color = 'currentColor', fill = 'none', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill={fill} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
   </svg>
 );

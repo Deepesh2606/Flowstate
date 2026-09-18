@@ -3,8 +3,9 @@ import FlipCard from './FlipCard';
 
 const TimerDisplay = ({
   timeLeft,
+  stopwatchMs = 0,
   isRunning,
-  mode: _mode,
+  mode,
   hasWallpaper,
   clockStyle = 'digital',
   showSeconds = true,
@@ -13,6 +14,8 @@ const TimerDisplay = ({
   const hours = Math.floor(timeLeft / 3600);
   const minutes = isOverHour ? Math.floor((timeLeft % 3600) / 60) : Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
+  const isStopwatch = mode === 'stopwatch';
+  const msFormatted = String(stopwatchMs).padStart(2, '0');
 
   // Digital time string
   let timeStr = '';
@@ -49,6 +52,20 @@ const TimerDisplay = ({
               <FlipCard value={seconds} label="SECONDS" />
             </>
           )}
+          {isStopwatch && (
+            <div className="flip-card-unit flip-card-ms-unit">
+              <div className="flip-card-wrapper flip-ms-wrapper">
+                <div className="flip-flap flip-top-static">
+                  <span>.{msFormatted}</span>
+                </div>
+                <div className="flip-flap flip-bottom-static">
+                  <span>.{msFormatted}</span>
+                </div>
+                <div className="flip-divider-seam" />
+              </div>
+              <div className="flip-card-label">MS</div>
+            </div>
+          )}
         </div>
       ) : (
         <div
@@ -56,7 +73,10 @@ const TimerDisplay = ({
           aria-live="polite"
           aria-atomic="true"
         >
-          {timeStr}
+          <span>{timeStr}</span>
+          {isStopwatch && (
+            <span className="stopwatch-ms">.{msFormatted}</span>
+          )}
         </div>
       )}
     </div>

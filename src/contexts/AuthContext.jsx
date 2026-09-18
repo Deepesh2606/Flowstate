@@ -14,13 +14,49 @@ export const useAuth = () => {
   return ctx;
 };
 
+const CACHED_USER_KEY = 'flowstate_cached_user';
+
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem(CACHED_USER_KEY);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  // If we already have a cached user, don't block render with loading
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem(CACHED_USER_KEY);
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+      if (user) {
+        const userData = {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+        };
+        setCurrentUser(user);
+        try {
+          localStorage.setItem(CACHED_USER_KEY, JSON.stringify(userData));
+        } catch {
+          // ignore
+        }
+      } else {
+        setCurrentUser(null);
+        try {
+          localStorage.removeItem(CACHED_USER_KEY);
+        } catch {
+          // ignore
+        }
+      }
       setLoading(false);
     });
     return unsub;

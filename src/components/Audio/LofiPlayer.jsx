@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAudio } from '../../contexts/AudioContext';
 
 /**
@@ -7,7 +7,29 @@ import { useAudio } from '../../contexts/AudioContext';
  * When the drawer is closed, it stays alive in a hidden/minimized container so playback continues.
  */
 const LofiPlayer = ({ inDrawer = false }) => {
-  const { lofiPlaying, currentVideoId } = useAudio();
+  const { lofiPlaying, currentVideoId, showAudioDrawer, handleStreamError } = useAudio();
+
+  // If this is the background instance but the drawer is open, don't render to prevent double playback!
+  if (!inDrawer && showAudioDrawer) {
+    return null;
+  }
+
+  // Listen for YouTube iframe errors
+  useEffect(() => {
+    const onMessage = (event) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        // YouTube API error event codes: 100, 101, 150
+        if (data?.event === 'onError' || data?.info === 100 || data?.info === 101 || data?.info === 150) {
+          handleStreamError(currentVideoId);
+        }
+      } catch {
+        // Not a JSON message
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [currentVideoId, handleStreamError]);
 
   if (!lofiPlaying || !currentVideoId) {
     return null;

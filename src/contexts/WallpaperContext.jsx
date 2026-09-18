@@ -10,9 +10,17 @@ export const useWallpaper = () => {
   return ctx;
 };
 
+const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
+
 export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
-  const [wallpaper, setWallpaperState] = useState(null);
+  const [wallpaper, setWallpaperState] = useState(() => {
+    try {
+      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || null;
+    } catch {
+      return null;
+    }
+  });
   const [customWallpapers, setCustomWallpapers] = useState([]);
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
@@ -23,7 +31,12 @@ export const WallpaperProvider = ({ children }) => {
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
       if (settings?.wallpaper) {
         setWallpaperState(settings.wallpaper);
-      } else {
+        try {
+          localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);
+        } catch {
+          // ignore
+        }
+      } else if (!localStorage.getItem(WALLPAPER_STORAGE_KEY)) {
         setShowPicker(true);
       }
       if (settings?.customWallpapers) {
@@ -63,6 +76,12 @@ export const WallpaperProvider = ({ children }) => {
     async (url) => {
       setWallpaperState(url);
       setShowPicker(false);
+      try {
+        if (url) localStorage.setItem(WALLPAPER_STORAGE_KEY, url);
+        else localStorage.removeItem(WALLPAPER_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
       if (currentUser) {
         await saveSettings(currentUser.uid, { wallpaper: url });
       }

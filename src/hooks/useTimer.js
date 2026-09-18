@@ -54,28 +54,33 @@ export const useTimer = (settings, toast) => {
   const autoStartBreaks = settings?.autoStartBreaks ?? false;
   const autoStartPomodoros = settings?.autoStartPomodoros ?? false;
   const soundEnabled = settings?.soundEnabled ?? true;
+  const notifyOnComplete = settings?.notifyOnComplete ?? true;
 
   const [mode, setMode] = useState(MODES.pomodoro);
   const [timeLeft, setTimeLeft] = useState(durations.pomodoro);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
-  const [subject, setSubject] = useState('Quant');
-  const [studyMode, setStudyMode] = useState('SSC CGL');
+  const [subject, setSubject] = useState('');
+  const [studyMode, setStudyMode] = useState(settings?.modePreference || settings?.targets?.[0]?.name || '');
   const [sessionStart, setSessionStart] = useState(null);
+  const [stopwatchMs, setStopwatchMs] = useState(0);
 
   const intervalRef = useRef(null);
   const modeRef = useRef(mode);
   const sessionCountRef = useRef(sessionCount);
   const timeLeftRef = useRef(timeLeft);
+  const stopwatchMsRef = useRef(stopwatchMs);
   const targetTimeRef = useRef(null); // Stores the absolute timestamp for calculation
 
   modeRef.current = mode;
   sessionCountRef.current = sessionCount;
   timeLeftRef.current = timeLeft;
+  stopwatchMsRef.current = stopwatchMs;
 
   useEffect(() => {
     if (mode === MODES.stopwatch) {
       setTimeLeft(0);
+      setStopwatchMs(0);
     } else {
       setTimeLeft(durations[mode]);
     }
@@ -108,7 +113,7 @@ export const useTimer = (settings, toast) => {
       }
 
       if (currentMode === MODES.stopwatch) {
-        toast?.(`Stopwatch session saved.`, 'success', 4000);
+        if (notifyOnComplete) toast?.('Stopwatch session recorded.', 'success', 3000);
         return; // Stopwatch just stops and saves
       }
 
@@ -117,20 +122,20 @@ export const useTimer = (settings, toast) => {
       sessionCountRef.current = newCount;
 
       if (newCount % longBreakInterval === 0) {
-        toast?.(`${newCount} sessions done! Time for a long break.`, 'longbreak', 5000);
+        if (notifyOnComplete) toast?.(`${newCount} sessions completed. Time for a long break!`, 'longbreak', 4000);
         setMode(MODES.longBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       } else {
-        toast?.(`Session complete! Take a short break.`, 'focus', 4000);
+        if (notifyOnComplete) toast?.('Session complete. Take a short break.', 'focus', 3500);
         setMode(MODES.shortBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       }
     } else {
-      toast?.('Break over — back to focus!', 'info', 4000);
+      if (notifyOnComplete) toast?.('Break over — back to focus!', 'info', 3500);
       setMode(MODES.pomodoro);
       if (autoStartPomodoros) setTimeout(() => setIsRunning(true), 800);
     }
-  }, [currentUser, subject, studyMode, durations, longBreakInterval, autoStartBreaks, autoStartPomodoros, soundEnabled, toast]);
+  }, [currentUser, subject, studyMode, durations, longBreakInterval, autoStartBreaks, autoStartPomodoros, soundEnabled, notifyOnComplete, toast]);
 
   const play = useCallback(() => {
     setIsRunning(true);
@@ -145,17 +150,22 @@ export const useTimer = (settings, toast) => {
 
       setSessionStart(Date.now());
       if (modeRef.current === MODES.stopwatch) {
-        targetTimeRef.current = Date.now() - (timeLeftRef.current * 1000);
+        targetTimeRef.current = Date.now() - (timeLeftRef.current * 1000) - (stopwatchMsRef.current * 10);
       } else {
         targetTimeRef.current = Date.now() + (timeLeftRef.current * 1000);
       }
 
+      const tickRate = modeRef.current === MODES.stopwatch ? 35 : 250;
+
       intervalRef.current = setInterval(() => {
         const now = Date.now();
         if (modeRef.current === MODES.stopwatch) {
-          const elapsed = Math.floor((now - targetTimeRef.current) / 1000);
-          sessionCountRef.currentElapsed = elapsed;
-          setTimeLeft(elapsed);
+          const elapsedTotalMs = Math.max(0, now - targetTimeRef.current);
+          const elapsedSec = Math.floor(elapsedTotalMs / 1000);
+          const centis = Math.floor((elapsedTotalMs % 1000) / 10);
+          sessionCountRef.currentElapsed = elapsedSec;
+          setTimeLeft(elapsedSec);
+          setStopwatchMs(centis);
         } else {
           const remaining = Math.max(0, Math.ceil((targetTimeRef.current - now) / 1000));
           setTimeLeft(remaining);
@@ -166,7 +176,7 @@ export const useTimer = (settings, toast) => {
             handleSessionComplete();
           }
         }
-      }, 250); // High precision tick
+      }, tickRate);
     } else {
       clearInterval(intervalRef.current);
     }
@@ -177,8 +187,12 @@ export const useTimer = (settings, toast) => {
 
   const reset = useCallback(() => {
     setIsRunning(false);
-    if (modeRef.current === MODES.stopwatch) setTimeLeft(0);
-    else setTimeLeft(durations[modeRef.current]);
+    if (modeRef.current === MODES.stopwatch) {
+      setTimeLeft(0);
+      setStopwatchMs(0);
+    } else {
+      setTimeLeft(durations[modeRef.current]);
+    }
   }, [durations]);
 
   const skip = useCallback(() => {
@@ -195,7 +209,7 @@ export const useTimer = (settings, toast) => {
   const progress = mode === MODES.stopwatch ? 0 : (totalDuration - timeLeft) / totalDuration;
 
   return {
-    mode, timeLeft, isRunning, sessionCount,
+    mode, timeLeft, stopwatchMs, isRunning, sessionCount,
     subject, setSubject, studyMode, setStudyMode,
     progress, play, pause, reset, skip, switchMode, MODES,
   };

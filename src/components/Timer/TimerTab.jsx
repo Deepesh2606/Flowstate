@@ -13,6 +13,7 @@ const TimerTab = ({ settings, hasWallpaper }) => {
   const {
     mode,
     timeLeft,
+    stopwatchMs,
     isRunning,
     sessionCount,
     subject,
@@ -29,20 +30,14 @@ const TimerTab = ({ settings, hasWallpaper }) => {
 
   const handlePlay = () => {
     play();
-    if (mode === 'pomodoro') toast(subject ? `Focusing on ${subject}` : 'Focus session started', 'focus');
-    else if (mode === 'shortBreak') toast('Short break started', 'break');
-    else if (mode === 'longBreak') toast('Long break started', 'longbreak');
-    else toast('Stopwatch active', 'focus');
   };
 
   const handlePause = () => {
     pause();
-    // User requested no toast on pause
   };
 
   const handleReset = () => {
     reset();
-    toast('Timer reset', 'info');
   };
 
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
@@ -54,12 +49,10 @@ const TimerTab = ({ settings, hasWallpaper }) => {
   const handleConfirmSkip = () => {
     setShowSkipConfirm(false);
     skip();
-    toast('Session skipped', 'warning');
   };
 
   const handleSwitchMode = (newMode) => {
     switchMode(newMode);
-    // User requested NO toast when switching mode manually
   };
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -91,6 +84,7 @@ const TimerTab = ({ settings, hasWallpaper }) => {
       <TimerDisplay
         progress={progress}
         timeLeft={timeLeft}
+        stopwatchMs={stopwatchMs}
         mode={mode}
         isRunning={isRunning}
         hasWallpaper={hasWallpaper}

@@ -68,10 +68,10 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
   }, [settings]);
 
   // Study Targets
-  const defaultTargets = [{ id: '1', name: 'SSC CGL', subjects: ['Quant', 'English', 'GK', 'Reasoning'] }];
-  const [targetsRaw, setTargetsRaw] = useState((settings?.targets || defaultTargets).map(t => ({
+  const initialTargets = (settings?.targets || []).filter(t => t.name !== 'SSC CGL');
+  const [targetsRaw, setTargetsRaw] = useState(initialTargets.map(t => ({
     ...t,
-    subjectsStr: t.subjects.join(', ')
+    subjectsStr: (t.subjects || []).join(', ')
   })));
 
   const handleUpdateTarget = (index, field, value) => {
@@ -119,20 +119,59 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
     };
   }, [clockColor, autoClockColor, wallpaper]);
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--clock-font-family', clockFont);
-  }, [clockFont]);
+  // Real-time update helper to immediately reflect changes in UI & background
+  const applyRealtime = useCallback(
+    (partialUpdates) => {
+      onSave(partialUpdates);
+    },
+    [onSave]
+  );
 
-  // Cleanup effect: restore original styles if cancelled without saving
-  useEffect(() => {
-    const original = originalSettingsRef.current;
-    return () => {
-      if (!original.autoClockColor) {
-        document.documentElement.style.setProperty('--clock-text-color', original.clockColor);
-      }
-      document.documentElement.style.setProperty('--clock-font-family', original.clockFont);
-    };
-  }, []);
+  const handleClockStyleChange = (style) => {
+    setClockStyle(style);
+    applyRealtime({ clockStyle: style });
+  };
+
+  const handleShowSecondsChange = (val) => {
+    setShowSeconds(val);
+    applyRealtime({ showSeconds: val });
+  };
+
+  const handleAutoClockColorChange = (val) => {
+    setAutoClockColor(val);
+    applyRealtime({ autoClockColor: val });
+  };
+
+  const handleClockColorChange = (col) => {
+    setClockColor(col);
+    setAutoClockColor(false);
+    applyRealtime({ autoClockColor: false, clockColor: col, textColor: col });
+  };
+
+  const handleClockFontChange = (fontFamily) => {
+    setClockFont(fontFamily);
+    applyRealtime({ clockFont: fontFamily });
+  };
+
+  const handleDurationsChange = (type, minutes) => {
+    const val = Math.max(1, Number(minutes));
+    if (type === 'pomodoro') setPomodoro(val);
+    else if (type === 'shortBreak') setShortBreak(val);
+    else if (type === 'longBreak') setLongBreak(val);
+
+    applyRealtime({
+      durations: {
+        pomodoro: (type === 'pomodoro' ? val : Number(pomodoro)) * 60,
+        shortBreak: (type === 'shortBreak' ? val : Number(shortBreak)) * 60,
+        longBreak: (type === 'longBreak' ? val : Number(longBreak)) * 60,
+      },
+    });
+  };
+
+  const handleToggleChange = (field, setter, val) => {
+    setter(val);
+    applyRealtime({ [field]: val });
+  };
 
   const handleSave = async () => {
     const finalTargets = targetsRaw.map(t => ({
@@ -161,7 +200,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
       clockFont,
       targets: finalTargets,
     });
-    toast('Settings saved!', 'success');
+    toast('Settings updated', 'success', 2200);
     onClose();
   };
 
@@ -182,15 +221,15 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           <div className="setting-item">
             <label className="setting-label" htmlFor="setting-pomodoro">Focus (minutes)</label>
             <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => setPomodoro(Math.max(1, pomodoro - 1))}>−</button>
+              <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro - 1)}>−</button>
               <input
                 id="setting-pomodoro"
                 className="setting-input setting-input-center"
                 type="number" min="1" max="90"
                 value={pomodoro}
-                onChange={(e) => setPomodoro(Number(e.target.value))}
+                onChange={(e) => handleDurationsChange('pomodoro', e.target.value)}
               />
-              <button className="setting-stepper" onClick={() => setPomodoro(Math.min(90, pomodoro + 1))}>+</button>
+              <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro + 1)}>+</button>
             </div>
             {/* Quick preset pills */}
             <div className="setting-preset-pills">
@@ -199,7 +238,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                   key={mins}
                   type="button"
                   className={`setting-preset-pill ${pomodoro === mins ? 'active' : ''}`}
-                  onClick={() => setPomodoro(mins)}
+                  onClick={() => handleDurationsChange('pomodoro', mins)}
                 >
                   {mins}m
                 </button>
@@ -210,15 +249,15 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           <div className="setting-item">
             <label className="setting-label" htmlFor="setting-short-break">Short Break (minutes)</label>
             <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => setShortBreak(Math.max(1, shortBreak - 1))}>−</button>
+              <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak - 1)}>−</button>
               <input
                 id="setting-short-break"
                 className="setting-input setting-input-center"
                 type="number" min="1" max="30"
                 value={shortBreak}
-                onChange={(e) => setShortBreak(Number(e.target.value))}
+                onChange={(e) => handleDurationsChange('shortBreak', e.target.value)}
               />
-              <button className="setting-stepper" onClick={() => setShortBreak(Math.min(30, shortBreak + 1))}>+</button>
+              <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak + 1)}>+</button>
             </div>
             {/* Quick preset pills */}
             <div className="setting-preset-pills">
@@ -227,7 +266,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                   key={mins}
                   type="button"
                   className={`setting-preset-pill ${shortBreak === mins ? 'active' : ''}`}
-                  onClick={() => setShortBreak(mins)}
+                  onClick={() => handleDurationsChange('shortBreak', mins)}
                 >
                   {mins}m
                 </button>
@@ -238,15 +277,15 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           <div className="setting-item">
             <label className="setting-label" htmlFor="setting-long-break">Long Break (minutes)</label>
             <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => setLongBreak(Math.max(1, longBreak - 1))}>−</button>
+              <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak - 1)}>−</button>
               <input
                 id="setting-long-break"
                 className="setting-input setting-input-center"
                 type="number" min="1" max="60"
                 value={longBreak}
-                onChange={(e) => setLongBreak(Number(e.target.value))}
+                onChange={(e) => handleDurationsChange('longBreak', e.target.value)}
               />
-              <button className="setting-stepper" onClick={() => setLongBreak(Math.min(60, longBreak + 1))}>+</button>
+              <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak + 1)}>+</button>
             </div>
             {/* Quick preset pills */}
             <div className="setting-preset-pills">
@@ -255,7 +294,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                   key={mins}
                   type="button"
                   className={`setting-preset-pill ${longBreak === mins ? 'active' : ''}`}
-                  onClick={() => setLongBreak(mins)}
+                  onClick={() => handleDurationsChange('longBreak', mins)}
                 >
                   {mins}m
                 </button>
@@ -342,14 +381,14 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           <Toggle
             id="toggle-auto-breaks"
             checked={autoStartBreaks}
-            onChange={setAutoStartBreaks}
+            onChange={(val) => handleToggleChange('autoStartBreaks', setAutoStartBreaks, val)}
             label="Auto-start Breaks"
             sub="Breaks begin automatically after focus ends"
           />
           <Toggle
             id="toggle-auto-pomodoros"
             checked={autoStartPomodoros}
-            onChange={setAutoStartPomodoros}
+            onChange={(val) => handleToggleChange('autoStartPomodoros', setAutoStartPomodoros, val)}
             label="Auto-start Focus"
             sub="Focus timer starts after break ends"
           />
@@ -362,14 +401,14 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           <Toggle
             id="toggle-sound"
             checked={soundEnabled}
-            onChange={setSoundEnabled}
+            onChange={(val) => handleToggleChange('soundEnabled', setSoundEnabled, val)}
             label="Sound Effects"
             sub="Chime when session completes"
           />
           <Toggle
             id="toggle-notify"
             checked={notifyOnComplete}
-            onChange={setNotifyOnComplete}
+            onChange={(val) => handleToggleChange('notifyOnComplete', setNotifyOnComplete, val)}
             label="Toast Notifications"
             sub="Show alerts for session events"
           />
@@ -386,14 +425,14 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
               <button
                 type="button"
                 className={`setting-segmented-btn ${clockStyle === 'digital' ? 'active' : ''}`}
-                onClick={() => setClockStyle('digital')}
+                onClick={() => handleClockStyleChange('digital')}
               >
                 Digital
               </button>
               <button
                 type="button"
                 className={`setting-segmented-btn ${clockStyle === 'flip' ? 'active' : ''}`}
-                onClick={() => setClockStyle('flip')}
+                onClick={() => handleClockStyleChange('flip')}
               >
                 Flip Clock
               </button>
@@ -404,7 +443,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           <Toggle
             id="toggle-show-seconds"
             checked={showSeconds}
-            onChange={setShowSeconds}
+            onChange={handleShowSecondsChange}
             label="Show Seconds"
             sub="Display seconds countdown on the main clock"
           />
@@ -417,14 +456,14 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                 <button
                   type="button"
                   className={`setting-segmented-btn ${autoClockColor ? 'active' : ''}`}
-                  onClick={() => setAutoClockColor(true)}
+                  onClick={() => handleAutoClockColorChange(true)}
                 >
                   Auto
                 </button>
                 <button
                   type="button"
                   className={`setting-segmented-btn ${!autoClockColor ? 'active' : ''}`}
-                  onClick={() => setAutoClockColor(false)}
+                  onClick={() => handleAutoClockColorChange(false)}
                 >
                   Custom
                 </button>
@@ -444,7 +483,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                     id="setting-clock-color"
                     type="color"
                     value={clockColor}
-                    onChange={(e) => setClockColor(e.target.value)}
+                    onChange={(e) => handleClockColorChange(e.target.value)}
                     style={{ 
                       width: '32px', height: '32px', padding: '0', 
                       border: 'none', borderRadius: '4px', cursor: 'pointer',
@@ -469,7 +508,7 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
               className="setting-input"
               style={{ width: '150px', padding: '6px' }}
               value={clockFont}
-              onChange={(e) => setClockFont(e.target.value)}
+              onChange={(e) => handleClockFontChange(e.target.value)}
             >
               <option value="'Inter', system-ui, sans-serif">Inter (Default)</option>
               <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
@@ -479,9 +518,14 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
           </div>
         </div>
 
-        <button className="save-btn" onClick={handleSave} id="settings-save-btn">
-          Save Settings
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+          <button className="save-btn" onClick={handleSave} id="settings-save-btn">
+            Save & Close
+          </button>
+          <span style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)' }}>
+            ✓ Changes are applied in real-time
+          </span>
+        </div>
       </aside>
     </>
   );

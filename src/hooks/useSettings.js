@@ -8,7 +8,7 @@ const DEFAULT_SETTINGS = {
     shortBreak: 5 * 60,
     longBreak: 15 * 60,
   },
-  modePreference: 'SSC CGL',
+  modePreference: '',
   clockColor: '#ffffff',
   textColor: '#ffffff',
   autoClockColor: true,
@@ -16,21 +16,36 @@ const DEFAULT_SETTINGS = {
   showSeconds: true,
   subjectColor: '#06b6d4',
   clockFont: "'Inter', system-ui, sans-serif",
-  targets: [
-    { id: '1', name: 'SSC CGL', subjects: ['Quant', 'English', 'GK', 'Reasoning'] }
-  ],
+  targets: [],
 };
+
+const SETTINGS_STORAGE_KEY = 'flowstate_settings_cache';
 
 export const useSettings = () => {
   const { currentUser } = useAuth();
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState(() => {
+    try {
+      const cached = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        // Clean out legacy default SSC CGL targets containing Quant if present
+        if (parsed.targets?.length === 1 && parsed.targets[0]?.name === 'SSC CGL') {
+          parsed.targets = [];
+        }
+        return { ...DEFAULT_SETTINGS, ...parsed };
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_SETTINGS;
+  });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!currentUser) return;
     const unsub = subscribeSettings(currentUser.uid, (data) => {
       if (data) {
-        setSettings((prev) => ({
+        const merged = {
           ...DEFAULT_SETTINGS,
           ...data,
           autoClockColor: data.autoClockColor !== undefined ? data.autoClockColor : true,
@@ -42,7 +57,13 @@ export const useSettings = () => {
             ...DEFAULT_SETTINGS.durations,
             ...(data.durations || {}),
           },
-        }));
+        };
+        setSettings(merged);
+        try {
+          localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
+        } catch {
+          // ignore
+        }
       }
       setLoaded(true);
     });
@@ -51,23 +72,32 @@ export const useSettings = () => {
 
   const updateSettings = useCallback(
     async (updates) => {
-      const color = updates.clockColor || updates.textColor || settings.clockColor || settings.textColor;
-      const merged = {
-        ...settings,
-        ...updates,
-        clockColor: color,
-        textColor: color,
-        durations: {
-          ...settings.durations,
-          ...(updates.durations || {}),
-        },
-      };
-      setSettings(merged);
-      if (currentUser) {
-        await saveSettings(currentUser.uid, merged);
-      }
+      setSettings((prev) => {
+        const color = updates.clockColor || updates.textColor || prev.clockColor || prev.textColor;
+        const merged = {
+          ...prev,
+          ...updates,
+          clockColor: color,
+          textColor: color,
+          durations: {
+            ...prev.durations,
+            ...(updates.durations || {}),
+          },
+        };
+        try {
+          localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
+        } catch {
+          // ignore
+        }
+        if (currentUser) {
+          saveSettings(currentUser.uid, merged).catch((err) =>
+            console.warn('Background settings save error:', err)
+          );
+        }
+        return merged;
+      });
     },
-    [currentUser, settings]
+    [currentUser]
   );
 
   return { settings, updateSettings, loaded };

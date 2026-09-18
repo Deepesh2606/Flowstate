@@ -10,11 +10,81 @@ export const AMBIENT_SOUNDS = [
 ];
 
 export const LOFI_STREAMS = [
-  { id: 'lofi-girl', title: 'Lofi Girl - Relax & Study', subtitle: 'Beats to relax and study to', videoId: 'jfKfPfyJRdk' },
-  { id: 'synthwave', title: 'Lofi Girl - Synthwave', subtitle: 'Chill synth & retro beats', videoId: '4xDzrJKXOOY' },
-  { id: 'chillhop', title: 'Chillhop Radio', subtitle: 'Jazzy and groovy study beats', videoId: '5yx6BWlEvqA' },
-  { id: 'coffee-lofi', title: 'Coffee Shop Lofi', subtitle: 'Warm acoustic & coffee beats', videoId: '-5KAN9_CzSA' },
-  { id: 'custom', title: 'Custom Stream / Video', subtitle: 'Enter YouTube video link or ID', videoId: '' }
+  {
+    id: 'lofi-girl',
+    title: 'Lofi Girl - Relax & Study',
+    subtitle: 'Classic beats to relax and study to',
+    videoId: 'rFZHOHl-L8A',
+    fallbacks: ['qGohtGC5Rtk', '0muHFBSiybw'],
+  },
+  {
+    id: 'synthwave',
+    title: 'Lofi Girl - Synthwave',
+    subtitle: 'Chill retro synth beats for flow',
+    videoId: '4xDzrJKXOOY',
+    fallbacks: ['GSfT7H87zq4'],
+  },
+  {
+    id: 'chillhop',
+    title: 'Chillhop Radio - Study & Relax',
+    subtitle: 'Jazzy & chilled hip hop beats',
+    videoId: '7NOSDKb0HlU',
+    fallbacks: ['5yx6BWlEVcY', 'jiua2V9q9V0'],
+  },
+  {
+    id: 'lofi-house',
+    title: 'Lofi Girl - House & Lounge',
+    subtitle: 'Upbeat chill lounge vibes',
+    videoId: '3PFJ9SETS4M',
+    fallbacks: ['0muHFBSiybw'],
+  },
+  {
+    id: 'sleep-ambient',
+    title: 'Sleep & Space Ambient',
+    subtitle: 'Deep focus & calming soundscapes',
+    videoId: 'VAlMDl00mYY',
+    fallbacks: ['GSfT7H87zq4'],
+  },
+  {
+    id: 'custom',
+    title: 'Custom Stream / Video',
+    subtitle: 'Enter YouTube video link or ID',
+    videoId: '',
+    fallbacks: [],
+  },
+];
+
+export const SPOTIFY_PLAYLISTS = [
+  {
+    id: '37i9dQZF1DXdLEN7aqioXM',
+    title: 'Lofi Beats',
+    subtitle: 'The quintessential chill beats playlist',
+    type: 'playlist',
+  },
+  {
+    id: '37i9dQZF1DWZeKCadgRdKQ',
+    title: 'Deep Focus',
+    subtitle: 'Ambient & atmospheric post-rock',
+    type: 'playlist',
+  },
+  {
+    id: '37i9dQZF1DX4sWSpwq3LiO',
+    title: 'Peaceful Piano',
+    subtitle: 'Calm classical piano for focus',
+    type: 'playlist',
+  },
+  {
+    id: '37i9dQZF1DX3rxVfibe1L0',
+    title: 'Brain Food',
+    subtitle: 'Hypnotic electronic study beats',
+    type: 'playlist',
+  },
+  {
+    id: '37i9dQZF1DX0SM0LYsmbMT',
+    title: 'Jazz Vibes',
+    subtitle: 'Smooth instrumental jazz background',
+    type: 'playlist',
+  },
 ];
 
 export const SOUND_PRESETS = [
@@ -96,9 +166,99 @@ export const AudioProvider = ({ children }) => {
   const [lofiPlaying, setLofiPlaying] = useState(false);
   const [selectedStreamId, setSelectedStreamId] = useState('lofi-girl');
   const [customVideoId, setCustomVideoId] = useState('');
+  const [streamStatus, setStreamStatus] = useState({}); // { [id]: 'available' | 'offline' | 'checking' }
+  const [filterAvailableOnly, setFilterAvailableOnly] = useState(false);
+
+  // Spotify state
+  const [spotifyActive, setSpotifyActive] = useState(false);
+  const [selectedSpotifyId, setSelectedSpotifyId] = useState('37i9dQZF1DXdLEN7aqioXM');
+  const [spotifyType, setSpotifyType] = useState('playlist');
+  const [customSpotifyInput, setCustomSpotifyInput] = useState('');
 
   // Audio HTML elements map: { [id]: HTMLAudioElement }
   const audioRefs = useRef({});
+
+  // Stream Availability Checker
+  const checkVideoAvailability = useCallback((vidId) => {
+    return new Promise((resolve) => {
+      if (!vidId) return resolve(false);
+      const img = new Image();
+      img.onload = () => {
+        // YouTube returns 120px wide placeholder when video is unavailable
+        const isAvail = img.naturalWidth > 120;
+        resolve(isAvail);
+      };
+      img.onerror = () => resolve(false);
+      img.src = `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`;
+    });
+  }, []);
+
+  // Verify all streams periodically
+  const refreshStreamStatuses = useCallback(async () => {
+    const statusMap = {};
+    for (const stream of LOFI_STREAMS) {
+      if (stream.id === 'custom') continue;
+      statusMap[stream.id] = 'checking';
+    }
+    setStreamStatus((prev) => ({ ...prev, ...statusMap }));
+
+    const results = {};
+    await Promise.all(
+      LOFI_STREAMS.filter((s) => s.id !== 'custom').map(async (s) => {
+        const isOk = await checkVideoAvailability(s.videoId);
+        results[s.id] = isOk ? 'available' : 'offline';
+      })
+    );
+    setStreamStatus(results);
+  }, [checkVideoAvailability]);
+
+  // Initial check on mount
+  useEffect(() => {
+    refreshStreamStatuses();
+  }, [refreshStreamStatuses]);
+
+  // Auto fallback if currently playing stream errors
+  const handleStreamError = useCallback(
+    async (failedVideoId) => {
+      console.warn(`Lofi stream ${failedVideoId} reported playback error. Finding available fallback...`);
+      setStreamStatus((prev) => ({ ...prev, [selectedStreamId]: 'offline' }));
+
+      // Find first available preset that isn't offline
+      const available = LOFI_STREAMS.find(
+        (s) => s.id !== 'custom' && s.id !== selectedStreamId && streamStatus[s.id] !== 'offline'
+      );
+
+      if (available) {
+        setSelectedStreamId(available.id);
+      } else {
+        // Try any preset
+        const other = LOFI_STREAMS.find((s) => s.id !== 'custom' && s.id !== selectedStreamId);
+        if (other) setSelectedStreamId(other.id);
+      }
+    },
+    [selectedStreamId, streamStatus]
+  );
+
+  // Helper to extract Spotify URI or ID
+  const extractSpotifyDetails = useCallback((input) => {
+    if (!input) return null;
+    const trimmed = input.trim();
+    // Match URLs like open.spotify.com/playlist/37i9dQZF1DXdLEN7aqioXM or open.spotify.com/album/...
+    const urlMatch = trimmed.match(/open\.spotify\.com\/(playlist|album|track)\/([a-zA-Z0-9]+)/);
+    if (urlMatch) {
+      return { type: urlMatch[1], id: urlMatch[2] };
+    }
+    // Match spotify:playlist:37i9dQZF1DXdLEN7aqioXM
+    const uriMatch = trimmed.match(/spotify:(playlist|album|track):([a-zA-Z0-9]+)/);
+    if (uriMatch) {
+      return { type: uriMatch[1], id: uriMatch[2] };
+    }
+    // Bare ID
+    if (/^[a-zA-Z0-9]{22}$/.test(trimmed)) {
+      return { type: 'playlist', id: trimmed };
+    }
+    return null;
+  }, []);
 
   // Persist volumes
   useEffect(() => {
@@ -222,6 +382,7 @@ export const AudioProvider = ({ children }) => {
   const stopAll = useCallback(() => {
     stopAllAmbient();
     setLofiPlaying(false);
+    setSpotifyActive(false);
   }, [stopAllAmbient]);
 
   // Parse YouTube video ID from various formats
@@ -247,7 +408,7 @@ export const AudioProvider = ({ children }) => {
       : LOFI_STREAMS.find((s) => s.id === selectedStreamId)?.videoId || '';
 
   const activeAmbientCount = Object.values(tracks).filter((t) => t.playing).length;
-  const isAnyPlaying = activeAmbientCount > 0 || lofiPlaying;
+  const isAnyPlaying = activeAmbientCount > 0 || lofiPlaying || spotifyActive;
 
   const activeAmbientLabels = AMBIENT_SOUNDS.filter((s) => tracks[s.id]?.playing).map(
     (s) => s.label
@@ -258,6 +419,7 @@ export const AudioProvider = ({ children }) => {
       value={{
         AMBIENT_SOUNDS,
         LOFI_STREAMS,
+        SPOTIFY_PLAYLISTS,
         SOUND_PRESETS,
         tracks,
         toggleTrack,
@@ -281,6 +443,21 @@ export const AudioProvider = ({ children }) => {
         setCustomVideoId,
         currentVideoId,
         extractVideoId,
+        streamStatus,
+        refreshStreamStatuses,
+        handleStreamError,
+        filterAvailableOnly,
+        setFilterAvailableOnly,
+        // Spotify
+        spotifyActive,
+        setSpotifyActive,
+        selectedSpotifyId,
+        setSelectedSpotifyId,
+        spotifyType,
+        setSpotifyType,
+        customSpotifyInput,
+        setCustomSpotifyInput,
+        extractSpotifyDetails,
         // Drawer toggle
         showAudioDrawer,
         setShowAudioDrawer,

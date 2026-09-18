@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { IconCheck, IconInfo, IconWarning, IconError, IconFocus, IconBreak, IconLongBreak } from '../Icons';
 
 const ToastContext = createContext(null);
 
@@ -8,26 +9,24 @@ export const useToast = () => {
   return ctx;
 };
 
-import { IconCheck, IconInfo, IconWarning, IconError, IconFocus, IconBreak, IconLongBreak } from '../Icons';
-
-const ICONS = {
-  success: <IconCheck size={18} />,
-  info: <IconInfo size={18} />,
-  warning: <IconWarning size={18} />,
-  error: <IconError size={18} />,
-  focus: <IconFocus size={18} />,
-  break: <IconBreak size={18} />,
-  longbreak: <IconLongBreak size={18} />,
+const TOAST_THEMES = {
+  success:   { icon: '#10B981', border: 'rgba(16, 185, 129, 0.28)' },
+  focus:     { icon: '#10B981', border: 'rgba(16, 185, 129, 0.28)' },
+  break:     { icon: '#38BDF8', border: 'rgba(56, 189, 248, 0.28)' },
+  longbreak: { icon: '#A78BFA', border: 'rgba(167, 139, 250, 0.28)' },
+  info:      { icon: '#818CF8', border: 'rgba(129, 140, 248, 0.28)' },
+  warning:   { icon: '#F59E0B', border: 'rgba(245, 158, 11, 0.28)' },
+  error:     { icon: '#F43F5E', border: 'rgba(244, 63, 94, 0.28)' },
 };
 
-const COLORS = {
-  success: { bg: 'rgba(0,200,150,0.15)', border: 'rgba(0,200,150,0.4)', icon: '#00C896' },
-  info:    { bg: 'rgba(120,120,255,0.15)', border: 'rgba(120,120,255,0.4)', icon: '#7878ff' },
-  warning: { bg: 'rgba(251,191,36,0.15)', border: 'rgba(251,191,36,0.4)', icon: '#fbbf24' },
-  error:   { bg: 'rgba(255,80,80,0.15)', border: 'rgba(255,80,80,0.4)', icon: '#ff5050' },
-  focus:   { bg: 'rgba(0,200,150,0.15)', border: 'rgba(0,200,150,0.4)', icon: '#00C896' },
-  break:   { bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.4)', icon: '#60a5fa' },
-  longbreak:{ bg: 'rgba(167,139,250,0.15)', border: 'rgba(167,139,250,0.4)', icon: '#a78bfa' },
+const ICONS = {
+  success: (color) => <IconCheck size={14} color={color} />,
+  info: (color) => <IconInfo size={14} color={color} />,
+  warning: (color) => <IconWarning size={14} color={color} />,
+  error: (color) => <IconError size={14} color={color} />,
+  focus: (color) => <IconFocus size={14} color={color} />,
+  break: (color) => <IconBreak size={14} color={color} />,
+  longbreak: (color) => <IconLongBreak size={14} color={color} />,
 };
 
 let idCounter = 0;
@@ -40,13 +39,17 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.map((t) => t.id === id ? { ...t, exiting: true } : t));
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 300);
-    clearTimeout(timersRef.current[id]);
+    }, 220);
+    if (timersRef.current[id]) {
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    }
   }, []);
 
-  const toast = useCallback((message, type = 'success', duration = 3500) => {
+  const toast = useCallback((message, type = 'success', duration = 3000) => {
     const id = ++idCounter;
-    setToasts((prev) => [...prev.slice(-4), { id, message, type, exiting: false }]);
+    // Keep at most 2 toasts active so notifications stay minimal and clean
+    setToasts((prev) => [...prev.slice(-1), { id, message, type, exiting: false }]);
     timersRef.current[id] = setTimeout(() => dismiss(id), duration);
     return id;
   }, [dismiss]);
@@ -56,27 +59,23 @@ export const ToastProvider = ({ children }) => {
       {children}
       <div className="toast-container" aria-live="polite" aria-atomic="false">
         {toasts.map((t) => {
-          const color = COLORS[t.type] || COLORS.success;
+          const theme = TOAST_THEMES[t.type] || TOAST_THEMES.success;
+          const renderIcon = ICONS[t.type] || ICONS.success;
           return (
             <div
               key={t.id}
               className={`toast-item ${t.exiting ? 'toast-exit' : 'toast-enter'}`}
               style={{
-                background: `rgba(14,14,26,0.92)`,
-                border: `1px solid ${color.border}`,
-                boxShadow: `0 4px 32px rgba(0,0,0,0.4), 0 0 0 1px ${color.border}`,
+                borderColor: theme.border,
               }}
               role="alert"
+              onClick={() => dismiss(t.id)}
+              title="Click to dismiss"
             >
-              <span className="toast-icon" style={{ color: color.icon, background: color.bg }}>
-                {ICONS[t.type] || ICONS.success}
+              <span className="toast-icon-wrapper" style={{ color: theme.icon }}>
+                {renderIcon(theme.icon)}
               </span>
               <span className="toast-msg">{t.message}</span>
-              <button className="toast-close" onClick={() => dismiss(t.id)} aria-label="Dismiss">✕</button>
-              <div
-                className="toast-progress"
-                style={{ background: color.icon, animationDuration: '3.5s' }}
-              />
             </div>
           );
         })}

@@ -57,22 +57,13 @@ const HistoryTab = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
       {/* Header */}
-      <div style={{
-        fontFamily: 'Space Grotesk, sans-serif',
-        fontSize: '1.1rem',
-        fontWeight: '700',
-        marginBottom: '16px',
-        color: 'rgba(255,255,255,0.9)',
-      }}>
-        Session History
-        <span style={{
-          marginLeft: '10px',
-          fontSize: '13px',
-          fontWeight: '400',
-          color: 'rgba(255,255,255,0.4)',
-          fontFamily: 'Inter, sans-serif',
-        }}>
-          {filtered.length} sessions
+      <div className="history-header">
+        <div className="history-title-group">
+          <IconHistory size={20} color="var(--accent)" />
+          <h2 className="history-title">Session History</h2>
+        </div>
+        <span className="history-count-badge">
+          {filtered.length} {filtered.length === 1 ? 'session' : 'sessions'}
         </span>
       </div>
 
@@ -90,28 +81,29 @@ const HistoryTab = () => {
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <input
-          className="filter-date"
-          type="date"
-          value={filterFrom}
-          onChange={(e) => setFilterFrom(e.target.value)}
-          id="filter-from-date"
-          aria-label="From date"
-          title="From date"
-        />
-        <input
-          className="filter-date"
-          type="date"
-          value={filterTo}
-          onChange={(e) => setFilterTo(e.target.value)}
-          id="filter-to-date"
-          aria-label="To date"
-          title="To date"
-        />
+        <div className="filter-date-group">
+          <input
+            className="filter-date"
+            type="date"
+            value={filterFrom}
+            onChange={(e) => setFilterFrom(e.target.value)}
+            id="filter-from-date"
+            aria-label="From date"
+            title="From date"
+          />
+          <input
+            className="filter-date"
+            type="date"
+            value={filterTo}
+            onChange={(e) => setFilterTo(e.target.value)}
+            id="filter-to-date"
+            aria-label="To date"
+            title="To date"
+          />
+        </div>
         {(filterSubject || filterFrom || filterTo) && (
           <button
-            className="pill"
-            style={{ whiteSpace: 'nowrap' }}
+            className="filter-clear-btn"
             onClick={() => { setFilterSubject(''); setFilterFrom(''); setFilterTo(''); }}
             id="filter-clear-btn"
           >
@@ -123,7 +115,7 @@ const HistoryTab = () => {
       {/* Session List */}
       {filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon"><IconHistory size={32} /></div>
+          <div className="empty-state-icon"><IconHistory size={36} /></div>
           <div className="empty-state-text">
             {sessions.length === 0
               ? 'No sessions yet. Complete a Pomodoro to see history!'
