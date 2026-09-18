@@ -295,3 +295,9 @@ export const IconMoon = ({ size = 16, color = "currentColor", className = "" }) 
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 );
+export const IconPip = ({ size = 18, color = "currentColor", className = "" }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="3" />
+    <rect x="11" y="11" width="8" height="6" rx="1.5" fill={color} fillOpacity="0.3" />
+  </svg>
+);

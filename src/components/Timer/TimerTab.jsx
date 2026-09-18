@@ -3,7 +3,8 @@ import TimerDisplay from './TimerDisplay';
 import ModePills from './ModePills';
 import SubjectSelector from './SubjectSelector';
 import SessionCounter from './SessionCounter';
-import { IconBook, IconMaximize, IconMinimize } from '../Icons';
+import { IconBook, IconMaximize, IconMinimize, IconPip } from '../Icons';
+import { usePictureInPicture, PiPWindowPortal } from './PictureInPicture';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 
@@ -76,6 +77,22 @@ const TimerTab = ({ settings, hasWallpaper }) => {
   };
 
   const [isEditingSubject, setIsEditingSubject] = useState(false);
+  const { isPipActive, togglePip, pipDoc } = usePictureInPicture({
+    timeLeft,
+    stopwatchMs,
+    mode,
+    isRunning,
+    progress,
+    subject,
+    sessionCount,
+    clockStyle: settings?.clockStyle || "digital",
+    play: handlePlay,
+    pause: handlePause,
+    reset: handleReset,
+    skip: handleConfirmSkip,
+    toast,
+  });
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -168,6 +185,16 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         >
           {isFullscreen ? <IconMinimize size={20} /> : <IconMaximize size={20} />}
         </button>
+        <button
+          className={`flocus-ctrl-btn ${isPipActive ? "active" : ""}`}
+          onClick={togglePip}
+          aria-label="Picture-in-Picture"
+          title="Picture-in-Picture (floating mini timer)"
+          style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          id="timer-pip-btn"
+        >
+          <IconPip size={18} />
+        </button>
       </div>
 
       {/* Subject Selector */}
@@ -232,6 +259,19 @@ const TimerTab = ({ settings, hasWallpaper }) => {
           </div>
         </div>
       )}
+      {/* PiP Portal */}
+      <PiPWindowPortal
+        pipDoc={pipDoc}
+        timeLeft={timeLeft}
+        mode={mode}
+        isRunning={isRunning}
+        subject={subject}
+        sessionCount={sessionCount}
+        onPlay={handlePlay}
+        onPause={handlePause}
+        onReset={handleReset}
+        onSkip={handleConfirmSkip}
+      />
     </div>
   );
 };
