@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWallpaper } from '../contexts/WallpaperContext';
+import { useToast } from './Toast/ToastProvider';
 import { uploadWallpaper } from '../cloudinary';
 import { IconImage, IconCheck, IconTrash } from './Icons';
 
@@ -21,8 +22,10 @@ const WallpaperPicker = () => {
     deleteGlobalCurated
   } = useWallpaper();
   const { currentUser } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
+  const [justUploaded, setJustUploaded] = useState(false);
   const [uploadAsCurated, setUploadAsCurated] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const fileRef = useRef(null);
@@ -52,8 +55,12 @@ const WallpaperPicker = () => {
         await addCustomWallpaper(url);
       }
       await setWallpaper(url);
-      setActiveTab('presets');
+      setJustUploaded(true);
+      toast('Wallpaper uploaded and set successfully!', 'success', 3000);
       setUploadAsCurated(false);
+      if (fileRef.current) {
+        fileRef.current.value = '';
+      }
     } catch (err) {
       console.error(err);
       setUploadError(err.message || 'Upload failed. Check Cloudinary config.');
@@ -106,8 +113,52 @@ const WallpaperPicker = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {customWallpapers && customWallpapers.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>My Uploads</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: 0, letterSpacing: '0.05em' }}>My Uploads</h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('upload');
+                        setTimeout(() => fileRef.current?.click(), 80);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--accent)',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        padding: '2px 6px'
+                      }}
+                      id="btn-upload-more-header"
+                    >
+                      + Upload More
+                    </button>
+                  </div>
                   <div className="wallpaper-grid">
+                    <button
+                      className="wallpaper-thumb"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        border: '2px dashed var(--glass-border)',
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        cursor: 'pointer',
+                        color: 'var(--text-secondary)'
+                      }}
+                      onClick={() => {
+                        setActiveTab('upload');
+                        setTimeout(() => fileRef.current?.click(), 80);
+                      }}
+                      aria-label="Upload another wallpaper"
+                      id="btn-upload-more-card"
+                    >
+                      <span style={{ fontSize: '20px', lineHeight: 1, color: 'var(--accent)' }}>+</span>
+                      <span style={{ fontSize: '11px' }}>Upload More</span>
+                    </button>
                     {customWallpapers.map((url, i) => (
                       <div key={`custom-${i}`} style={{ position: 'relative' }}>
                         <button
@@ -193,6 +244,56 @@ const WallpaperPicker = () => {
 
           {activeTab === 'upload' && (
             <div>
+              {justUploaded && (
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  border: '1px solid rgba(16, 185, 129, 0.28)',
+                  borderRadius: '12px',
+                  padding: '14px',
+                  textAlign: 'center',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ color: '#10b981', fontWeight: 600, fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <IconCheck size={16} /> Wallpaper applied!
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 14px',
+                        background: 'var(--accent)',
+                        color: '#081226',
+                        fontWeight: 600,
+                        borderRadius: '20px',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                      id="btn-upload-more-pill"
+                    >
+                      + Upload More
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('presets')}
+                      style={{
+                        fontSize: '12px',
+                        padding: '6px 14px',
+                        background: 'var(--glass-bg-strong)',
+                        border: '1px solid var(--glass-border)',
+                        color: 'var(--text-primary)',
+                        borderRadius: '20px',
+                        cursor: 'pointer'
+                      }}
+                      id="btn-view-wallpapers-pill"
+                    >
+                      View Gallery
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div
                 className="upload-area"
                 onClick={() => fileRef.current?.click()}

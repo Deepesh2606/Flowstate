@@ -234,6 +234,17 @@ const AppShell = () => {
                 <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
               </button>
               <button
+                className="user-menu-item"
+                onClick={() => {
+                  setShowSettings(true);
+                  setShowUserMenu(false);
+                }}
+                role="menuitem"
+                id="menu-open-settings"
+              >
+                <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
+              </button>
+              <button
                 className="user-menu-item danger"
                 onClick={signOut}
                 role="menuitem"

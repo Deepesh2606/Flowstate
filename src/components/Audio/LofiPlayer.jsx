@@ -9,11 +9,6 @@ import { useAudio } from '../../contexts/AudioContext';
 const LofiPlayer = ({ inDrawer = false }) => {
   const { lofiPlaying, currentVideoId, showAudioDrawer, handleStreamError } = useAudio();
 
-  // If this is the background instance but the drawer is open, don't render to prevent double playback!
-  if (!inDrawer && showAudioDrawer) {
-    return null;
-  }
-
   // Listen for YouTube iframe errors
   useEffect(() => {
     const onMessage = (event) => {
@@ -30,6 +25,11 @@ const LofiPlayer = ({ inDrawer = false }) => {
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [currentVideoId, handleStreamError]);
+
+  // If this is the background instance but the drawer is open, don't render to prevent double playback!
+  if (!inDrawer && showAudioDrawer) {
+    return null;
+  }
 
   if (!lofiPlaying || !currentVideoId) {
     return null;
