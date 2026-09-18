@@ -575,10 +575,246 @@ input {
 }
 
 /* ─── Subject Selector ───────────────────────────────────────────────────────── */
+/* ─── Centered Focus Topic Badge (Under Timer) ─────────────────────────────── */
+.timer-focus-center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: 2px 0 6px 0;
+  text-align: center;
+}
+
+.current-focus-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px 6px 14px;
+  border-radius: 100px;
+  background: rgba(10, 14, 26, 0.72);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(6, 182, 212, 0.15);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  max-width: 90%;
+  animation: fadeIn 0.3s ease;
+  user-select: none;
+}
+
+.current-focus-badge:hover {
+  border-color: var(--accent);
+  box-shadow: 0 6px 24px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.focus-badge-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulseDot 2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.focus-badge-tag {
+  font-family: var(--font-logo);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.focus-badge-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.focus-badge-edit-icon {
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.current-focus-badge:hover .focus-badge-edit-icon {
+  color: var(--text-primary);
+}
+
+.current-focus-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.current-focus-prompt-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.focus-prompt-plus {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.timer-counter-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* ─── Subject Selector & Focused State ───────────────────────────────────────── */
 .subject-selector {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.subject-selector.is-running {
+  opacity: 0.85;
+}
+
+.subject-focused-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(10, 14, 26, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all var(--transition-fast);
+  animation: fadeIn 0.25s ease;
+}
+
+.subject-focused-card:hover {
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+.subject-focused-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.subject-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+.subject-focused-meta {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.subject-focused-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.subject-focused-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.subject-pill-action {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.subject-pill-action:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text-primary);
+}
+
+.subject-pill-action.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+/* Subject input form with Enter Focus button */
+.subject-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.subject-input-wrapper .subject-input {
+  padding-right: 120px;
+}
+
+.subject-submit-btn {
+  position: absolute;
+  right: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #081226;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.subject-submit-btn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
 }
 
 .mode-toggle {

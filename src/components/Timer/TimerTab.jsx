@@ -75,6 +75,8 @@ const TimerTab = ({ settings, hasWallpaper }) => {
     }
   };
 
+  const [isEditingSubject, setIsEditingSubject] = useState(false);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Mode Pills */}
@@ -92,16 +94,44 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         showSeconds={settings?.showSeconds ?? true}
       />
 
-      {/* Subject chip + session counter row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+      {/* Centered Focus Topic Badge & Session Counter */}
+      <div className="timer-focus-center-container">
         {subject ? (
-          <div className="current-subject-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <IconBook size={14} /> {subject}
+          <div
+            className="current-focus-badge"
+            onClick={() => setIsEditingSubject(true)}
+            title="Click to change what you are focusing on"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setIsEditingSubject(true)}
+            id="current-focus-badge"
+          >
+            <span className="focus-badge-pulse" />
+            <span className="focus-badge-tag">FOCUSING ON</span>
+            <span className="focus-badge-text">{subject}</span>
+            <span className="focus-badge-edit-icon" aria-hidden="true">✎</span>
           </div>
         ) : (
-          <div />
+          <button
+            type="button"
+            className="current-focus-prompt-btn"
+            onClick={() => {
+              setIsEditingSubject(true);
+              setTimeout(() => {
+                const el = document.getElementById('subject-text-input');
+                if (el) el.focus();
+              }, 60);
+            }}
+            id="btn-set-focus-prompt"
+          >
+            <span className="focus-prompt-plus">+</span>
+            <span>Set what you're focusing on</span>
+          </button>
         )}
-        <SessionCounter count={sessionCount} />
+
+        <div className="timer-counter-wrapper">
+          <SessionCounter count={sessionCount} />
+        </div>
       </div>
 
       {/* Controls */}
@@ -147,6 +177,9 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         studyMode={studyMode}
         setStudyMode={setStudyMode}
         targets={settings?.targets || []}
+        isRunning={isRunning}
+        isEditing={isEditingSubject}
+        setIsEditing={setIsEditingSubject}
       />
 
       {/* Skip Confirmation Dialog */}
