@@ -5,14 +5,15 @@ import { useAudio } from '../../contexts/AudioContext';
 import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones } from '../Icons';
+import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconMac } from '../Icons';
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import LofiPlayer from '../Audio/LofiPlayer';
+import WallpaperPicker from '../WallpaperPicker';
+import InstallModal from '../InstallModal';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
-const WallpaperPicker = lazy(() => import('../WallpaperPicker'));
 const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
 const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
 const AudioDrawer = lazy(() => import('../Audio/AudioDrawer'));
@@ -28,6 +29,17 @@ const AppShell = () => {
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,15 +141,7 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
-          <div className="topbar-brand">
-            <span className="topbar-brand-mark" aria-hidden="true">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-            </span>
-            <span className="topbar-logo">FLOWSTATE</span>
-          </div>
+          <span className="topbar-logo">FLOWSTATE</span>
         </header>
 
         {/* Top Right Controls (Notes/Tasks) */}
@@ -192,6 +196,17 @@ const AppShell = () => {
               <IconSettings size={18} />
             </button>
 
+            {/* Add to Mac Dock / Install button */}
+            <button
+              className="floating-icon-btn"
+              onClick={() => setShowInstallModal(true)}
+              aria-label="Add to Mac Dock or Install App"
+              id="mac-dock-btn"
+              title="Add to Mac Dock / Install App"
+            >
+              <IconMac size={18} />
+            </button>
+
             {/* User avatar */}
             {currentUser?.photoURL ? (
               <img
@@ -244,6 +259,17 @@ const AppShell = () => {
               <button
                 className="user-menu-item"
                 onClick={() => {
+                  setShowInstallModal(true);
+                  setShowUserMenu(false);
+                }}
+                role="menuitem"
+                id="menu-install-dock"
+              >
+                <IconMac size={14} style={{ marginRight: 8, color: 'var(--accent)' }} /> Add to Mac Dock / Install
+              </button>
+              <button
+                className="user-menu-item"
+                onClick={() => {
                   setShowSettings(true);
                   setShowUserMenu(false);
                 }}
@@ -288,18 +314,26 @@ const AppShell = () => {
       </div>
 
       {/* Modals & Drawers */}
+      {showPicker && <WallpaperPicker />}
       <Suspense fallback={null}>
-        {showPicker && <WallpaperPicker />}
         {showSettings && (
           <SettingsDrawer
             settings={settings}
             onSave={updateSettings}
             onClose={() => setShowSettings(false)}
+            onOpenInstall={() => setShowInstallModal(true)}
           />
         )}
         {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
         {showAudioDrawer && <AudioDrawer onClose={() => setShowAudioDrawer(false)} />}
       </Suspense>
+
+      <InstallModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        deferredPrompt={deferredPrompt}
+        onInstalled={() => setDeferredPrompt(null)}
+      />
 
       <style>{`
         @keyframes tabFadeIn {

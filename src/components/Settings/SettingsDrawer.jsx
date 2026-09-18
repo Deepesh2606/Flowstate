@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
-import { IconSettings, IconFocus, IconInfo, IconBook } from '../Icons';
+import { IconSettings, IconFocus, IconInfo, IconBook, IconMac } from '../Icons';
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
@@ -23,7 +23,7 @@ const Toggle = ({ id, checked, onChange, label, sub }) => (
   </div>
 );
 
-const SettingsDrawer = ({ settings, onSave, onClose }) => {
+const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   const { toast } = useToast();
   const { wallpaper } = useWallpaper();
   const d = settings?.durations || {};
@@ -515,6 +515,42 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
               <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
               <option value="'Playfair Display', serif">Playfair Display</option>
             </select>
+          </div>
+        </div>
+
+        {/* Desktop & Mac Dock Section */}
+        <div className="settings-section">
+          <div className="settings-section-title">
+            <IconMac size={16} /> Desktop & Mac Dock
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                if (onOpenInstall) onOpenInstall();
+                onClose();
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '10px 14px',
+                fontSize: '13px',
+                fontWeight: 600,
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid rgba(6, 182, 212, 0.3)',
+                background: 'rgba(6, 182, 212, 0.08)'
+              }}
+              id="settings-install-dock-btn"
+            >
+              <IconMac size={16} color="var(--accent)" /> Add FLOWSTATE to Mac Dock
+            </button>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+              Pin to your Mac Dock & launch as a native standalone app
+            </span>
           </div>
         </div>
 

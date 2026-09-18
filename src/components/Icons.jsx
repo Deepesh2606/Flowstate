@@ -260,4 +260,21 @@ export const IconThunder = ({ size = 16, color = 'currentColor', className = '' 
   </svg>
 );
 
+export const IconMac = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <line x1="8" y1="21" x2="16" y2="21" />
+    <line x1="12" y1="17" x2="12" y2="21" />
+  </svg>
+);
+
+export const IconDownload = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
+
 

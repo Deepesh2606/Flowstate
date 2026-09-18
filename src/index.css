@@ -112,55 +112,16 @@ input {
   pointer-events: none;
 }
 
-.topbar-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: auto;
-  user-select: none;
-  padding: 6px 16px 6px 10px;
-  border-radius: 100px;
-  background: rgba(10, 14, 26, 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(6, 182, 212, 0.12);
-  transition: all var(--transition-fast);
-}
-
-.topbar-brand:hover {
-  border-color: rgba(6, 182, 212, 0.4);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
-  transform: translateY(-1px);
-}
-
-.topbar-brand-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(56, 189, 248, 0.15));
-  border: 1px solid rgba(6, 182, 212, 0.5);
-  color: var(--accent);
-  box-shadow: 0 0 10px var(--accent-glow);
-}
-
 .topbar-logo {
   font-family: var(--font-logo);
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #ffffff;
   text-align: center;
   user-select: none;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #ffffff 40%, #f1f5f9 70%, #67e8f9 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.6));
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
 }
 
 /* Bottom Right Floating Controls */
@@ -520,15 +481,21 @@ input {
 }
 
 .session-counter:hover {
-  border-color: rgba(6, 182, 212, 0.35);
-  box-shadow: 0 4px 24px var(--accent-glow);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.2);
 }
 
-.session-counter-icon {
+.session-done-icon {
   display: flex;
   align-items: center;
-  color: var(--accent);
-  filter: drop-shadow(0 0 6px var(--accent-glow));
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
 
 .session-pips {
@@ -538,30 +505,27 @@ input {
 }
 
 .session-pip {
-  display: block;
-  width: 14px;
-  height: 5px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+  color: #081226;
 }
 
 .session-pip.filled {
-  width: 18px;
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 10px var(--accent-glow);
-}
-
-.session-pip.current {
-  border-color: rgba(6, 182, 212, 0.6);
-  background: rgba(6, 182, 212, 0.25);
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: #10b981;
+  border-color: #10b981;
+  color: #081226;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
 }
 
 .session-pip.empty {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.12);
 }
 
@@ -1193,7 +1157,8 @@ input {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  animation: fadeIn var(--transition-med) forwards;
+  animation: fadeIn 0.14s ease-out forwards;
+  will-change: opacity;
 }
 
 @keyframes fadeIn {
@@ -1218,7 +1183,9 @@ input {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  animation: slideInRight var(--transition-med) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideInRight 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 @keyframes slideInRight {
@@ -1628,6 +1595,108 @@ input {
   color: var(--text-muted);
 }
 
+/* ─── Curated Preset Upload Card ─────────────────────────────────────────────── */
+.curated-toggle-card {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(12, 14, 26, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all var(--transition-fast);
+}
+
+.curated-toggle-card.active {
+  border-color: var(--accent);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: 0 0 24px var(--accent-dim);
+}
+
+.curated-toggle-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.curated-toggle-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+}
+
+.curated-globe-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.curated-toggle-card.active .curated-globe-icon {
+  background: rgba(6, 182, 212, 0.22);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.curated-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.curated-toggle-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.curated-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-fast);
+}
+
+.curated-badge.active {
+  background: rgba(6, 182, 212, 0.2);
+  color: var(--accent);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.curated-toggle-desc {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.curated-name-field {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 /* ─── Splash Screen ──────────────────────────────────────────────────────────── */
 .splash {
   position: fixed;
@@ -1696,17 +1765,14 @@ input {
 
 .splash-logo {
   font-family: var(--font-logo);
-  font-size: clamp(3.2rem, 11vw, 5.8rem);
+  font-size: clamp(3rem, 10vw, 5.2rem);
   font-weight: 900;
   letter-spacing: 0.14em;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #ffffff 30%, #e0f2fe 65%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 45px rgba(6, 182, 212, 0.4)) drop-shadow(0 2px 14px rgba(0, 0, 0, 0.7));
+  color: #ffffff;
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.75);
 }
 
 @keyframes logoIn {
@@ -2882,5 +2948,228 @@ input {
 .skip-btn-confirm:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 22px var(--accent-glow);
+}
+
+/* ─── Mac Dock / App Install Modal ────────────────────────────────────────── */
+.install-modal-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 121;
+  padding: 20px;
+  pointer-events: auto;
+  animation: fadeIn 0.15s ease-out forwards;
+}
+
+.install-modal-card {
+  width: 100%;
+  max-width: 460px;
+  background: rgba(14, 16, 28, 0.94);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(6, 182, 212, 0.12);
+  overflow: hidden;
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.install-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.install-modal-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-mac-icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 16px var(--accent-dim);
+}
+
+.install-modal-title {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.install-modal-subtitle {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.install-modal-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.install-standalone-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.install-success-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.install-highlight-card {
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(56, 189, 248, 0.05));
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.install-highlight-text strong {
+  display: block;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.install-highlight-text p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.install-action-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.install-guide-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.install-pill {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.install-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.install-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.install-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.install-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.install-step-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.install-step-desc {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.mac-kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.install-modal-footer {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.install-footer-tip {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 

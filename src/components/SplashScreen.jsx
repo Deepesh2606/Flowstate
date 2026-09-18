@@ -12,20 +12,6 @@ const SplashScreen = ({ onSignIn, loading }) => {
 
       {/* Logo block — centered hero */}
       <div className="splash-hero">
-        <div className="splash-brand-emblem" aria-hidden="true">
-          <svg width="52" height="52" viewBox="0 0 48 48" fill="none">
-            <defs>
-              <linearGradient id="splashLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#38BDF8" />
-                <stop offset="100%" stopColor="#06B6D4" />
-              </linearGradient>
-            </defs>
-            <rect width="48" height="48" rx="14" fill="rgba(6, 182, 212, 0.12)" stroke="rgba(6, 182, 212, 0.35)" strokeWidth="1.5" />
-            <circle cx="24" cy="24" r="11" stroke="url(#splashLogoGrad)" strokeWidth="2.5" />
-            <path d="M24 17v7l4.5 3" stroke="url(#splashLogoGrad)" strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx="24" cy="24" r="2" fill="url(#splashLogoGrad)" />
-          </svg>
-        </div>
         <h1 className="splash-logo">FLOWSTATE</h1>
         <p className="splash-tagline">Study smarter. Track deeper. Flow further.</p>
       </div>

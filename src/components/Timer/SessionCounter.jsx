@@ -8,25 +8,29 @@ const SessionCounter = ({ count = 0 }) => {
     <div
       className="session-counter"
       role="status"
-      aria-label={`${completed} of 4 focus sessions completed in this cycle`}
-      title={`${completed} of 4 focus sessions completed`}
+      aria-label={`${completed} of 4 sessions completed`}
+      title={`${completed} of 4 sessions completed`}
     >
-      <span className="session-counter-icon" aria-hidden="true">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="3" fill="currentColor" />
+      <span className="session-done-icon" aria-hidden="true" title="Sessions completed">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
         </svg>
       </span>
       <div className="session-pips" aria-hidden="true">
         {Array.from({ length: 4 }, (_, i) => {
-          const isFilled = i < completed;
-          const isCurrent = i === completed;
+          const isDone = i < completed;
           return (
             <span
               key={i}
-              className={`session-pip ${isFilled ? 'filled' : isCurrent ? 'current' : 'empty'}`}
-              title={isFilled ? `Session ${i + 1} completed` : `Session ${i + 1}`}
-            />
+              className={`session-pip ${isDone ? 'filled' : 'empty'}`}
+              title={`Session ${i + 1}: ${isDone ? 'Done' : 'Pending'}`}
+            >
+              {isDone && (
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </span>
           );
         })}
       </div>

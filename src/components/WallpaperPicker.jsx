@@ -40,13 +40,13 @@ const WallpaperPicker = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [justUploaded, setJustUploaded] = useState(false);
   const [uploadAsCurated, setUploadAsCurated] = useState(false);
+  const [curatedLabel, setCuratedLabel] = useState('');
   const [uploadError, setUploadError] = useState('');
   const fileRef = useRef(null);
 
-  const handlePresetSelect = async (url) => {
-    // Preload into browser cache first so switching is instant
-    await preloadImage(url);
-    await setWallpaper(url);
+  const handlePresetSelect = (url) => {
+    setWallpaper(url);
+    preloadImage(url);
   };
 
   const handleFileUpload = async (e) => {
@@ -84,7 +84,7 @@ const WallpaperPicker = () => {
       setUploadStatus('Wallpaper applied!');
 
       if (uploadAsCurated) {
-        await uploadToGlobalCurated(url);
+        await uploadToGlobalCurated(url, curatedLabel);
       } else {
         await addCustomWallpaper(url);
       }
@@ -96,6 +96,7 @@ const WallpaperPicker = () => {
       setJustUploaded(true);
       toast('Wallpaper uploaded and applied successfully!', 'success', 3000);
       setUploadAsCurated(false);
+      setCuratedLabel('');
       if (fileRef.current) {
         fileRef.current.value = '';
       }
@@ -411,17 +412,63 @@ const WallpaperPicker = () => {
                 </p>
               )}
               
-              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <input 
-                  type="checkbox" 
-                  id="curated-checkbox" 
-                  checked={uploadAsCurated}
-                  onChange={(e) => setUploadAsCurated(e.target.checked)}
-                  style={{ width: '16px', height: '16px', accentColor: 'var(--accent-glow)' }}
-                />
-                <label htmlFor="curated-checkbox" style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                  Upload as a Global Curated Preset (visible to all users)
-                </label>
+              <div className={`curated-toggle-card ${uploadAsCurated ? 'active' : ''}`}>
+                <div className="curated-toggle-content">
+                  <div className="curated-toggle-header">
+                    <div className="curated-globe-icon" aria-hidden="true">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                      </svg>
+                    </div>
+                    <div className="curated-toggle-text">
+                      <div className="curated-toggle-title">
+                        <span>Global Curated Preset</span>
+                        <span className={`curated-badge ${uploadAsCurated ? 'active' : ''}`}>
+                          {uploadAsCurated ? 'Visible to All' : 'Private'}
+                        </span>
+                      </div>
+                      <p className="curated-toggle-desc">
+                        {uploadAsCurated
+                          ? 'Added to curated presets for everyone using Flowstate.'
+                          : 'Saved to your personal uploads only. Enable to share with all users.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className={`toggle-switch ${uploadAsCurated ? 'on' : ''}`}
+                    onClick={() => setUploadAsCurated(!uploadAsCurated)}
+                    role="switch"
+                    aria-checked={uploadAsCurated}
+                    aria-label="Upload as global curated preset"
+                    id="btn-toggle-curated-preset"
+                  >
+                    <div className="toggle-thumb" />
+                  </button>
+                </div>
+
+                {uploadAsCurated && (
+                  <div className="curated-name-field">
+                    <label
+                      htmlFor="curated-preset-label"
+                      style={{ display: 'block', fontSize: '11.5px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: 600 }}
+                    >
+                      Preset Theme Title <span style={{ opacity: 0.6 }}>(optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="curated-preset-label"
+                      className="settings-input"
+                      placeholder="e.g. Cyberpunk Neon, Tokyo Rain..."
+                      value={curatedLabel}
+                      onChange={(e) => setCuratedLabel(e.target.value)}
+                      maxLength={35}
+                      style={{ fontSize: '12.5px', padding: '8px 12px', width: '100%', borderRadius: '8px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
