@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAudio } from '../../contexts/AudioContext';
 import TabBar from './TabBar';
+import RightSideNav from './RightSideNav';
 import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
@@ -149,10 +150,17 @@ const AppShell = () => {
   }, []);
 
   const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
+  const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
 
   const handleTabChange = (tab, subMode = null) => {
     setActiveTab(tab);
     if (subMode) setPendingSwitchMode(subMode);
+  };
+
+  // RightSideNav requests a mode switch
+  const handleRightNavModeSwitch = (modeId) => {
+    setPendingSwitchMode(modeId);
+    setCurrentTimerMode(modeId);
   };
 
   const renderTab = () => {
@@ -167,6 +175,7 @@ const AppShell = () => {
             initialMode={pendingSwitchMode}
             onInitialModeConsumed={() => setPendingSwitchMode(null)}
             timerActionsRef={timerActionsRef}
+            onModeChange={setCurrentTimerMode}
           />
         );
       case 'clock':
@@ -429,6 +438,14 @@ const AppShell = () => {
         {/* Bottom Tab Bar */}
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
+
+      {/* Right Side Mode Nav */}
+      <RightSideNav
+        activeTab={activeTab}
+        timerMode={currentTimerMode}
+        onSwitchMode={handleRightNavModeSwitch}
+        onTabChange={handleTabChange}
+      />
 
       {/* Modals & Drawers */}
       {showPicker && <WallpaperPicker />}

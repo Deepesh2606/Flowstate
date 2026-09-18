@@ -2478,11 +2478,11 @@ input {
   gap: 4px;
   padding: 5px;
   border-radius: 9999px;
-  background: rgba(10, 14, 24, 0.5);
+  background: rgba(6, 10, 20, 0.72);
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 2px 0 rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 2px 0 rgba(0, 0, 0, 0.5);
   max-width: 100%;
   overflow-x: auto;
 }
@@ -2505,21 +2505,23 @@ input {
 .liquid-pill-label {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.78);
   transition: color 0.2s ease;
   position: relative;
   z-index: 2;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
 }
 
 .liquid-pill-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .liquid-pill-btn:hover .liquid-pill-label {
-  color: var(--text-primary);
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255,255,255,0.4);
 }
 
 .liquid-pill-btn.active {
@@ -4754,4 +4756,201 @@ input {
   background: rgba(6,182,212,0.12);
   border-color: rgba(6,182,212,0.4);
   color: var(--accent, #06b6d4);
+}
+
+/* ─── Right Side Nav ──────────────────────────────────────────────────────────── */
+.right-side-nav {
+  position: fixed;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 6px;
+  background: rgba(6, 10, 20, 0.72);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.rsn-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rsn-pill {
+  position: relative;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  padding: 9px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 58px;
+}
+
+.rsn-pill-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.2s ease;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  line-height: 1.3;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  white-space: pre-line;
+}
+
+.rsn-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rsn-pill:hover .rsn-pill-label {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.rsn-pill.active {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--accent) 70%, #fff 30%) 0%,
+    var(--accent) 55%,
+    color-mix(in srgb, var(--accent) 80%, #000 20%) 100%
+  );
+  box-shadow:
+    0 4px 20px color-mix(in srgb, var(--accent) 50%, transparent),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.65),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: scale(1.04);
+}
+
+.rsn-pill.active .rsn-pill-label {
+  color: #06101e;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+.rsn-pill-glaze {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rsn-divider {
+  width: 70%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+  margin: 4px 0;
+  border-radius: 9999px;
+}
+
+.rsn-clock-btn {
+  position: relative;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  padding: 9px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 58px;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.rsn-clock-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.2s ease;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.rsn-clock-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rsn-clock-btn:hover .rsn-clock-label,
+.rsn-clock-btn:hover svg {
+  color: #ffffff;
+}
+
+.rsn-clock-btn.active {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--accent) 70%, #fff 30%) 0%,
+    var(--accent) 55%,
+    color-mix(in srgb, var(--accent) 80%, #000 20%) 100%
+  );
+  box-shadow:
+    0 4px 20px color-mix(in srgb, var(--accent) 50%, transparent),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.65),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: scale(1.04);
+}
+
+.rsn-clock-btn.active .rsn-clock-label,
+.rsn-clock-btn.active svg {
+  color: #06101e;
+}
+
+/* ─── Responsive: hide right side nav on very small screens ─────────────────── */
+@media (max-width: 480px) {
+  .right-side-nav {
+    right: 8px;
+    padding: 8px 4px;
+    border-radius: 16px;
+  }
+  .rsn-pill,
+  .rsn-clock-btn {
+    padding: 7px 6px;
+    min-width: 46px;
+  }
+  .rsn-pill-label,
+  .rsn-clock-label {
+    font-size: 8px;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (max-width: 360px) {
+  .right-side-nav {
+    display: none;
+  }
 }

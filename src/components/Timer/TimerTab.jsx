@@ -17,7 +17,7 @@ import { useTasks } from '../../hooks/useTasks';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
-const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialModeConsumed, timerActionsRef }) => {
+const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialModeConsumed, timerActionsRef, onModeChange }) => {
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { tasks } = useTasks();
@@ -141,7 +141,15 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
     setShowSkipConfirm(false);
     skip();
   };
-  const handleSwitchMode = (newMode) => switchMode(newMode);
+  const handleSwitchMode = (newMode) => {
+    switchMode(newMode);
+    onModeChange?.(newMode);
+  };
+
+  // Sync external mode changes (auto-advance) back to AppShell
+  useEffect(() => {
+    onModeChange?.(mode);
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Expose timer actions to AppShell for keyboard shortcuts
   useEffect(() => {
