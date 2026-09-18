@@ -4,6 +4,7 @@ import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAudio } from '../../contexts/AudioContext';
 import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
+import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones } from '../Icons';
 import { getWallpaperContrast } from '../../utils/imageUtils';
@@ -116,7 +117,24 @@ const AppShell = () => {
   const renderTab = () => {
     switch (activeTab) {
       case 'timer':
-        return <TimerTab settings={settings} onOpenSettings={() => setShowSettings(true)} hasWallpaper={!!wallpaper} />;
+        return (
+          <TimerTab
+            settings={settings}
+            onOpenSettings={() => setShowSettings(true)}
+            hasWallpaper={!!wallpaper}
+            onTabChange={handleTabChange}
+          />
+        );
+      case 'clock':
+        return (
+          <ClockTab
+            settings={settings}
+            onUpdateSettings={updateSettings}
+            hasWallpaper={!!wallpaper}
+            onTabChange={handleTabChange}
+            onOpenSettings={() => setShowSettings(true)}
+          />
+        );
       case 'stats':
         return (
           <Suspense fallback={<FallbackLoader />}>

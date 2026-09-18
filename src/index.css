@@ -3907,3 +3907,180 @@ input {
 .pip-action-btn.secondary:hover {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* ─── Live Real-Time Flip Clock & Date Display ────────────────────────────── */
+.live-clock-tab-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.live-flip-clock-container {
+  margin-bottom: 24px;
+}
+
+/* 12-Hour AM / PM Flip Card Unit */
+.flip-card-unit.flip-card-ampm-unit {
+  align-self: flex-start;
+  margin-top: clamp(2px, 0.8vw, 8px);
+}
+
+.flip-card-wrapper.flip-ampm-wrapper {
+  width: clamp(52px, 8.5vw, 92px);
+  height: clamp(62px, 10.5vw, 115px);
+}
+
+.flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+  font-size: clamp(1.4rem, 3.2vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Live Date, Day, Year Capsule */
+.live-date-capsule-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -6px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.live-date-capsule {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 1.6vw, 16px);
+  padding: clamp(8px, 1.2vw, 12px) clamp(16px, 2.5vw, 26px);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.25),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.live-date-capsule:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.32),
+              inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.live-day-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-status-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981, 0 0 4px #10b981;
+  animation: livePulse 2s infinite ease-in-out;
+}
+
+.live-pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: livePulse 2s infinite ease-in-out;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.6;
+  }
+}
+
+.live-day-text {
+  font-family: var(--clock-font-family, 'Space Grotesk', sans-serif);
+  font-weight: 800;
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  letter-spacing: 0.12em;
+  color: var(--clock-text-color, #ffffff);
+  text-shadow: var(--clock-text-shadow, 0 2px 10px rgba(0, 0, 0, 0.2));
+}
+
+.live-date-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.live-full-date-text {
+  font-family: var(--clock-font-family, 'Space Grotesk', sans-serif);
+  font-weight: 600;
+  font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+  color: var(--clock-text-color, #ffffff);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  text-shadow: var(--clock-text-shadow, 0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+.live-date-month-day {
+  font-weight: 700;
+}
+
+.live-date-comma {
+  margin-right: 3px;
+}
+
+.live-date-year {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.live-tz-badge {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--clock-text-color, #ffffff);
+  opacity: 0.85;
+}
+
+/* Clock Controls Bar */
+.live-clock-controls {
+  margin-top: 4px;
+}
+
+.clock-format-toggle-btn,
+.clock-seconds-toggle-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  padding: 0 14px;
+}
+
+.clock-format-toggle-btn.active-mode,
+.clock-seconds-toggle-btn.active-mode {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+

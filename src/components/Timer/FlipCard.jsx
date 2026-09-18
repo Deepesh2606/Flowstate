@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
  * A realistic retro-modern 3D flip card for flip clock display.
  * Uses 3D transform perspective and top/bottom split cards.
  */
-const FlipCard = ({ value, label }) => {
+const FlipCard = ({ value, label, pad = true, className = '', wrapperClassName = '' }) => {
   const [currentVal, setCurrentVal] = useState(value);
   const [prevVal, setPrevVal] = useState(value);
   const [isFlipping, setIsFlipping] = useState(false);
@@ -26,12 +26,19 @@ const FlipCard = ({ value, label }) => {
     }
   }, [value]);
 
-  const displayCurrent = String(currentVal).padStart(2, '0');
-  const displayPrev = String(prevVal).padStart(2, '0');
+  const formatDisplay = (val) => {
+    if (val === undefined || val === null) return '';
+    const str = String(val);
+    if (!pad) return str;
+    return !isNaN(Number(str)) && str.trim() !== '' ? str.padStart(2, '0') : str;
+  };
+
+  const displayCurrent = formatDisplay(currentVal);
+  const displayPrev = formatDisplay(prevVal);
 
   return (
-    <div className="flip-card-unit">
-      <div className={`flip-card-wrapper ${isFlipping ? 'flipping' : ''}`}>
+    <div className={`flip-card-unit ${className}`.trim()}>
+      <div className={`flip-card-wrapper ${isFlipping ? 'flipping' : ''} ${wrapperClassName}`.trim()}>
         {/* Upper Static Flap (shows current value) */}
         <div className="flip-flap flip-top-static">
           <span>{displayCurrent}</span>

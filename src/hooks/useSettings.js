@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS = {
   autoClockColor: true,
   clockStyle: 'digital', // 'digital' | 'flip'
   showSeconds: true,
+  clockFormat: '12h', // '12h' | '24h'
   theme: 'dark', // 'dark' | 'light'
   subjectColor: '#06b6d4',
   clockFont: "'Inter', system-ui, sans-serif",
@@ -53,6 +54,7 @@ export const useSettings = () => {
           theme: data.theme || 'dark',
           clockStyle: data.clockStyle || 'digital',
           showSeconds: data.showSeconds !== undefined ? data.showSeconds : true,
+          clockFormat: data.clockFormat || '12h',
           clockColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.clockColor,
           textColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.textColor,
           durations: {

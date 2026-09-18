@@ -9,7 +9,7 @@ import PipHelpModal from './PipHelpModal';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 
-const TimerTab = ({ settings, hasWallpaper }) => {
+const TimerTab = ({ settings, hasWallpaper, onTabChange }) => {
   const { toast } = useToast();
 
   const {
@@ -98,7 +98,11 @@ const TimerTab = ({ settings, hasWallpaper }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Mode Pills */}
-      <ModePills mode={mode} onSwitch={handleSwitchMode} />
+      <ModePills
+        mode={mode}
+        onSwitch={handleSwitchMode}
+        onSelectClock={onTabChange ? () => onTabChange('clock') : undefined}
+      />
 
       {/* Timer Card */}
       <TimerDisplay

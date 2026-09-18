@@ -1,8 +1,9 @@
 import React from 'react';
-import { IconTimer, IconStats, IconHistory } from '../Icons';
+import { IconTimer, IconClock, IconStats, IconHistory } from '../Icons';
 
 const TABS = [
   { id: 'timer', label: 'Timer', icon: <IconTimer size={20} /> },
+  { id: 'clock', label: 'Clock', icon: <IconClock size={20} /> },
   { id: 'stats', label: 'Stats', icon: <IconStats size={20} /> },
   { id: 'history', label: 'History', icon: <IconHistory size={20} /> },
 ];

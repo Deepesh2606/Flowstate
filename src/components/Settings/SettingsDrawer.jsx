@@ -44,6 +44,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   // Customization
   const [clockStyle, setClockStyle]                 = useState(settings?.clockStyle || 'digital');
   const [showSeconds, setShowSeconds]               = useState(settings?.showSeconds ?? true);
+  const [clockFormat, setClockFormat]               = useState(settings?.clockFormat || '12h');
   const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
   const [clockColor, setClockColor]                 = useState(settings?.clockColor || settings?.textColor || '#ffffff');
   const [clockFont, setClockFont]                   = useState(settings?.clockFont || "'Inter', system-ui, sans-serif");
@@ -56,6 +57,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
     autoClockColor: settings?.autoClockColor ?? true,
     clockStyle: settings?.clockStyle || 'digital',
     showSeconds: settings?.showSeconds ?? true,
+    clockFormat: settings?.clockFormat || '12h',
   });
 
   useEffect(() => {
@@ -63,6 +65,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       if (settings.autoClockColor !== undefined) setAutoClockColor(settings.autoClockColor);
       if (settings.clockStyle) setClockStyle(settings.clockStyle);
       if (settings.showSeconds !== undefined) setShowSeconds(settings.showSeconds);
+      if (settings.clockFormat) setClockFormat(settings.clockFormat);
       if (settings.clockColor || settings.textColor) setClockColor(settings.clockColor || settings.textColor);
       if (settings.clockFont) setClockFont(settings.clockFont);
       if (settings.theme) setTheme(settings.theme);
@@ -139,6 +142,11 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
     applyRealtime({ showSeconds: val });
   };
 
+  const handleClockFormatChange = (format) => {
+    setClockFormat(format);
+    applyRealtime({ clockFormat: format });
+  };
+
   const handleAutoClockColorChange = (val) => {
     setAutoClockColor(val);
     applyRealtime({ autoClockColor: val });
@@ -203,6 +211,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       notifyOnComplete,
       clockStyle,
       showSeconds,
+      clockFormat,
       autoClockColor,
       clockColor,
       textColor: clockColor,
@@ -458,6 +467,27 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
                 onClick={() => handleClockStyleChange('flip')}
               >
                 Flip Clock
+              </button>
+            </div>
+          </div>
+
+          {/* Time Format (12h vs 24h) */}
+          <div className="setting-item" style={{ marginBottom: '14px' }}>
+            <label className="setting-label" style={{ marginBottom: '6px' }}>Time Format</label>
+            <div className="setting-segmented-group">
+              <button
+                type="button"
+                className={`setting-segmented-btn ${clockFormat === '12h' ? 'active' : ''}`}
+                onClick={() => handleClockFormatChange('12h')}
+              >
+                12-Hour
+              </button>
+              <button
+                type="button"
+                className={`setting-segmented-btn ${clockFormat === '24h' ? 'active' : ''}`}
+                onClick={() => handleClockFormatChange('24h')}
+              >
+                24-Hour
               </button>
             </div>
           </div>
