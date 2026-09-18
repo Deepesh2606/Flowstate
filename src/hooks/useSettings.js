@@ -11,7 +11,9 @@ const DEFAULT_SETTINGS = {
   modePreference: 'SSC CGL',
   clockColor: '#ffffff',
   textColor: '#ffffff',
-  autoClockColor: false,
+  autoClockColor: true,
+  clockStyle: 'digital', // 'digital' | 'flip'
+  showSeconds: true,
   subjectColor: '#06b6d4',
   clockFont: "'Inter', system-ui, sans-serif",
   targets: [
@@ -31,6 +33,9 @@ export const useSettings = () => {
         setSettings((prev) => ({
           ...DEFAULT_SETTINGS,
           ...data,
+          autoClockColor: data.autoClockColor !== undefined ? data.autoClockColor : true,
+          clockStyle: data.clockStyle || 'digital',
+          showSeconds: data.showSeconds !== undefined ? data.showSeconds : true,
           clockColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.clockColor,
           textColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.textColor,
           durations: {

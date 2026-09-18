@@ -1,33 +1,67 @@
 import React from 'react';
+import FlipCard from './FlipCard';
 
-const TimerDisplay = ({ timeLeft, isRunning, mode, hasWallpaper }) => {
-  const minutes = Math.floor(timeLeft / 60);
+const TimerDisplay = ({
+  timeLeft,
+  isRunning,
+  mode: _mode,
+  hasWallpaper,
+  clockStyle = 'digital',
+  showSeconds = true,
+}) => {
+  const isOverHour = timeLeft >= 3600;
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = isOverHour ? Math.floor((timeLeft % 3600) / 60) : Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  
-  // For stopwatch, maybe show hours if it goes really long? 
-  // Let's just stick to MM:SS or H:MM:SS if over an hour.
+
+  // Digital time string
   let timeStr = '';
-  if (timeLeft >= 3600) {
-    const h = Math.floor(timeLeft / 3600);
-    const m = Math.floor((timeLeft % 3600) / 60);
-    const s = timeLeft % 60;
-    timeStr = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  if (isOverHour) {
+    timeStr = showSeconds
+      ? `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+      : `${hours}:${String(minutes).padStart(2, '0')}`;
   } else {
-    timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    timeStr = showSeconds
+      ? `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+      : String(minutes).padStart(2, '0');
   }
 
   return (
     <div className="flocus-timer-wrapper" style={{ position: 'relative' }}>
-      {!hasWallpaper && <div className="liquid-orb"></div>}
-      <div
-        className={`flocus-timer-digits ${isRunning ? 'active' : ''}`}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {timeStr}
-      </div>
+      {!hasWallpaper && <div className="liquid-orb" />}
+
+      {clockStyle === 'flip' ? (
+        <div
+          className={`flip-clock-container ${isRunning ? 'active' : ''}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {isOverHour && (
+            <>
+              <FlipCard value={hours} label="HOURS" />
+              <div className="flip-clock-colon">:</div>
+            </>
+          )}
+          <FlipCard value={minutes} label="MINUTES" />
+          {showSeconds && (
+            <>
+              <div className="flip-clock-colon">:</div>
+              <FlipCard value={seconds} label="SECONDS" />
+            </>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`flocus-timer-digits ${isRunning ? 'active' : ''}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {timeStr}
+        </div>
+      )}
     </div>
   );
 };
 
 export default TimerDisplay;
+

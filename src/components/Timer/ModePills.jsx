@@ -9,20 +9,27 @@ const MODES = [
 
 const ModePills = ({ mode, onSwitch }) => {
   return (
-    <div className="flocus-mode-group" role="group" aria-label="Timer mode">
-      {MODES.map((m) => (
-        <button
-          key={m.id}
-          id={`mode-${m.id}`}
-          className={`flocus-mode-btn ${mode === m.id ? 'active' : ''}`}
-          onClick={() => onSwitch(m.id)}
-          aria-pressed={mode === m.id}
-        >
-          {m.label}
-        </button>
-      ))}
+    <div className="liquid-pills-wrapper" role="group" aria-label="Timer mode">
+      <div className="liquid-pill-track">
+        {MODES.map((m) => {
+          const isActive = mode === m.id;
+          return (
+            <button
+              key={m.id}
+              id={`mode-${m.id}`}
+              className={`liquid-pill-btn ${isActive ? 'active' : ''}`}
+              onClick={() => onSwitch(m.id)}
+              aria-pressed={isActive}
+            >
+              {isActive && <span className="liquid-pill-glaze" aria-hidden="true" />}
+              <span className="liquid-pill-label">{m.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
 
 export default ModePills;
+

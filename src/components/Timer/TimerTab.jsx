@@ -45,7 +45,14 @@ const TimerTab = ({ settings, hasWallpaper }) => {
     toast('Timer reset', 'info');
   };
 
-  const handleSkip = () => {
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+
+  const handleSkipClick = () => {
+    setShowSkipConfirm(true);
+  };
+
+  const handleConfirmSkip = () => {
+    setShowSkipConfirm(false);
     skip();
     toast('Session skipped', 'warning');
   };
@@ -87,6 +94,8 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         mode={mode}
         isRunning={isRunning}
         hasWallpaper={hasWallpaper}
+        clockStyle={settings?.clockStyle || 'digital'}
+        showSeconds={settings?.showSeconds ?? true}
       />
 
       {/* Subject chip + session counter row */}
@@ -120,8 +129,9 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         {mode !== 'stopwatch' && (
           <button
             className="flocus-ctrl-btn"
-            onClick={handleSkip}
-            aria-label="Skip"
+            onClick={handleSkipClick}
+            aria-label="Skip session"
+            title="Skip session"
           >
             ⏭
           </button>
@@ -144,6 +154,57 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         setStudyMode={setStudyMode}
         targets={settings?.targets || []}
       />
+
+      {/* Skip Confirmation Dialog */}
+      {showSkipConfirm && (
+        <div
+          className="drawer-overlay"
+          style={{ zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          onClick={() => setShowSkipConfirm(false)}
+        >
+          <div
+            className="skip-confirm-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="skip-confirm-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="skip-confirm-header">
+              <span className="skip-confirm-icon">⏭</span>
+              <h3 id="skip-confirm-title" className="skip-confirm-title">
+                Skip {mode === 'pomodoro' ? 'Focus Session' : 'Break'}?
+              </h3>
+            </div>
+            <div className="skip-confirm-desc">
+              {mode === 'pomodoro' ? (
+                <>
+                  Skipping will <strong>end this focus block</strong> early, log it to your daily stats, increment your session counter, and advance you to your <strong>{(sessionCount + 1) % (settings?.longBreakInterval || 4) === 0 ? 'Long Break' : 'Short Break'}</strong>.
+                </>
+              ) : (
+                <>
+                  Skipping will <strong>conclude your break immediately</strong> and advance directly to your next focus block.
+                </>
+              )}
+            </div>
+            <div className="skip-confirm-actions">
+              <button
+                type="button"
+                className="skip-btn-cancel"
+                onClick={() => setShowSkipConfirm(false)}
+              >
+                Keep Going
+              </button>
+              <button
+                type="button"
+                className="skip-btn-confirm"
+                onClick={handleConfirmSkip}
+              >
+                Yes, Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '../Toast/ToastProvider';
+import { useWallpaper } from '../../contexts/WallpaperContext';
+import { getWallpaperContrast } from '../../utils/imageUtils';
 import { IconSettings, IconFocus, IconInfo, IconBook } from '../Icons';
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
@@ -23,6 +25,7 @@ const Toggle = ({ id, checked, onChange, label, sub }) => (
 
 const SettingsDrawer = ({ settings, onSave, onClose }) => {
   const { toast } = useToast();
+  const { wallpaper } = useWallpaper();
   const d = settings?.durations || {};
 
   // Timer durations
@@ -39,16 +42,27 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
   const [notifyOnComplete, setNotifyOnComplete]     = useState(settings?.notifyOnComplete ?? true);
   
   // Customization
-  const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? false);
+  const [clockStyle, setClockStyle]                 = useState(settings?.clockStyle || 'digital');
+  const [showSeconds, setShowSeconds]               = useState(settings?.showSeconds ?? true);
+  const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
   const [clockColor, setClockColor]                 = useState(settings?.clockColor || settings?.textColor || '#ffffff');
-  const [subjectColor, setSubjectColor]             = useState(settings?.subjectColor || '#06b6d4');
   const [clockFont, setClockFont]                   = useState(settings?.clockFont || "'Inter', system-ui, sans-serif");
+  
+  // Track original settings for cleanup if cancelled
+  const originalSettingsRef = useRef({
+    clockColor: settings?.clockColor || settings?.textColor || '#ffffff',
+    clockFont: settings?.clockFont || "'Inter', system-ui, sans-serif",
+    autoClockColor: settings?.autoClockColor ?? true,
+    clockStyle: settings?.clockStyle || 'digital',
+    showSeconds: settings?.showSeconds ?? true,
+  });
 
   useEffect(() => {
     if (settings) {
       if (settings.autoClockColor !== undefined) setAutoClockColor(settings.autoClockColor);
+      if (settings.clockStyle) setClockStyle(settings.clockStyle);
+      if (settings.showSeconds !== undefined) setShowSeconds(settings.showSeconds);
       if (settings.clockColor || settings.textColor) setClockColor(settings.clockColor || settings.textColor);
-      if (settings.subjectColor) setSubjectColor(settings.subjectColor);
       if (settings.clockFont) setClockFont(settings.clockFont);
     }
   }, [settings]);
@@ -76,6 +90,50 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
     setTargetsRaw(newTargets);
   };
 
+  // Live Preview Effects
+  useEffect(() => {
+    let cancelled = false;
+
+    const previewColor = async () => {
+      if (autoClockColor && wallpaper) {
+        const contrast = await getWallpaperContrast(wallpaper);
+        if (!cancelled) {
+          document.documentElement.style.setProperty('--clock-text-color', contrast.color);
+          document.documentElement.style.setProperty('--clock-text-shadow', contrast.shadow);
+        }
+      } else {
+        if (!cancelled) {
+          document.documentElement.style.setProperty('--clock-text-color', clockColor);
+          document.documentElement.style.setProperty(
+            '--clock-text-shadow',
+            `0 0 40px color-mix(in srgb, ${clockColor} 25%, transparent), 0 2px 24px rgba(0, 0, 0, 0.75)`
+          );
+        }
+      }
+    };
+
+    previewColor();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clockColor, autoClockColor, wallpaper]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--clock-font-family', clockFont);
+  }, [clockFont]);
+
+  // Cleanup effect: restore original styles if cancelled without saving
+  useEffect(() => {
+    const original = originalSettingsRef.current;
+    return () => {
+      if (!original.autoClockColor) {
+        document.documentElement.style.setProperty('--clock-text-color', original.clockColor);
+      }
+      document.documentElement.style.setProperty('--clock-font-family', original.clockFont);
+    };
+  }, []);
+
   const handleSave = async () => {
     const finalTargets = targetsRaw.map(t => ({
       id: t.id,
@@ -95,10 +153,11 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
       autoStartPomodoros,
       soundEnabled,
       notifyOnComplete,
+      clockStyle,
+      showSeconds,
       autoClockColor,
       clockColor,
       textColor: clockColor,
-      subjectColor,
       clockFont,
       targets: finalTargets,
     });
@@ -133,6 +192,19 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
               />
               <button className="setting-stepper" onClick={() => setPomodoro(Math.min(90, pomodoro + 1))}>+</button>
             </div>
+            {/* Quick preset pills */}
+            <div className="setting-preset-pills">
+              {[25, 45, 50, 60].map(mins => (
+                <button
+                  key={mins}
+                  type="button"
+                  className={`setting-preset-pill ${pomodoro === mins ? 'active' : ''}`}
+                  onClick={() => setPomodoro(mins)}
+                >
+                  {mins}m
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="setting-item">
@@ -147,6 +219,19 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                 onChange={(e) => setShortBreak(Number(e.target.value))}
               />
               <button className="setting-stepper" onClick={() => setShortBreak(Math.min(30, shortBreak + 1))}>+</button>
+            </div>
+            {/* Quick preset pills */}
+            <div className="setting-preset-pills">
+              {[5, 10, 15].map(mins => (
+                <button
+                  key={mins}
+                  type="button"
+                  className={`setting-preset-pill ${shortBreak === mins ? 'active' : ''}`}
+                  onClick={() => setShortBreak(mins)}
+                >
+                  {mins}m
+                </button>
+              ))}
             </div>
           </div>
 
@@ -163,6 +248,19 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
               />
               <button className="setting-stepper" onClick={() => setLongBreak(Math.min(60, longBreak + 1))}>+</button>
             </div>
+            {/* Quick preset pills */}
+            <div className="setting-preset-pills">
+              {[15, 20, 30].map(mins => (
+                <button
+                  key={mins}
+                  type="button"
+                  className={`setting-preset-pill ${longBreak === mins ? 'active' : ''}`}
+                  onClick={() => setLongBreak(mins)}
+                >
+                  {mins}m
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="setting-item">
@@ -177,6 +275,18 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
                 onChange={(e) => setLongBreakInterval(Number(e.target.value))}
               />
               <button className="setting-stepper" onClick={() => setLongBreakInterval(Math.min(10, longBreakInterval + 1))}>+</button>
+            </div>
+            <div className="setting-preset-pills">
+              {[2, 4, 6].map(num => (
+                <button
+                  key={num}
+                  type="button"
+                  className={`setting-preset-pill ${longBreakInterval === num ? 'active' : ''}`}
+                  onClick={() => setLongBreakInterval(num)}
+                >
+                  {num} sess
+                </button>
+              ))}
             </div>
           </div>
 
@@ -269,61 +379,87 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
         <div className="settings-section">
           <div className="settings-section-title"><IconSettings size={14} /> Customization</div>
 
-          <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <label className="setting-label" htmlFor="setting-clock-color" style={{ marginBottom: 0 }}>
-              Clock Color
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input
-                id="setting-clock-color"
-                type="color"
-                value={clockColor}
-                onChange={(e) => {
-                  setClockColor(e.target.value);
-                  if (autoClockColor) setAutoClockColor(false);
-                }}
-                style={{ 
-                  width: '32px', height: '32px', padding: '0', 
-                  border: 'none', borderRadius: '4px', cursor: 'pointer',
-                  background: 'none'
-                }}
-              />
-              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                {clockColor.toUpperCase()}
-              </span>
+          {/* Clock Style (Digital vs Flip Clock) */}
+          <div className="setting-item" style={{ marginBottom: '14px' }}>
+            <label className="setting-label" style={{ marginBottom: '6px' }}>Clock Style</label>
+            <div className="setting-segmented-group">
+              <button
+                type="button"
+                className={`setting-segmented-btn ${clockStyle === 'digital' ? 'active' : ''}`}
+                onClick={() => setClockStyle('digital')}
+              >
+                Digital
+              </button>
+              <button
+                type="button"
+                className={`setting-segmented-btn ${clockStyle === 'flip' ? 'active' : ''}`}
+                onClick={() => setClockStyle('flip')}
+              >
+                Flip Clock
+              </button>
             </div>
           </div>
 
+          {/* Seconds Toggle */}
           <Toggle
-            id="toggle-auto-clock-color"
-            checked={autoClockColor}
-            onChange={setAutoClockColor}
-            label="Auto-adjust Clock Color"
-            sub="Change clock color (black/white) based on wallpaper brightness"
+            id="toggle-show-seconds"
+            checked={showSeconds}
+            onChange={setShowSeconds}
+            label="Show Seconds"
+            sub="Display seconds countdown on the main clock"
           />
 
-          <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <label className="setting-label" htmlFor="setting-subject-color" style={{ marginBottom: 0 }}>
-              Subject Highlight Color
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input
-                id="setting-subject-color"
-                type="color"
-                value={subjectColor}
-                onChange={(e) => setSubjectColor(e.target.value)}
-                style={{ 
-                  width: '32px', height: '32px', padding: '0', 
-                  border: 'none', borderRadius: '4px', cursor: 'pointer',
-                  background: 'none'
-                }}
-              />
-              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                {subjectColor.toUpperCase()}
-              </span>
+          {/* Clock Color Mode (Auto Wallpaper Contrast vs Custom Color) */}
+          <div className="setting-item" style={{ marginTop: '12px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <label className="setting-label" style={{ marginBottom: 0 }}>Clock Color</label>
+              <div className="setting-segmented-group" style={{ width: '150px' }}>
+                <button
+                  type="button"
+                  className={`setting-segmented-btn ${autoClockColor ? 'active' : ''}`}
+                  onClick={() => setAutoClockColor(true)}
+                >
+                  Auto
+                </button>
+                <button
+                  type="button"
+                  className={`setting-segmented-btn ${!autoClockColor ? 'active' : ''}`}
+                  onClick={() => setAutoClockColor(false)}
+                >
+                  Custom
+                </button>
+              </div>
             </div>
+
+            {autoClockColor ? (
+              <div className="auto-color-badge">
+                <span className="auto-color-indicator" />
+                <span>Auto-adjusts contrast and color to match wallpaper</span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Pick Custom Color</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    id="setting-clock-color"
+                    type="color"
+                    value={clockColor}
+                    onChange={(e) => setClockColor(e.target.value)}
+                    style={{ 
+                      width: '32px', height: '32px', padding: '0', 
+                      border: 'none', borderRadius: '4px', cursor: 'pointer',
+                      background: 'none'
+                    }}
+                  />
+                  <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                    {clockColor.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Clock Font */}
           <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <label className="setting-label" htmlFor="setting-clock-font" style={{ marginBottom: 0 }}>
               Clock Font
@@ -352,3 +488,4 @@ const SettingsDrawer = ({ settings, onSave, onClose }) => {
 };
 
 export default SettingsDrawer;
+

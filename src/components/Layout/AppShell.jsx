@@ -6,7 +6,7 @@ import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
 import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones } from '../Icons';
-import { getBrightness } from '../../utils/imageUtils';
+import { getWallpaperContrast } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import LofiPlayer from '../Audio/LofiPlayer';
 
@@ -30,40 +30,48 @@ const AppShell = () => {
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
 
   useEffect(() => {
+    let cancelled = false;
+
     const applyClockColor = async () => {
-      const autoColor = settings?.autoClockColor ?? false;
+      const autoColor = settings?.autoClockColor ?? true;
       const customColor = settings?.clockColor || settings?.textColor || '#ffffff';
-      let finalColor = customColor;
 
       if (autoColor && wallpaper) {
-        const brightness = await getBrightness(wallpaper);
-        if (brightness !== null) {
-          // If average brightness is > 160 (light), use black text
-          finalColor = brightness > 160 ? '#000000' : '#ffffff';
-        } else {
-          finalColor = customColor;
+        const contrast = await getWallpaperContrast(wallpaper);
+        if (!cancelled) {
+          document.documentElement.style.setProperty('--clock-text-color', contrast.color);
+          document.documentElement.style.setProperty('--clock-text-shadow', contrast.shadow);
+          document.documentElement.style.setProperty('--clock-text-shadow-active', contrast.shadow);
+          document.documentElement.style.setProperty('--clock-is-light', contrast.isLight ? '1' : '0');
         }
       } else {
-        finalColor = customColor;
+        if (!cancelled) {
+          document.documentElement.style.setProperty('--clock-text-color', customColor);
+          document.documentElement.style.setProperty(
+            '--clock-text-shadow',
+            `0 0 40px color-mix(in srgb, ${customColor} 25%, transparent), 0 2px 24px rgba(0, 0, 0, 0.75)`
+          );
+          document.documentElement.style.setProperty(
+            '--clock-text-shadow-active',
+            `0 0 60px color-mix(in srgb, ${customColor} 35%, transparent), 0 2px 30px rgba(0, 0, 0, 0.85)`
+          );
+          document.documentElement.style.setProperty('--clock-is-light', '0');
+        }
       }
-
-      document.documentElement.style.setProperty('--clock-text-color', finalColor);
     };
 
     applyClockColor();
-
-    if (settings?.subjectColor) {
-      document.documentElement.style.setProperty('--subject-color', settings.subjectColor);
-    } else {
-      document.documentElement.style.setProperty('--subject-color', 'var(--accent)');
-    }
 
     if (settings?.clockFont) {
       document.documentElement.style.setProperty('--clock-font-family', settings.clockFont);
     } else {
       document.documentElement.style.setProperty('--clock-font-family', "'Inter', system-ui, sans-serif");
     }
-  }, [settings?.clockColor, settings?.textColor, settings?.autoClockColor, settings?.subjectColor, settings?.clockFont, wallpaper]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [settings?.clockColor, settings?.textColor, settings?.autoClockColor, settings?.clockFont, wallpaper]);
 
   const [activeTab, setActiveTab] = useState('timer');
   const [showUserMenu, setShowUserMenu] = useState(false);

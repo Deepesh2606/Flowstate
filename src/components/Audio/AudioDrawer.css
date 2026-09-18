@@ -509,7 +509,7 @@
 /* ── Mini Player Floating Pill ── */
 .audio-mini-pill {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(var(--tab-height) + 16px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 90;

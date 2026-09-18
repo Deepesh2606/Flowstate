@@ -63,22 +63,26 @@ const WallpaperPicker = () => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal" role="dialog" aria-label="Wallpaper Picker">
-        <div className="modal-header">
-          <h2 className="modal-title">Choose Wallpaper</h2>
+    <>
+      <div className="drawer-overlay" onClick={() => setShowPicker(false)} aria-hidden="true" />
+      <aside className="drawer wallpaper-drawer" role="dialog" aria-label="Wallpaper Gallery" aria-modal="true">
+        <div className="drawer-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <IconImage size={20} color="var(--accent)" />
+            <h2 className="drawer-title" style={{ fontSize: '1.25rem' }}>Wallpapers</h2>
+          </div>
           <button
             className="drawer-close"
             onClick={() => setShowPicker(false)}
-            aria-label="Close wallpaper picker"
+            aria-label="Close wallpaper gallery"
           >
             ✕
           </button>
         </div>
 
-        <div className="modal-tabs" role="tablist">
+        <div className="wallpaper-nav-tabs" role="tablist">
           <button
-            className={`modal-tab ${activeTab === 'presets' ? 'active' : ''}`}
+            className={`wallpaper-nav-tab ${activeTab === 'presets' ? 'active' : ''}`}
             onClick={() => setActiveTab('presets')}
             role="tab"
             aria-selected={activeTab === 'presets'}
@@ -87,7 +91,7 @@ const WallpaperPicker = () => {
             Presets
           </button>
           <button
-            className={`modal-tab ${activeTab === 'upload' ? 'active' : ''}`}
+            className={`wallpaper-nav-tab ${activeTab === 'upload' ? 'active' : ''}`}
             onClick={() => setActiveTab('upload')}
             role="tab"
             aria-selected={activeTab === 'upload'}
@@ -97,9 +101,9 @@ const WallpaperPicker = () => {
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="wallpaper-drawer-body">
           {activeTab === 'presets' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {customWallpapers && customWallpapers.length > 0 && (
                 <div>
                   <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>My Uploads</h3>
@@ -143,7 +147,7 @@ const WallpaperPicker = () => {
 
               {globalCurated && globalCurated.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Curated</h3>
+                  <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Curated Presets</h3>
                   <div className="wallpaper-grid">
                     {globalCurated.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => (
                     <div key={wp.id} style={{ position: 'relative' }}>
@@ -233,8 +237,8 @@ const WallpaperPicker = () => {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </aside>
+    </>
   );
 };
 
