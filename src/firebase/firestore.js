@@ -40,10 +40,10 @@ export const subscribeSettings = (uid, callback) => {
 export const subscribeGlobalCurated = (callback) => {
   const ref = doc(db, 'appData', 'wallpapers');
   return onSnapshot(ref, (snap) => {
-    if (snap.exists() && snap.data().curated) {
-      callback(snap.data().curated);
+    if (snap.exists()) {
+      callback(snap.data().curated || null, snap.data().defaultWallpaper || null);
     } else {
-      callback(null);
+      callback(null, null);
     }
   });
 };
@@ -71,6 +71,11 @@ export const removeGlobalCurated = async (presetId) => {
 export const seedGlobalCurated = async (presets) => {
   const ref = doc(db, 'appData', 'wallpapers');
   await setDoc(ref, { curated: presets }, { merge: true });
+};
+
+export const setGlobalDefault = async (url) => {
+  const ref = doc(db, 'appData', 'wallpapers');
+  await setDoc(ref, { defaultWallpaper: url }, { merge: true });
 };
 
 // ─── Sessions ─────────────────────────────────────────────────────────────────

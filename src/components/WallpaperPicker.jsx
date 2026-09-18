@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useWallpaper } from '../contexts/WallpaperContext';
 import { useToast } from './Toast/ToastProvider';
 import { uploadWallpaper } from '../cloudinary';
-import { IconImage, IconCheck, IconTrash } from './Icons';
+import { IconImage, IconCheck, IconTrash, IconStar } from './Icons';
 
 const preloadImage = (url) => {
   return new Promise((resolve) => {
@@ -28,8 +28,10 @@ const WallpaperPicker = () => {
     hiddenCurated,
     hideCuratedWallpaper,
     globalCurated,
+    globalDefault,
     uploadToGlobalCurated,
-    deleteGlobalCurated
+    deleteGlobalCurated,
+    setAsGlobalDefault
   } = useWallpaper();
   const { currentUser } = useAuth();
   const { toast } = useToast();
@@ -263,20 +265,39 @@ const WallpaperPicker = () => {
                         )}
                       </button>
                       {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteGlobalCurated(wp.id); }}
-                          style={{
-                            position: 'absolute', top: '6px', right: '6px',
-                            background: 'rgba(0,0,0,0.65)', color: '#ff5050',
-                            borderRadius: '50%', width: '26px', height: '26px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            border: '1px solid rgba(255,255,255,0.15)', zIndex: 10
-                          }}
-                          aria-label="Delete curated preset completely"
-                          title="Delete preset for everyone"
-                        >
-                          <IconTrash size={14} />
-                        </button>
+                        <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '6px', zIndex: 10 }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAsGlobalDefault(wp.url);
+                              toast('Set as global default', 'success');
+                            }}
+                            style={{
+                              background: globalDefault === wp.url ? 'var(--accent)' : 'rgba(0,0,0,0.65)',
+                              color: globalDefault === wp.url ? '#000' : '#fff',
+                              borderRadius: '50%', width: '26px', height: '26px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              border: '1px solid rgba(255,255,255,0.15)'
+                            }}
+                            aria-label="Set as global default"
+                            title="Set as global default for new users"
+                          >
+                            <IconStar size={14} fill={globalDefault === wp.url ? 'currentColor' : 'none'} />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteGlobalCurated(wp.id); }}
+                            style={{
+                              background: 'rgba(0,0,0,0.65)', color: '#ff5050',
+                              borderRadius: '50%', width: '26px', height: '26px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              border: '1px solid rgba(255,255,255,0.15)'
+                            }}
+                            aria-label="Delete curated preset completely"
+                            title="Delete preset for everyone"
+                          >
+                            <IconTrash size={14} />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}

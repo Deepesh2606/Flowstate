@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated, removeGlobalCurated } from '../firebase/firestore';
+import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated, removeGlobalCurated, setGlobalDefault } from '../firebase/firestore';
 
 const WallpaperContext = createContext(null);
 
@@ -27,23 +27,30 @@ export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [wallpaper, setWallpaperState] = useState(() => {
     try {
-      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || null;
+      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80"; // Replace this URL with your custom image URL
     } catch {
-      return null;
+      return "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80"; // Replace this URL with your custom image URL
     }
   });
   const [customWallpapers, setCustomWallpapers] = useState([]);
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
   const [globalCurated, setGlobalCurated] = useState(DEFAULT_PRESET_WALLPAPERS);
+  const [globalDefault, setGlobalDefaultState] = useState(null);
 
   // Subscribe to global curated wallpapers immediately
   useEffect(() => {
-    const unsubGlobal = subscribeGlobalCurated((curatedList) => {
+    const unsubGlobal = subscribeGlobalCurated((curatedList, defaultWallpaperUrl) => {
       if (curatedList && curatedList.length > 0) {
         setGlobalCurated(curatedList);
       } else {
         seedGlobalCurated(DEFAULT_PRESET_WALLPAPERS);
+      }
+      if (defaultWallpaperUrl) {
+        setGlobalDefaultState(defaultWallpaperUrl);
+        if (!localStorage.getItem(WALLPAPER_STORAGE_KEY)) {
+          setWallpaperState(defaultWallpaperUrl);
+        }
       }
     });
     return () => unsubGlobal();
@@ -148,6 +155,15 @@ export const WallpaperProvider = ({ children }) => {
     [currentUser]
   );
 
+  const setAsGlobalDefault = useCallback(
+    async (url) => {
+      if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+        await setGlobalDefault(url);
+      }
+    },
+    [currentUser]
+  );
+
   return (
     <WallpaperContext.Provider 
       value={{ 
@@ -161,8 +177,10 @@ export const WallpaperProvider = ({ children }) => {
         showPicker,
         setShowPicker,
         globalCurated,
+        globalDefault,
         uploadToGlobalCurated,
-        deleteGlobalCurated
+        deleteGlobalCurated,
+        setAsGlobalDefault
       }}
     >
       {children}
