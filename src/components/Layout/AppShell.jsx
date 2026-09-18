@@ -34,6 +34,7 @@ const AppShell = () => {
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip
 
   useEffect(() => {
     const handleBeforeInstall = (e) => {
@@ -43,6 +44,43 @@ const AppShell = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
+
+  // Request notification permission once (non-intrusively)
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      // Defer request by 5s so it doesn't interrupt initial load
+      const t = setTimeout(() => {
+        Notification.requestPermission().catch(() => {});
+      }, 5000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' ||
+                      document.activeElement?.isContentEditable;
+      if (isInput) return;
+
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        timerActionsRef.current?.togglePlay?.();
+      } else if (e.key === 'r' || e.key === 'R') {
+        timerActionsRef.current?.reset?.();
+      } else if (e.key === 's' || e.key === 'S') {
+        timerActionsRef.current?.skip?.();
+      } else if (e.key === 'Escape') {
+        setShowSettings(false);
+        setShowTasks(false);
+        setShowAudioDrawer(false);
+        setShowUserMenu(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [setShowAudioDrawer]);
 
   useEffect(() => {
     const currentTheme = settings?.theme || 'dark';
@@ -110,19 +148,25 @@ const AppShell = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleTabChange = (tab) => {
+  const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
+
+  const handleTabChange = (tab, subMode = null) => {
     setActiveTab(tab);
+    if (subMode) setPendingSwitchMode(subMode);
   };
 
   const renderTab = () => {
     switch (activeTab) {
       case 'timer':
         return (
-          <TimerTab
+        <TimerTab
             settings={settings}
             onOpenSettings={() => setShowSettings(true)}
             hasWallpaper={!!wallpaper}
             onTabChange={handleTabChange}
+            initialMode={pendingSwitchMode}
+            onInitialModeConsumed={() => setPendingSwitchMode(null)}
+            timerActionsRef={timerActionsRef}
           />
         );
       case 'clock':

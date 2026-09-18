@@ -7,7 +7,10 @@ const MODES = [
   { id: 'stopwatch', label: 'STOPWATCH' },
 ];
 
-const ModePills = ({ mode, onSwitch, onSelectClock }) => {
+// Clock pill is intentionally NOT shown in timer mode pills.
+// It appears alongside Stopwatch in the ClockTab navigation instead.
+
+const ModePills = ({ mode, onSwitch }) => {
   return (
     <div className="liquid-pills-wrapper" role="group" aria-label="Timer mode">
       <div className="liquid-pill-track">
@@ -26,20 +29,6 @@ const ModePills = ({ mode, onSwitch, onSelectClock }) => {
             </button>
           );
         })}
-        {onSelectClock && (
-          <button
-            type="button"
-            id="mode-clock"
-            className="liquid-pill-btn"
-            onClick={onSelectClock}
-            title="Switch to Live Real-Time Clock"
-          >
-            <span className="liquid-pill-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-              <span className="live-pulse-dot" style={{ width: '6px', height: '6px' }} />
-              CLOCK
-            </span>
-          </button>
-        )}
       </div>
     </div>
   );

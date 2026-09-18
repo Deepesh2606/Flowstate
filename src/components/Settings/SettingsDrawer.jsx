@@ -3,6 +3,31 @@ import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import { IconSettings, IconFocus, IconInfo, IconBook, IconMac, IconSun, IconMoon } from '../Icons';
+import { playChimeStyle } from '../../hooks/useTimer';
+
+// ─── App Themes ───────────────────────────────────────────────────────────────
+const APP_THEMES = [
+  { id: 'midnight', label: 'Midnight', accent: '#06b6d4', orb: 'rgba(6,182,212,0.18)', grad: '#0f172a' },
+  { id: 'ocean',    label: 'Ocean',    accent: '#38bdf8', orb: 'rgba(56,189,248,0.18)', grad: '#0c1a2e' },
+  { id: 'forest',   label: 'Forest',   accent: '#34d399', orb: 'rgba(52,211,153,0.18)', grad: '#0a1f15' },
+  { id: 'sunset',   label: 'Sunset',   accent: '#fb923c', orb: 'rgba(251,146,60,0.18)',  grad: '#1f0f08' },
+  { id: 'rose',     label: 'Rose',     accent: '#f472b6', orb: 'rgba(244,114,182,0.18)', grad: '#1f0a14' },
+  { id: 'mono',     label: 'Mono',     accent: '#94a3b8', orb: 'rgba(148,163,184,0.12)', grad: '#0f1117' },
+];
+
+const CHIME_OPTIONS = [
+  { id: 'classic', label: 'Classic', icon: '🎵' },
+  { id: 'bell',    label: 'Bell',    icon: '🔔' },
+  { id: 'bowl',    label: 'Bowl',    icon: '🎶' },
+  { id: 'ping',    label: 'Ping',    icon: '✨' },
+  { id: 'soft',    label: 'Soft',    icon: '🌙' },
+];
+
+const DEFAULT_PRESETS = [
+  { name: 'Deep Work', pomodoro: 50, shortBreak: 10, longBreak: 30 },
+  { name: 'Pomodoro',  pomodoro: 25, shortBreak: 5,  longBreak: 15 },
+  { name: 'Sprint',    pomodoro: 15, shortBreak: 3,  longBreak: 10 },
+];
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
@@ -49,6 +74,10 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   const [clockColor, setClockColor]                 = useState(settings?.clockColor || settings?.textColor || '#ffffff');
   const [clockFont, setClockFont]                   = useState(settings?.clockFont || "'Inter', system-ui, sans-serif");
   const [theme, setTheme]                           = useState(settings?.theme || 'dark');
+  const [appTheme, setAppTheme]                     = useState(settings?.appTheme || 'midnight');
+  const [chimeStyle, setChimeStyle]                 = useState(settings?.chimeStyle || 'classic');
+  const [showQuotes, setShowQuotes]                 = useState(settings?.showQuotes ?? true);
+  const [presets, setPresets]                       = useState(settings?.presets || DEFAULT_PRESETS);
   
   // Track original settings for cleanup if cancelled
   const originalSettingsRef = useRef({
@@ -69,6 +98,10 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       if (settings.clockColor || settings.textColor) setClockColor(settings.clockColor || settings.textColor);
       if (settings.clockFont) setClockFont(settings.clockFont);
       if (settings.theme) setTheme(settings.theme);
+      if (settings.appTheme) setAppTheme(settings.appTheme);
+      if (settings.chimeStyle) setChimeStyle(settings.chimeStyle);
+      if (settings.showQuotes !== undefined) setShowQuotes(settings.showQuotes);
+      if (settings.presets) setPresets(settings.presets);
     }
   }, [settings]);
 
@@ -217,10 +250,48 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       textColor: clockColor,
       clockFont,
       theme,
+      appTheme,
+      chimeStyle,
+      showQuotes,
+      presets,
       targets: finalTargets,
     });
     toast('Settings updated', 'success', 2200);
     onClose();
+  };
+
+  // Apply app theme CSS vars immediately on selection
+  const applyAppTheme = (themeId) => {
+    const t = APP_THEMES.find(x => x.id === themeId) || APP_THEMES[0];
+    document.documentElement.style.setProperty('--accent', t.accent);
+    document.documentElement.style.setProperty('--accent-dim', t.accent + '22');
+    document.documentElement.style.setProperty('--theme-orb-color', t.orb);
+  };
+
+  const handleAppThemeChange = (themeId) => {
+    setAppTheme(themeId);
+    applyAppTheme(themeId);
+    onSave({ appTheme: themeId });
+  };
+
+  const handleChimeChange = (id) => {
+    setChimeStyle(id);
+    playChimeStyle(id, !soundEnabled);
+    onSave({ chimeStyle: id });
+  };
+
+  const handlePresetApply = (preset) => {
+    setPomodoro(preset.pomodoro);
+    setShortBreak(preset.shortBreak);
+    setLongBreak(preset.longBreak);
+    applyRealtime({
+      durations: {
+        pomodoro: preset.pomodoro * 60,
+        shortBreak: preset.shortBreak * 60,
+        longBreak: preset.longBreak * 60,
+      },
+    });
+    toast(`Preset "${preset.name}" applied`, 'success', 2000);
   };
 
   return (
@@ -443,6 +514,80 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
             onChange={(val) => handleToggleChange('notifyOnComplete', setNotifyOnComplete, val)}
             label="Toast Notifications"
             sub="Show alerts for session events"
+          />
+        </div>
+
+        {/* ── Theme Engine ── */}
+        <div className="settings-section">
+          <div className="settings-section-title"><IconSettings size={14} /> App Theme</div>
+          <div className="theme-swatch-row">
+            {APP_THEMES.map(t => (
+              <button
+                key={t.id}
+                type="button"
+                className={`theme-swatch ${appTheme === t.id ? 'active' : ''}`}
+                style={{ '--swatch-color': t.accent }}
+                onClick={() => handleAppThemeChange(t.id)}
+                title={t.label}
+              >
+                <span className="theme-swatch-dot" style={{ background: t.accent }} />
+                <span className="theme-swatch-label">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Timer Presets ── */}
+        <div className="settings-section">
+          <div className="settings-section-title"><IconFocus size={14} /> Timer Presets</div>
+          <div className="presets-grid">
+            {presets.map((preset, i) => (
+              <div key={i} className="preset-card">
+                <div className="preset-name">{preset.name}</div>
+                <div className="preset-times">{preset.pomodoro}m / {preset.shortBreak}m / {preset.longBreak}m</div>
+                <button
+                  type="button"
+                  className="preset-apply-btn"
+                  onClick={() => handlePresetApply(preset)}
+                >
+                  Apply
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Chime Style ── */}
+        <div className="settings-section">
+          <div className="settings-section-title"><IconInfo size={14} /> Timer Chime</div>
+          <div className="chime-options-row">
+            {CHIME_OPTIONS.map(c => (
+              <button
+                key={c.id}
+                type="button"
+                className={`chime-option-btn ${chimeStyle === c.id ? 'active' : ''}`}
+                onClick={() => handleChimeChange(c.id)}
+                title={`Preview ${c.label} chime`}
+              >
+                <span>{c.icon}</span>
+                <span>{c.label}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
+            Click to preview. Plays when your session completes.
+          </div>
+        </div>
+
+        {/* ── Motivational Quotes ── */}
+        <div className="settings-section">
+          <div className="settings-section-title"><IconInfo size={14} /> Motivation</div>
+          <Toggle
+            id="toggle-show-quotes"
+            checked={showQuotes}
+            onChange={(val) => { setShowQuotes(val); applyRealtime({ showQuotes: val }); }}
+            label="Motivational Quotes"
+            sub="Show an inspiring quote before each focus session"
           />
         </div>
 

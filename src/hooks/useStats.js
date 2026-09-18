@@ -108,6 +108,70 @@ export const useStats = () => {
 
   const { current: currentStreak, longest: longestStreak } = calculateStreaks();
 
+  // Monthly data (last 90 days for heatmap)
+  const monthlyData = (() => {
+    const result = {};
+    for (let i = 89; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      result[key] = 0;
+    }
+    sessions.forEach(s => {
+      if (s.date && result[s.date] !== undefined) {
+        result[s.date] += s.duration || 0;
+      }
+    });
+    return result; // { 'YYYY-MM-DD': seconds }
+  })();
+
+  // Best time of day (which 2-hour window has the most focus time)
+  const bestTimeOfDay = (() => {
+    const buckets = new Array(12).fill(0); // 12 two-hour buckets
+    sessions.forEach(s => {
+      if (!s.timestamp) return;
+      const hour = new Date(s.timestamp).getHours();
+      const bucket = Math.floor(hour / 2);
+      buckets[bucket] += s.duration || 0;
+    });
+    const maxIdx = buckets.indexOf(Math.max(...buckets));
+    if (buckets[maxIdx] === 0) return null;
+    const startH = maxIdx * 2;
+    const endH = startH + 2;
+    const fmt = (h) => {
+      const ampm = h >= 12 ? 'pm' : 'am';
+      return `${h % 12 === 0 ? 12 : h % 12}${ampm}`;
+    };
+    return { label: `${fmt(startH)}–${fmt(endH)}`, totalSeconds: buckets[maxIdx] };
+  })();
+
+  // Weekly subject trend (last 4 weeks, top subjects)
+  const weeklySubjectTrend = (() => {
+    const weeks = [0, 1, 2, 3].map(w => {
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - (w * 7 + 6));
+      const weekEnd = new Date();
+      weekEnd.setDate(weekEnd.getDate() - (w * 7));
+      return { start: weekStart.toISOString().split('T')[0], end: weekEnd.toISOString().split('T')[0], label: w === 0 ? 'This week' : `${w}w ago` };
+    }).reverse();
+
+    const subjectSet = new Set(sessions.slice(0, 100).map(s => s.subject).filter(Boolean));
+    const topSubjects = [...subjectSet].slice(0, 3);
+
+    return topSubjects.map(subj => ({
+      subject: subj,
+      data: weeks.map(w => ({
+        label: w.label,
+        total: sessions
+          .filter(s => s.subject === subj && s.date >= w.start && s.date <= w.end)
+          .reduce((acc, s) => acc + (s.duration || 0), 0),
+      })),
+    }));
+  })();
+
+  // All-time total focus hours
+  const totalFocusTime = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
+
   return {
     sessions,
     loading,
@@ -117,5 +181,9 @@ export const useStats = () => {
     currentStreak,
     longestStreak,
     totalSessions: sessions.length,
+    monthlyData,
+    bestTimeOfDay,
+    weeklySubjectTrend,
+    totalFocusTime,
   };
 };

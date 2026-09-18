@@ -182,17 +182,17 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => 
     <div className="live-clock-tab-wrapper">
       {!hasWallpaper && <div className="liquid-orb" />}
 
-      {/* Top Header Mode Pills for Live Clock */}
+      {/* Top Header Mode Pills for Live Clock — Stopwatch | Clock */}
       <div className="liquid-pills-wrapper" role="group" aria-label="Clock mode navigation">
         <div className="liquid-pill-track">
           {onTabChange && (
             <button
               type="button"
               className="liquid-pill-btn"
-              onClick={() => onTabChange('timer')}
-              title="Switch to Focus & Study Timer"
+              onClick={() => onTabChange('timer', 'stopwatch')}
+              title="Switch to Stopwatch"
             >
-              <span className="liquid-pill-label">TIMER</span>
+              <span className="liquid-pill-label">STOPWATCH</span>
             </button>
           )}
           <button
@@ -203,7 +203,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => 
             <span className="liquid-pill-glaze" aria-hidden="true" />
             <span className="liquid-pill-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span className="live-pulse-dot" aria-hidden="true" />
-              LIVE CLOCK
+              CLOCK
             </span>
           </button>
         </div>
@@ -246,33 +246,15 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => 
         </div>
       </div>
 
-      {/* Date, Day, and Year Section Below Flip Clock */}
+      {/* Minimal Date Strip */}
       <div className="live-date-capsule-container">
-        <div className="live-date-capsule">
-          {/* Day of Week Badge */}
-          <div className="live-day-badge">
-            <span className="live-status-pulse" />
-            <span className="live-day-text">{dayName.toUpperCase()}</span>
-          </div>
-
-          <div className="live-date-divider" />
-
-          {/* Full Date & Year */}
-          <div className="live-full-date-text">
-            <span className="live-date-month-day">{monthName} {dayOfMonth}</span>
-            <span className="live-date-comma">,</span>
-            <span className="live-date-year">{year}</span>
-          </div>
-
-          {/* Timezone Badge */}
-          {timeZoneName && (
-            <>
-              <div className="live-date-divider" />
-              <div className="live-tz-badge" title="Local Timezone">
-                {timeZoneName}
-              </div>
-            </>
-          )}
+        <div className="live-date-capsule live-date-capsule--minimal">
+          <span className="live-status-pulse" />
+          <span className="live-day-text">{dayName}</span>
+          <span className="live-date-sep">·</span>
+          <span className="live-full-date-text">
+            {time.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+          </span>
         </div>
       </div>
 
