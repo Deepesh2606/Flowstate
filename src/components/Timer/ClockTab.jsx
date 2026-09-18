@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FlipCard from './FlipCard';
-import { IconMaximize, IconMinimize, IconPip } from '../Icons';
+import { IconMaximize, IconMinimize, IconPip, IconSettings } from '../Icons';
 
-const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => {
+const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpenSettings }) => {
   const [time, setTime] = useState(() => new Date());
   const [is12Hour, setIs12Hour] = useState(() => {
     return (settings?.clockFormat || '12h') === '12h';
@@ -12,8 +12,29 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => 
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPipActive, setIsPipActive] = useState(false);
+  const [showEditColor, setShowEditColor] = useState(false);
   const pipVideoRef = useRef(null);
   const pipCanvasRef = useRef(null);
+  const hoverTimerRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      setShowEditColor(true);
+    }, 4000);
+  };
+
+  const handleMouseLeave = () => {
+    setShowEditColor(false);
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+  };
+
+  // Cleanup timeout
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
 
   // Sync with settings prop changes
   useEffect(() => {
@@ -210,7 +231,12 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => 
       </div>
 
       {/* Main 3D Flip Clock Area */}
-      <div className="flocus-timer-wrapper" style={{ position: 'relative' }}>
+      <div 
+        className="flocus-timer-wrapper" 
+        style={{ position: 'relative' }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <div
           className="flip-clock-container live-flip-clock-container active"
           aria-live="polite"
@@ -243,6 +269,37 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange }) => 
               />
             </div>
           )}
+        </div>
+
+        {/* Hover Edit Color Button */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-48px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          opacity: showEditColor ? 1 : 0,
+          pointerEvents: showEditColor ? 'auto' : 'none',
+          transition: 'opacity 0.4s ease-in-out',
+          zIndex: 10
+        }}>
+          <button
+            type="button"
+            className="flocus-ctrl-btn"
+            onClick={onOpenSettings}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 16px',
+              fontSize: '12px',
+              borderRadius: '20px',
+              fontWeight: 600,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            }}
+          >
+            <IconSettings size={14} />
+            Edit Color
+          </button>
         </div>
       </div>
 

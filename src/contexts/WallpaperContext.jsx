@@ -59,11 +59,27 @@ export const WallpaperProvider = ({ children }) => {
   // Subscribe to current user settings
   useEffect(() => {
     if (!currentUser) return;
+    
+    // Optimistically load from localStorage to prevent delayed UI changes on login
+    try {
+      const cachedWallpaper = localStorage.getItem(`wallpaper_${currentUser.uid}`);
+      if (cachedWallpaper) setWallpaperState(cachedWallpaper);
+
+      const cachedCustom = localStorage.getItem(`custom_wallpapers_${currentUser.uid}`);
+      if (cachedCustom) setCustomWallpapers(JSON.parse(cachedCustom));
+
+      const cachedHidden = localStorage.getItem(`hidden_curated_${currentUser.uid}`);
+      if (cachedHidden) setHiddenCurated(JSON.parse(cachedHidden));
+    } catch (err) {
+      // ignore parse errors
+    }
+
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
       if (settings?.wallpaper) {
         setWallpaperState(settings.wallpaper);
         try {
           localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);
+          localStorage.setItem(`wallpaper_${currentUser.uid}`, settings.wallpaper);
         } catch {
           // ignore
         }
@@ -72,9 +88,15 @@ export const WallpaperProvider = ({ children }) => {
       }
       if (settings?.customWallpapers) {
         setCustomWallpapers(settings.customWallpapers);
+        try {
+          localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(settings.customWallpapers));
+        } catch {}
       }
       if (settings?.hiddenCurated) {
         setHiddenCurated(settings.hiddenCurated);
+        try {
+          localStorage.setItem(`hidden_curated_${currentUser.uid}`, JSON.stringify(settings.hiddenCurated));
+        } catch {}
       }
     });
 
@@ -86,8 +108,13 @@ export const WallpaperProvider = ({ children }) => {
       setWallpaperState(url);
       setShowPicker(false);
       try {
-        if (url) localStorage.setItem(WALLPAPER_STORAGE_KEY, url);
-        else localStorage.removeItem(WALLPAPER_STORAGE_KEY);
+        if (url) {
+          localStorage.setItem(WALLPAPER_STORAGE_KEY, url);
+          if (currentUser) localStorage.setItem(`wallpaper_${currentUser.uid}`, url);
+        } else {
+          localStorage.removeItem(WALLPAPER_STORAGE_KEY);
+          if (currentUser) localStorage.removeItem(`wallpaper_${currentUser.uid}`);
+        }
       } catch {
         // ignore
       }
@@ -103,6 +130,9 @@ export const WallpaperProvider = ({ children }) => {
       const updated = [url, ...customWallpapers];
       setCustomWallpapers(updated);
       if (currentUser) {
+        try {
+          localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(updated));
+        } catch {}
         await saveSettings(currentUser.uid, { customWallpapers: updated });
       }
     },
@@ -114,6 +144,9 @@ export const WallpaperProvider = ({ children }) => {
       const updated = customWallpapers.filter((w) => w !== url);
       setCustomWallpapers(updated);
       if (currentUser) {
+        try {
+          localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(updated));
+        } catch {}
         await saveSettings(currentUser.uid, { customWallpapers: updated });
       }
       // If the removed wallpaper is the active one, revert to default
@@ -129,6 +162,9 @@ export const WallpaperProvider = ({ children }) => {
       const updated = [...hiddenCurated, id];
       setHiddenCurated(updated);
       if (currentUser) {
+        try {
+          localStorage.setItem(`hidden_curated_${currentUser.uid}`, JSON.stringify(updated));
+        } catch {}
         await saveSettings(currentUser.uid, { hiddenCurated: updated });
       }
     },

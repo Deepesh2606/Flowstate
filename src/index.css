@@ -4934,27 +4934,17 @@ input {
   color: #06101e;
 }
 
-/* ─── Responsive: hide right side nav on very small screens ─────────────────── */
-@media (max-width: 480px) {
-  .right-side-nav {
-    right: 8px;
-    padding: 8px 4px;
-    border-radius: 16px;
-  }
-  .rsn-pill,
-  .rsn-clock-btn {
-    padding: 7px 6px;
-    min-width: 46px;
-  }
-  .rsn-pill-label,
-  .rsn-clock-label {
-    font-size: 8px;
-    letter-spacing: 0.05em;
-  }
-}
-
-@media (max-width: 360px) {
+@media (max-width: 768px) {
   .right-side-nav {
     display: none;
   }
+}
+
+/* Auto contrast for stats text against varied backgrounds */
+.stat-card-label, .stat-card-value, .stat-card-sub,
+.goal-ring-title, .goal-ring-sub,
+.streak-number, .streak-label, .streak-flame,
+.best-time-label, .best-time-value, .best-time-icon {
+  mix-blend-mode: difference;
+  color: #fff;
 }
