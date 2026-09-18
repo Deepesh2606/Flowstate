@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { WallpaperProvider } from './contexts/WallpaperContext';
 import { ToastProvider } from './components/Toast/ToastProvider';
@@ -38,6 +39,7 @@ const App = () => (
   <AuthProvider>
     <ToastProvider>
       <AppInner />
+      <Analytics />
     </ToastProvider>
   </AuthProvider>
 );
