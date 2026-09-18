@@ -1155,10 +1155,8 @@ input {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: fadeIn 0.14s ease-out forwards;
+  background: rgba(0, 0, 0, 0.65);
+  animation: fadeIn 0.25s ease-out forwards;
   will-change: opacity;
 }
 
@@ -1175,23 +1173,24 @@ input {
   width: 320px;
   max-width: 90vw;
   z-index: 101;
-  background: rgba(12, 12, 22, 0.85);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  background: rgba(12, 12, 22, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-left: 1px solid var(--glass-border);
   padding: 24px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  animation: slideInRight 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform;
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
   transform: translateZ(0);
+  box-shadow: -10px 0 40px rgba(0,0,0,0.5);
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 .drawer-header {
@@ -1400,9 +1399,9 @@ input {
 .wallpaper-drawer {
   width: 380px;
   max-width: 92vw;
-  background: rgba(14, 14, 24, 0.90);
-  backdrop-filter: blur(36px);
-  -webkit-backdrop-filter: blur(36px);
+  background: rgba(14, 14, 24, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-left: 1px solid var(--glass-border);
   padding: 24px 20px;
   display: flex;
@@ -3292,7 +3291,7 @@ input {
 }
 
 [data-theme="light"] .drawer-overlay {
-  background: rgba(15, 23, 42, 0.25);
+  background: rgba(15, 23, 42, 0.4);
 }
 
 [data-theme="light"] .drawer-theme-toggle {
