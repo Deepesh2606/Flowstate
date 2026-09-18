@@ -5,7 +5,17 @@ import { useToast } from './Toast/ToastProvider';
 import { uploadWallpaper } from '../cloudinary';
 import { IconImage, IconCheck, IconTrash } from './Icons';
 
-// Presets are now fetched from Firebase via globalCurated
+const preloadImage = (url) => {
+  return new Promise((resolve) => {
+    if (!url) return resolve(false);
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+    // Timeout safeguard (max 3.5s) so it never blocks indefinitely on slow networks
+    setTimeout(() => resolve(false), 3500);
+  });
+};
 
 const WallpaperPicker = () => {
   const { 
@@ -26,6 +36,7 @@ const WallpaperPicker = () => {
   const [activeTab, setActiveTab] = useState('presets');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('Uploading image...');
   const [previewUrl, setPreviewUrl] = useState(null);
   const [justUploaded, setJustUploaded] = useState(false);
   const [uploadAsCurated, setUploadAsCurated] = useState(false);
@@ -33,6 +44,8 @@ const WallpaperPicker = () => {
   const fileRef = useRef(null);
 
   const handlePresetSelect = async (url) => {
+    // Preload into browser cache first so switching is instant
+    await preloadImage(url);
     await setWallpaper(url);
   };
 
@@ -52,13 +65,23 @@ const WallpaperPicker = () => {
     setPreviewUrl(preview);
     setUploading(true);
     setUploadProgress(10);
+    setUploadStatus('Optimizing & uploading image...');
     setUploadError('');
 
     try {
       const url = await uploadWallpaper(file, (percent) => {
-        setUploadProgress(percent);
+        // Map 0-100% upload network transfer to 10-85% component fill
+        const scaled = Math.round(10 + (percent * 0.75));
+        setUploadProgress(Math.min(85, scaled));
       });
+
+      // Once uploaded, preload and cache in browser memory to eliminate blank delay
+      setUploadProgress(92);
+      setUploadStatus('Caching & applying wallpaper...');
+      await preloadImage(url);
+
       setUploadProgress(100);
+      setUploadStatus('Wallpaper applied!');
 
       if (uploadAsCurated) {
         await uploadToGlobalCurated(url);
@@ -67,11 +90,11 @@ const WallpaperPicker = () => {
       }
       await setWallpaper(url);
 
-      // Brief pause to display the completed fill before switching to success state
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      // Smooth delay so user observes the 100% completion and browser renders wallpaper seamlessly
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       setJustUploaded(true);
-      toast('Wallpaper uploaded and set successfully!', 'success', 3000);
+      toast('Wallpaper uploaded and applied successfully!', 'success', 3000);
       setUploadAsCurated(false);
       if (fileRef.current) {
         fileRef.current.value = '';

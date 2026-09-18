@@ -1,28 +1,36 @@
 import React from 'react';
-import { IconStar } from '../Icons';
 
-const SessionCounter = ({ count }) => {
+const SessionCounter = ({ count = 0 }) => {
   const cycleCount = count % 4;
   const completed = cycleCount === 0 && count > 0 ? 4 : cycleCount;
 
   return (
-    <div className="session-counter" aria-label={`${completed} of 4 pomodoros completed`} title={`${completed} of 4 pomodoros completed`}>
-      {Array.from({ length: 4 }, (_, i) => {
-        const isFilled = i < completed;
-        return (
-          <span
-            key={i}
-            className={`session-star ${isFilled ? 'filled' : 'empty'}`}
-            title={isFilled ? 'Completed pomodoro' : 'Remaining pomodoro'}
-          >
-            <IconStar
-              size={17}
-              fill={isFilled ? 'currentColor' : 'rgba(255, 255, 255, 0.16)'}
-              color={isFilled ? 'currentColor' : 'rgba(255, 255, 255, 0.65)'}
+    <div
+      className="session-counter"
+      role="status"
+      aria-label={`${completed} of 4 focus sessions completed in this cycle`}
+      title={`${completed} of 4 focus sessions completed`}
+    >
+      <span className="session-counter-icon" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="3" fill="currentColor" />
+        </svg>
+      </span>
+      <div className="session-pips" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, i) => {
+          const isFilled = i < completed;
+          const isCurrent = i === completed;
+          return (
+            <span
+              key={i}
+              className={`session-pip ${isFilled ? 'filled' : isCurrent ? 'current' : 'empty'}`}
+              title={isFilled ? `Session ${i + 1} completed` : `Session ${i + 1}`}
             />
-          </span>
-        );
-      })}
+          );
+        })}
+      </div>
+      <span className="session-counter-badge">{completed}/4</span>
     </div>
   );
 };

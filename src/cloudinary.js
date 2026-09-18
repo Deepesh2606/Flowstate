@@ -43,8 +43,8 @@ export const uploadWallpaper = (file, onProgress) => {
         if (onProgress) onProgress(100);
         try {
           const data = JSON.parse(xhr.responseText);
-          // Return a web-optimized URL: auto format + quality, max 3840px wide for 4K
-          resolve(data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_3840/'));
+          // Return a web-optimized URL: auto format, high efficiency quality, capped at 2560px for ultrafast loading
+          resolve(data.secure_url.replace('/upload/', '/upload/f_auto,q_auto:good,w_2560,c_limit/'));
         } catch (err) {
           reject(new Error('Invalid response from Cloudinary'));
         }
