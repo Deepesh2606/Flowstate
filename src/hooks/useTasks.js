@@ -8,7 +8,12 @@ export const useTasks = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     const unsub = subscribeTasks(currentUser.uid, (data, err) => {
       setTasks(data || []);
       setLoading(false);

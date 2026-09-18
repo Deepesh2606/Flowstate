@@ -3502,3 +3502,408 @@ input {
   font-weight: 800;
   box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
 }
+
+/* ─── Minimal Google Auth & Modal ─────────────────────────────────────────── */
+.minimal-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 100px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #111827;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.minimal-google-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.minimal-google-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.minimal-google-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.minimal-google-btn .google-icon {
+  flex-shrink: 0;
+}
+
+.minimal-google-btn.size-sm {
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  gap: 8px;
+}
+
+.minimal-google-btn.size-sm .google-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.minimal-google-btn.size-md {
+  padding: 11px 22px;
+  font-size: 14px;
+  gap: 10px;
+}
+
+.minimal-google-btn.size-md .google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.minimal-google-btn.size-lg {
+  padding: 13px 28px;
+  font-size: 15px;
+  gap: 12px;
+  width: 100%;
+}
+
+.minimal-google-btn.size-lg .google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Topbar Sign In Button */
+.topbar-signin-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(8px);
+}
+
+.topbar-signin-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #081226;
+  box-shadow: 0 0 16px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+/* Auth Modal */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 15, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.auth-modal-card {
+  position: relative;
+  max-width: 380px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 32px rgba(6, 182, 212, 0.15);
+  border-radius: 24px;
+  padding: 34px 28px 28px;
+  text-align: center;
+  animation: scaleIn 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  backdrop-filter: blur(24px);
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.auth-modal-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.auth-modal-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin: 0 auto 14px;
+  filter: drop-shadow(0 6px 18px rgba(6, 182, 212, 0.35));
+}
+
+.auth-modal-title {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.auth-modal-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 24px;
+}
+
+.auth-modal-action {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.auth-modal-footer {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 20px 0 0;
+  letter-spacing: 0.01em;
+}
+
+/* Feature gate inside drawers */
+.auth-feature-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 16px;
+  margin-top: 20px;
+}
+
+.auth-feature-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.auth-feature-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.auth-feature-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 250px;
+  margin: 0;
+}
+
+/* Tab gates for Stats & History */
+.auth-tab-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+  padding: 24px 16px;
+}
+
+.auth-tab-card {
+  max-width: 420px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 38px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.auth-tab-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.auth-tab-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 10px;
+}
+
+.auth-tab-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 320px;
+  margin: 0;
+}
+
+/* ─── PiP Help Modal ──────────────────────────────────────────────────────── */
+.pip-help-card {
+  max-width: 440px;
+}
+
+.pip-help-icon-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.pip-browser-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 8px;
+  text-align: left;
+}
+
+.pip-browser-row {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pip-browser-row.supported {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.pip-browser-row.supported .pip-browser-status {
+  color: #10b981;
+}
+
+.pip-browser-row.unsupported {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.07);
+}
+
+.pip-browser-row.unsupported .pip-browser-status {
+  color: #f59e0b;
+}
+
+.pip-browser-status {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+
+.pip-browser-names {
+  font-size: 13px;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+.pip-browser-sub {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.pip-safari-tip {
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-top: 10px;
+}
+
+.pip-safari-tip-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.pip-safari-tip-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.pip-action-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pip-action-btn.primary {
+  background: var(--accent);
+  color: #081226;
+  border: none;
+}
+
+.pip-action-btn.primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.pip-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.pip-action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

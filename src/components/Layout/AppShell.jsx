@@ -18,6 +18,8 @@ const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
 const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
 const AudioDrawer = lazy(() => import('../Audio/AudioDrawer'));
 
+import GoogleSignInButton from '../Auth/GoogleSignInButton';
+
 const FallbackLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'rgba(255,255,255,0.5)' }}>
     Loading...
@@ -25,7 +27,7 @@ const FallbackLoader = () => (
 );
 
 const AppShell = () => {
-  const { currentUser, signOut } = useAuth();
+  const { currentUser, signOut, openAuthModal } = useAuth();
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
@@ -152,8 +154,18 @@ const AppShell = () => {
           </span>
         </header>
 
-        {/* Top Right Controls (Notes/Tasks) */}
-        <div className="top-right-controls">
+        {/* Top Right Controls (Notes/Tasks + Sign In) */}
+        <div className="top-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {!currentUser && (
+            <button
+              className="topbar-signin-btn"
+              onClick={() => openAuthModal('Sign in with Google to sync your study data')}
+              id="topbar-signin-btn"
+              title="Sign in with Google"
+            >
+              Sign In
+            </button>
+          )}
           <button
             className="floating-icon-btn"
             onClick={() => setShowTasks(true)}
@@ -218,6 +230,7 @@ const AppShell = () => {
                 className="floating-icon-btn"
                 onClick={() => setShowUserMenu((v) => !v)}
                 id="user-avatar-fallback"
+                title={currentUser ? 'User Menu' : 'Guest / Sign In'}
               >
                 <IconUser size={18} />
               </button>
@@ -227,51 +240,107 @@ const AppShell = () => {
           {/* User dropdown menu */}
           {showUserMenu && (
             <div className="user-menu" role="menu">
-              <div className="user-menu-info">
-                <div className="user-menu-name">{currentUser?.displayName || 'User'}</div>
-                <div className="user-menu-email">{currentUser?.email}</div>
-              </div>
-              <button
-                className="user-menu-item"
-                onClick={() => {
-                  setShowAudioDrawer(true);
-                  setShowUserMenu(false);
-                }}
-                role="menuitem"
-                id="menu-open-ambience"
-              >
-                <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Music
-              </button>
-              <button
-                className="user-menu-item"
-                onClick={() => {
-                  setShowPicker(true);
-                  setShowUserMenu(false);
-                }}
-                role="menuitem"
-                id="menu-change-wallpaper"
-              >
-                <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
-              </button>
-              <button
-                className="user-menu-item"
-                onClick={() => {
-                  setShowSettings(true);
-                  setShowUserMenu(false);
-                }}
-                role="menuitem"
-                id="menu-open-settings"
-              >
-                <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
-              </button>
-              <button
-                className="user-menu-item danger"
-                onClick={signOut}
-                role="menuitem"
-                id="menu-sign-out"
-              >
-                Sign Out
-              </button>
+              {currentUser ? (
+                <>
+                  <div className="user-menu-info">
+                    <div className="user-menu-name">{currentUser.displayName || 'User'}</div>
+                    <div className="user-menu-email">{currentUser.email}</div>
+                  </div>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      setShowAudioDrawer(true);
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-open-ambience"
+                  >
+                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Music
+                  </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      setShowPicker(true);
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-change-wallpaper"
+                  >
+                    <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
+                  </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      setShowSettings(true);
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-open-settings"
+                  >
+                    <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
+                  </button>
+                  <button
+                    className="user-menu-item danger"
+                    onClick={() => {
+                      signOut();
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-sign-out"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="user-menu-info">
+                    <div className="user-menu-name">Guest Mode</div>
+                    <div className="user-menu-email">Data stored locally</div>
+                  </div>
+                  <div style={{ padding: '6px 8px 10px' }}>
+                    <GoogleSignInButton
+                      size="sm"
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        openAuthModal('Sign in with Google to sync your study data across devices');
+                      }}
+                    />
+                  </div>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      setShowAudioDrawer(true);
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-open-ambience"
+                  >
+                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Music
+                  </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      setShowPicker(true);
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-change-wallpaper"
+                  >
+                    <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
+                  </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      setShowSettings(true);
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-open-settings"
+                  >
+                    <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

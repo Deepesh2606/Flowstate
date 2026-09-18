@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useStats } from '../../hooks/useStats';
+import { IconStats } from '../Icons';
+import GoogleSignInButton from '../Auth/GoogleSignInButton';
 import WeeklyBarChart from './WeeklyBarChart';
 import SubjectBreakdown from './SubjectBreakdown';
 
@@ -12,6 +15,7 @@ const formatTime = (seconds) => {
 };
 
 const StatsTab = () => {
+  const { currentUser } = useAuth();
   const {
     loading,
     todayFocusTime,
@@ -23,6 +27,25 @@ const StatsTab = () => {
   } = useStats();
 
   const [showDetails, setShowDetails] = useState(true);
+
+  if (!currentUser) {
+    return (
+      <div className="auth-tab-gate">
+        <div className="auth-tab-card">
+          <div className="auth-tab-icon">
+            <IconStats size={36} color="var(--accent)" />
+          </div>
+          <h2 className="auth-tab-title">Focus Analytics & Streaks</h2>
+          <p className="auth-tab-desc">
+            Sign in with Google to record your study time, monitor weekly charts, and track focus streaks.
+          </p>
+          <div style={{ marginTop: '20px' }}>
+            <GoogleSignInButton size="md" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <div className="spinner" />;
 

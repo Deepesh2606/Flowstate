@@ -16,7 +16,12 @@ export const useStats = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setSessions([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     const unsub = subscribeSessions(currentUser.uid, (data, err) => {
       setSessions(data || []);
       setLoading(false);

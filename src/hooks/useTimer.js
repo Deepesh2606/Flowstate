@@ -91,18 +91,27 @@ export const useTimer = (settings, toast) => {
   // We must define play before handleSessionComplete if handleSessionComplete calls play
   // However, handleSessionComplete can just use setTimeout(() => setIsRunning(true), 800)
   // which works with our useEffect that listens to isRunning.
-  const handleSessionComplete = useCallback(async () => {
+  const handleSessionComplete = useCallback(async (isSkipped = false) => {
     playChime(!soundEnabled);
     const currentMode = modeRef.current;
     const currentCount = sessionCountRef.current;
 
     if (currentMode === MODES.pomodoro || currentMode === MODES.stopwatch) {
-      // Save to Firestore
-      if (currentUser) {
+      // Calculate actual studied duration
+      let studiedDuration = durations.pomodoro;
+      if (currentMode === MODES.stopwatch) {
+        studiedDuration = sessionCountRef.currentElapsed || 0;
+      } else if (isSkipped) {
+        // If skipped, record only the time studied so far (total duration minus time remaining)
+        studiedDuration = Math.max(0, durations.pomodoro - timeLeftRef.current);
+      }
+
+      // Save to Firestore if user studied for at least 1 second
+      if (currentUser && studiedDuration > 0) {
         try {
           await addSession(currentUser.uid, {
             subject,
-            duration: currentMode === MODES.stopwatch ? sessionCountRef.currentElapsed : durations.pomodoro,
+            duration: studiedDuration,
             mode: studyMode,
             date: new Date().toISOString().split('T')[0],
             timestamp: Date.now(),
@@ -126,7 +135,16 @@ export const useTimer = (settings, toast) => {
         setMode(MODES.longBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       } else {
-        if (notifyOnComplete) toast?.('Session complete. Take a short break.', 'focus', 3500);
+        if (notifyOnComplete) {
+          if (isSkipped && studiedDuration > 0) {
+            const mins = Math.floor(studiedDuration / 60);
+            const secs = studiedDuration % 60;
+            const timeLabel = mins > 0 ? `${mins}m${secs > 0 ? ` ${secs}s` : ''}` : `${secs}s`;
+            toast?.(`Focus session ended early (${timeLabel} logged). Take a short break.`, 'focus', 3500);
+          } else {
+            toast?.('Session complete. Take a short break.', 'focus', 3500);
+          }
+        }
         setMode(MODES.shortBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       }
@@ -173,7 +191,7 @@ export const useTimer = (settings, toast) => {
           if (remaining <= 0) {
             clearInterval(intervalRef.current);
             setIsRunning(false);
-            handleSessionComplete();
+            handleSessionComplete(false);
           }
         }
       }, tickRate);
@@ -197,7 +215,7 @@ export const useTimer = (settings, toast) => {
 
   const skip = useCallback(() => {
     setIsRunning(false);
-    handleSessionComplete();
+    handleSessionComplete(true);
   }, [handleSessionComplete]);
 
   const switchMode = useCallback((newMode) => {

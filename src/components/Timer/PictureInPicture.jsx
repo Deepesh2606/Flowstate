@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { IconPlay, IconPause, IconPip } from '../Icons';
 
 /**
  * PictureInPicture component for Flowstate timer.
@@ -25,6 +24,7 @@ export const usePictureInPicture = ({
 }) => {
   const [isPipActive, setIsPipActive] = useState(false);
   const [pipDoc, setPipDoc] = useState(null);
+  const [showPipHelp, setShowPipHelp] = useState(false);
   const pipWindowRef = useRef(null);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
@@ -230,6 +230,13 @@ export const usePictureInPicture = ({
 
     // 3. Fallback to Canvas Stream Video PiP (Safari on Mac, Firefox, etc.)
     try {
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      if (!('documentPictureInPicture' in window) && isSafari) {
+        // Document PiP is not supported in Safari. Show browser help modal
+        setShowPipHelp(true);
+        return;
+      }
+
       if (!canvasRef.current) {
         const canvas = document.createElement('canvas');
         canvas.width = 512;
@@ -255,15 +262,30 @@ export const usePictureInPicture = ({
         });
       }
 
-      const stream = canvasRef.current.captureStream(30);
+      const captureMethod = canvasRef.current.captureStream || canvasRef.current.webkitCaptureStream;
+      if (!captureMethod) {
+        setShowPipHelp(true);
+        return;
+      }
+
+      const stream = captureMethod.call(canvasRef.current, 30);
       video.srcObject = stream;
       await video.play();
-      await video.requestPictureInPicture();
+
+      if (video.requestPictureInPicture) {
+        await video.requestPictureInPicture();
+      } else if (video.webkitSetPresentationMode) {
+        video.webkitSetPresentationMode('picture-in-picture');
+      } else {
+        setShowPipHelp(true);
+        return;
+      }
+
       setIsPipActive(true);
       if (toast) toast('Picture-in-Picture started', 'success', 2000);
     } catch (err) {
-      console.error('PiP could not be opened:', err);
-      if (toast) toast('Unable to open Picture-in-Picture in this browser', 'error', 2500);
+      console.warn('PiP could not be opened, displaying browser guidance:', err);
+      setShowPipHelp(true);
     }
   };
 
@@ -272,6 +294,8 @@ export const usePictureInPicture = ({
     togglePip,
     pipDoc,
     timeStr,
+    showPipHelp,
+    setShowPipHelp,
   };
 };
 

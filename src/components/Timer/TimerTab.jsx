@@ -5,6 +5,7 @@ import SubjectSelector from './SubjectSelector';
 import SessionCounter from './SessionCounter';
 import { IconBook, IconMaximize, IconMinimize, IconPip } from '../Icons';
 import { usePictureInPicture, PiPWindowPortal } from './PictureInPicture';
+import PipHelpModal from './PipHelpModal';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 
@@ -77,7 +78,7 @@ const TimerTab = ({ settings, hasWallpaper }) => {
   };
 
   const [isEditingSubject, setIsEditingSubject] = useState(false);
-  const { isPipActive, togglePip, pipDoc } = usePictureInPicture({
+  const { isPipActive, togglePip, pipDoc, showPipHelp, setShowPipHelp } = usePictureInPicture({
     timeLeft,
     stopwatchMs,
     mode,
@@ -271,6 +272,11 @@ const TimerTab = ({ settings, hasWallpaper }) => {
         onPause={handlePause}
         onReset={handleReset}
         onSkip={handleConfirmSkip}
+      />
+      {/* PiP Help Modal for Safari / Unsupported Browsers */}
+      <PipHelpModal
+        isOpen={showPipHelp}
+        onClose={() => setShowPipHelp(false)}
       />
     </div>
   );

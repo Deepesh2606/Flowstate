@@ -22,6 +22,8 @@ const formatDate = (dateStr) => {
   }
 };
 
+import GoogleSignInButton from '../Auth/GoogleSignInButton';
+
 const HistoryTab = () => {
   const { currentUser } = useAuth();
   const { sessions, loading } = useStats();
@@ -30,6 +32,25 @@ const HistoryTab = () => {
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [deleting, setDeleting] = useState(null);
+
+  if (!currentUser) {
+    return (
+      <div className="auth-tab-gate">
+        <div className="auth-tab-card">
+          <div className="auth-tab-icon">
+            <IconHistory size={36} color="var(--accent)" />
+          </div>
+          <h2 className="auth-tab-title">Session History</h2>
+          <p className="auth-tab-desc">
+            Sign in with Google to review your completed study sessions, filter by subject, and sync logs.
+          </p>
+          <div style={{ marginTop: '20px' }}>
+            <GoogleSignInButton size="md" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const allSubjects = [...new Set(sessions.map((s) => s.subject).filter(Boolean))];
 

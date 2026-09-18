@@ -34,6 +34,10 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalReason, setAuthModalReason] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -63,15 +67,45 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signInWithGoogle = async () => {
-    googleProvider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithPopup(auth, googleProvider);
+    setSigningIn(true);
+    try {
+      googleProvider.setCustomParameters({ prompt: 'select_account' });
+      await signInWithPopup(auth, googleProvider);
+      setIsAuthModalOpen(false);
+      setAuthModalReason('');
+    } catch (err) {
+      console.error('Google sign in error:', err);
+      throw err;
+    } finally {
+      setSigningIn(false);
+    }
   };
 
   const signOut = async () => {
     await firebaseSignOut(auth);
   };
 
-  const value = { currentUser, signInWithGoogle, signOut, loading };
+  const openAuthModal = (reason = '') => {
+    setAuthModalReason(reason);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+    setAuthModalReason('');
+  };
+
+  const value = {
+    currentUser,
+    signInWithGoogle,
+    signOut,
+    loading,
+    signingIn,
+    isAuthModalOpen,
+    openAuthModal,
+    closeAuthModal,
+    authModalReason,
+  };
 
   return (
     <AuthContext.Provider value={value}>

@@ -1,10 +1,39 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTasks } from '../../hooks/useTasks';
-import { IconCheck, IconTrash } from '../Icons';
+import { IconCheck, IconTrash, IconTasks } from '../Icons';
+import GoogleSignInButton from '../Auth/GoogleSignInButton';
 
 const TasksDrawer = ({ onClose }) => {
+  const { currentUser } = useAuth();
   const { tasks, loading, addTask, toggleTask, deleteTask } = useTasks();
   const [newTask, setNewTask] = useState('');
+
+  if (!currentUser) {
+    return (
+      <>
+        <div className="drawer-overlay" onClick={onClose} aria-hidden="true" />
+        <aside className="drawer" role="dialog" aria-label="Tasks" aria-modal="true">
+          <div className="drawer-header">
+            <h2 className="drawer-title">Tasks & Notes</h2>
+            <button className="drawer-close" onClick={onClose} aria-label="Close tasks">✕</button>
+          </div>
+          <div className="auth-feature-gate">
+            <div className="auth-feature-icon">
+              <IconTasks size={30} color="var(--accent)" />
+            </div>
+            <h3 className="auth-feature-title">Cloud Tasks & Notes</h3>
+            <p className="auth-feature-desc">
+              Sign in with Google to manage and sync your study checklist across devices.
+            </p>
+            <div style={{ marginTop: '16px' }}>
+              <GoogleSignInButton size="md" />
+            </div>
+          </div>
+        </aside>
+      </>
+    );
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
