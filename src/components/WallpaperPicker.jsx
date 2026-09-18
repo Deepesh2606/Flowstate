@@ -267,24 +267,6 @@ const WallpaperPicker = () => {
                       {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
                         <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '6px', zIndex: 10 }}>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setAsGlobalDefault(wp.url);
-                              toast('Set as global default', 'success');
-                            }}
-                            style={{
-                              background: globalDefault === wp.url ? 'var(--accent)' : 'rgba(0,0,0,0.65)',
-                              color: globalDefault === wp.url ? '#000' : '#fff',
-                              borderRadius: '50%', width: '26px', height: '26px',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              border: '1px solid rgba(255,255,255,0.15)'
-                            }}
-                            aria-label="Set as global default"
-                            title="Set as global default for new users"
-                          >
-                            <IconStar size={14} fill={globalDefault === wp.url ? 'currentColor' : 'none'} />
-                          </button>
-                          <button
                             onClick={(e) => { e.stopPropagation(); deleteGlobalCurated(wp.id); }}
                             style={{
                               background: 'rgba(0,0,0,0.65)', color: '#ff5050',

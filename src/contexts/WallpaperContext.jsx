@@ -13,23 +13,23 @@ export const useWallpaper = () => {
 const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
 
 const DEFAULT_PRESET_WALLPAPERS = [
-  { id: 'forest', label: 'Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80' },
-  { id: 'aurora', label: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80' },
-  { id: 'mountains', label: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80' },
-  { id: 'galaxy', label: 'Galaxy', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600&q=80' },
-  { id: 'ocean', label: 'Ocean', url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1600&q=80' },
-  { id: 'desert', label: 'Desert Dunes', url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80' },
-  { id: 'neon-city', label: 'Neon City', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1600&q=80' },
-  { id: 'abstract', label: 'Abstract', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1600&q=80' },
+  { id: 'forest', label: 'Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80&auto=format,compress' },
+  { id: 'aurora', label: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80&auto=format,compress' },
+  { id: 'mountains', label: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80&auto=format,compress' },
+  { id: 'galaxy', label: 'Galaxy', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600&q=80&auto=format,compress' },
+  { id: 'ocean', label: 'Ocean', url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1600&q=80&auto=format,compress' },
+  { id: 'desert', label: 'Desert Dunes', url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80&auto=format,compress' },
+  { id: 'neon-city', label: 'Neon City', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1600&q=80&auto=format,compress' },
+  { id: 'abstract', label: 'Abstract', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1600&q=80&auto=format,compress' },
 ];
 
 export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [wallpaper, setWallpaperState] = useState(() => {
     try {
-      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80"; // Replace this URL with your custom image URL
+      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || "/defaultpreset.png";
     } catch {
-      return "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80"; // Replace this URL with your custom image URL
+      return "/defaultpreset.png";
     }
   });
   const [customWallpapers, setCustomWallpapers] = useState([]);
