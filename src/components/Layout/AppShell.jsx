@@ -239,15 +239,6 @@ const AppShell = () => {
           )}
           <button
             className="floating-icon-btn"
-            onClick={() => window.open('https://chatgpt.com', 'AIChat', 'width=450,height=700,left=200,top=200')}
-            aria-label="Open ChatGPT"
-            id="chatgpt-btn"
-            title="Ask ChatGPT"
-          >
-            <IconChat size={18} />
-          </button>
-          <button
-            className="floating-icon-btn"
             onClick={() => setShowTasks(true)}
             aria-label="Open tasks"
             id="tasks-btn"
@@ -423,6 +414,21 @@ const AppShell = () => {
               )}
             </div>
           )}
+        </div>
+
+        {/* Bottom Left Controls */}
+        <div className="bottom-left-controls">
+          <a
+            href="https://chatgpt.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ai-chat-btn"
+            id="chatgpt-btn-bottom"
+            title="Ask AI"
+          >
+            <IconChat size={18} />
+            Ask AI
+          </a>
         </div>
 
         {/* Tab Content */}
