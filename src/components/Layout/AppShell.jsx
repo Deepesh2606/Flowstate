@@ -7,7 +7,7 @@ import RightSideNav from './RightSideNav';
 import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones } from '../Icons';
+import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat } from '../Icons';
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import LofiPlayer from '../Audio/LofiPlayer';
@@ -237,6 +237,15 @@ const AppShell = () => {
               Sign In
             </button>
           )}
+          <button
+            className="floating-icon-btn"
+            onClick={() => window.open('https://chatgpt.com', 'AIChat', 'width=450,height=700,left=200,top=200')}
+            aria-label="Open ChatGPT"
+            id="chatgpt-btn"
+            title="Ask ChatGPT"
+          >
+            <IconChat size={18} />
+          </button>
           <button
             className="floating-icon-btn"
             onClick={() => setShowTasks(true)}

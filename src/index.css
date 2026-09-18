@@ -4818,7 +4818,6 @@ input {
   z-index: 2;
   text-align: center;
   line-height: 1.3;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
   white-space: pre-line;
 }
 
@@ -4828,7 +4827,6 @@ input {
 
 .rsn-pill:hover .rsn-pill-label {
   color: #ffffff;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 .rsn-pill.active {
@@ -4902,7 +4900,6 @@ input {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.72);
   transition: color 0.2s ease;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 .rsn-clock-btn:hover {
