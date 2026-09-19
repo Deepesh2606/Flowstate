@@ -200,7 +200,8 @@ const AIChatSidebar = ({ onClose }) => {
           </div>
           <div>
             <span className="ai-chat-panel-name">Flowstate AI</span>
-            <span className="ai-chat-panel-model">Gemini 2.0 Flash</span>
+            <span className="ai-chat-panel-model">Gemini 3.6 Flash</span>
+            {/* Model: gemini-3.6-flash (fast, free tier available) */}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>

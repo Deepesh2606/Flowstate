@@ -4,7 +4,7 @@
  * Model: gemini-2.0-flash (fast, free tier available)
  */
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-3.6-flash';
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 const SYSTEM_PROMPT = `You are Flowstate AI — a friendly, concise study and focus assistant built into the Flowstate productivity app.
