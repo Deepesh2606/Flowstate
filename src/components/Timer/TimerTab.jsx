@@ -197,7 +197,7 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
   const pendingTasks = tasks?.filter(t => !t.completed) || [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
+    <div className="timer-tab-wrapper">
       {/* Countdown Glow */}
       <CountdownGlow timeLeft={timeLeft} mode={mode} isRunning={isRunning} />
 

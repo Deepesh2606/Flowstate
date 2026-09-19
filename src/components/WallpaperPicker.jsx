@@ -26,28 +26,6 @@ const toThumbUrl = (url) => {
   return url.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto:eco,w_400,c_fill,g_auto/');
 };
 
-/**
- * Extract a human-readable name from a Cloudinary image URL.
- * e.g. ".../flowstate/wallpapers/my_sunset_photo_abc123" → "My Sunset Photo"
- */
-const getWallpaperName = (url) => {
-  if (!url) return 'Wallpaper';
-  try {
-    // Get the last path segment (the public_id filename)
-    const parts = url.split('/');
-    let name = parts[parts.length - 1];
-    // Remove file extension if present
-    name = name.replace(/\.[^.]+$/, '');
-    // Remove Cloudinary's auto-appended random suffix (underscore + alphanumeric at end)
-    name = name.replace(/_[a-z0-9]{6,}$/i, '');
-    // Replace underscores/hyphens with spaces and title-case
-    name = name.replace(/[_-]+/g, ' ').trim();
-    name = name.replace(/\b\w/g, (c) => c.toUpperCase());
-    return name || 'My Wallpaper';
-  } catch {
-    return 'My Wallpaper';
-  }
-};
 
 
 const WallpaperPicker = () => {
@@ -239,7 +217,6 @@ const WallpaperPicker = () => {
                       <span style={{ fontSize: '11px' }}>Upload More</span>
                     </button>
                     {customWallpapers.map((url, i) => {
-                      const name = getWallpaperName(url);
                       const thumbUrl = toThumbUrl(url);
                       return (
                       <div key={`custom-${i}`} style={{ position: 'relative' }}>
@@ -247,8 +224,8 @@ const WallpaperPicker = () => {
                           className={`wallpaper-thumb ${wallpaper === url ? 'selected' : ''}`}
                           style={{ backgroundImage: `url(${thumbUrl})`, width: '100%' }}
                           onClick={() => handlePresetSelect(url)}
-                          title={name}
-                          aria-label={`Select ${name}`}
+                          title="Custom Wallpaper"
+                          aria-label={`Select custom wallpaper ${i + 1}`}
                         >
                           {wallpaper === url && (
                             <div style={{
@@ -258,7 +235,6 @@ const WallpaperPicker = () => {
                               <IconCheck size={28} color="#081226" />
                             </div>
                           )}
-                          <div className="wallpaper-thumb-label">{name}</div>
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); removeCustomWallpaper(url); }}
@@ -269,7 +245,7 @@ const WallpaperPicker = () => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             border: '1px solid rgba(255,255,255,0.15)', zIndex: 10
                           }}
-                          aria-label={`Delete ${name}`}
+                          aria-label="Delete wallpaper"
                           title="Delete wallpaper"
                         >
                           <IconTrash size={14} />
@@ -285,24 +261,26 @@ const WallpaperPicker = () => {
                 <div>
                   <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Curated Presets</h3>
                   <div className="wallpaper-grid">
-                    {globalCurated.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => (
-                    <div key={wp.id} style={{ position: 'relative' }}>
-                      <button
-                        className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
-                        style={{ backgroundImage: `url(${toThumbUrl(wp.url)})`, width: '100%' }}
-                        onClick={() => handlePresetSelect(wp.url)}
-                        title={wp.label || getWallpaperName(wp.url)}
-                        aria-label={`Select ${wp.label || getWallpaperName(wp.url)} wallpaper`}
-                      >
-                        {wallpaper === wp.url && (
-                          <div style={{
-                            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)'
-                          }}>
-                            <IconCheck size={28} color="#081226" />
-                          </div>
-                        )}
-                      </button>
+                    {globalCurated.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => {
+                      const displayTitle = (wp.label && wp.label.trim().toLowerCase() !== 'user upload') ? wp.label : 'Curated Preset';
+                      return (
+                      <div key={wp.id} style={{ position: 'relative' }}>
+                        <button
+                          className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
+                          style={{ backgroundImage: `url(${toThumbUrl(wp.url)})`, width: '100%' }}
+                          onClick={() => handlePresetSelect(wp.url)}
+                          title={displayTitle}
+                          aria-label={`Select ${displayTitle}`}
+                        >
+                          {wallpaper === wp.url && (
+                            <div style={{
+                              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)'
+                            }}>
+                              <IconCheck size={28} color="#081226" />
+                            </div>
+                          )}
+                        </button>
                       {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
                         <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '6px', zIndex: 10 }}>
                           <button
@@ -321,7 +299,8 @@ const WallpaperPicker = () => {
                         </div>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
               )}
