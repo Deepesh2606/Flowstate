@@ -27,16 +27,30 @@ export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [wallpaper, setWallpaperState] = useState(() => {
     try {
-      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || "/defaultpreset.png";
+      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || null;
     } catch {
-      return "/defaultpreset.png";
+      return null;
     }
   });
   const [customWallpapers, setCustomWallpapers] = useState([]);
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
-  const [globalCurated, setGlobalCurated] = useState(DEFAULT_PRESET_WALLPAPERS);
+  // Start empty — populated by Firebase to avoid flashing wrong presets
+  const [globalCurated, setGlobalCurated] = useState([]);
   const [globalDefault, setGlobalDefaultState] = useState(null);
+
+  // Preload the cached wallpaper immediately on mount so it renders without delay
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
+      if (cached) {
+        const img = new window.Image();
+        img.src = cached;
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Subscribe to global curated wallpapers immediately
   useEffect(() => {
@@ -44,12 +58,16 @@ export const WallpaperProvider = ({ children }) => {
       if (curatedList && curatedList.length > 0) {
         setGlobalCurated(curatedList);
       } else {
+        // Seed defaults into Firebase if collection is empty
         seedGlobalCurated(DEFAULT_PRESET_WALLPAPERS);
+        // Also show defaults locally so picker isn't empty
+        setGlobalCurated(DEFAULT_PRESET_WALLPAPERS);
       }
       if (defaultWallpaperUrl) {
         setGlobalDefaultState(defaultWallpaperUrl);
         if (!localStorage.getItem(WALLPAPER_STORAGE_KEY)) {
           setWallpaperState(defaultWallpaperUrl);
+          try { localStorage.setItem(WALLPAPER_STORAGE_KEY, defaultWallpaperUrl); } catch {}
         }
       }
     });

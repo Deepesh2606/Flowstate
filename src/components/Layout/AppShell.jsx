@@ -35,6 +35,7 @@ const AppShell = () => {
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showAIChat, setShowAIChat] = useState(false);
   const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip
 
   useEffect(() => {
@@ -418,17 +419,17 @@ const AppShell = () => {
 
         {/* Bottom Left Controls */}
         <div className="bottom-left-controls">
-          <a
-            href="https://chatgpt.com"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
             className="ai-chat-btn"
+            onClick={() => setShowAIChat(v => !v)}
             id="chatgpt-btn-bottom"
             title="Ask AI"
+            aria-label="Open AI Chat"
+            aria-expanded={showAIChat}
           >
             <IconChat size={18} />
             Ask AI
-          </a>
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -461,6 +462,49 @@ const AppShell = () => {
         onSwitchMode={handleRightNavModeSwitch}
         onTabChange={handleTabChange}
       />
+
+      {/* AI Chat Left Sidebar */}
+      {showAIChat && (
+        <>
+          <div className="drawer-overlay" onClick={() => setShowAIChat(false)} aria-hidden="true" />
+          <aside className="ai-chat-sidebar" role="dialog" aria-label="AI Chat" aria-modal="true">
+            <div className="drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconChat size={20} color="var(--accent)" />
+                <h2 className="drawer-title" style={{ fontSize: '1.25rem' }}>AI Assistant</h2>
+              </div>
+              <button
+                className="drawer-close"
+                onClick={() => setShowAIChat(false)}
+                aria-label="Close AI Chat"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="ai-chat-sidebar-body">
+              <div className="ai-chat-iframe-wrapper">
+                <iframe
+                  src="https://chatgpt.com"
+                  title="ChatGPT AI Assistant"
+                  className="ai-chat-iframe"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                />
+              </div>
+              <div className="ai-chat-links">
+                <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" className="ai-chat-external-link">
+                  Open ChatGPT in new tab ↗
+                </a>
+                <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="ai-chat-external-link">
+                  Open Gemini ↗
+                </a>
+                <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="ai-chat-external-link">
+                  Open Claude ↗
+                </a>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
 
       {/* Modals & Drawers */}
       {showPicker && <WallpaperPicker />}
