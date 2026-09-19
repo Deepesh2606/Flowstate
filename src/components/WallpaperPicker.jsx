@@ -17,6 +17,39 @@ const preloadImage = (url) => {
   });
 };
 
+/**
+ * Convert a full-res Cloudinary URL to a small thumbnail URL for the picker grid.
+ * 400px wide, auto format/quality — loads ~4x faster than the full image.
+ */
+const toThumbUrl = (url) => {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  return url.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto:eco,w_400,c_fill,g_auto/');
+};
+
+/**
+ * Extract a human-readable name from a Cloudinary image URL.
+ * e.g. ".../flowstate/wallpapers/my_sunset_photo_abc123" → "My Sunset Photo"
+ */
+const getWallpaperName = (url) => {
+  if (!url) return 'Wallpaper';
+  try {
+    // Get the last path segment (the public_id filename)
+    const parts = url.split('/');
+    let name = parts[parts.length - 1];
+    // Remove file extension if present
+    name = name.replace(/\.[^.]+$/, '');
+    // Remove Cloudinary's auto-appended random suffix (underscore + alphanumeric at end)
+    name = name.replace(/_[a-z0-9]{6,}$/i, '');
+    // Replace underscores/hyphens with spaces and title-case
+    name = name.replace(/[_-]+/g, ' ').trim();
+    name = name.replace(/\b\w/g, (c) => c.toUpperCase());
+    return name || 'My Wallpaper';
+  } catch {
+    return 'My Wallpaper';
+  }
+};
+
+
 const WallpaperPicker = () => {
   const { 
     wallpaper, 
@@ -205,13 +238,17 @@ const WallpaperPicker = () => {
                       <span style={{ fontSize: '20px', lineHeight: 1, color: 'var(--accent)' }}>+</span>
                       <span style={{ fontSize: '11px' }}>Upload More</span>
                     </button>
-                    {customWallpapers.map((url, i) => (
+                    {customWallpapers.map((url, i) => {
+                      const name = getWallpaperName(url);
+                      const thumbUrl = toThumbUrl(url);
+                      return (
                       <div key={`custom-${i}`} style={{ position: 'relative' }}>
                         <button
                           className={`wallpaper-thumb ${wallpaper === url ? 'selected' : ''}`}
-                          style={{ backgroundImage: `url(${url})`, width: '100%' }}
+                          style={{ backgroundImage: `url(${thumbUrl})`, width: '100%' }}
                           onClick={() => handlePresetSelect(url)}
-                          aria-label={`Select custom wallpaper ${i+1}`}
+                          title={name}
+                          aria-label={`Select ${name}`}
                         >
                           {wallpaper === url && (
                             <div style={{
@@ -221,6 +258,7 @@ const WallpaperPicker = () => {
                               <IconCheck size={28} color="#081226" />
                             </div>
                           )}
+                          <div className="wallpaper-thumb-label">{name}</div>
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); removeCustomWallpaper(url); }}
@@ -231,13 +269,14 @@ const WallpaperPicker = () => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             border: '1px solid rgba(255,255,255,0.15)', zIndex: 10
                           }}
-                          aria-label="Delete custom wallpaper"
-                          title="Delete preset"
+                          aria-label={`Delete ${name}`}
+                          title="Delete wallpaper"
                         >
                           <IconTrash size={14} />
                         </button>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -250,10 +289,10 @@ const WallpaperPicker = () => {
                     <div key={wp.id} style={{ position: 'relative' }}>
                       <button
                         className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
-                        style={{ backgroundImage: `url(${wp.url})`, width: '100%' }}
+                        style={{ backgroundImage: `url(${toThumbUrl(wp.url)})`, width: '100%' }}
                         onClick={() => handlePresetSelect(wp.url)}
-                        title={wp.label}
-                        aria-label={`Select ${wp.label} wallpaper`}
+                        title={wp.label || getWallpaperName(wp.url)}
+                        aria-label={`Select ${wp.label || getWallpaperName(wp.url)} wallpaper`}
                       >
                         {wallpaper === wp.url && (
                           <div style={{
