@@ -5001,9 +5001,8 @@ input {
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Fixed elements that must shift right when chat opens */
+/* Fixed elements that shift right when chat opens */
 .app-layout--chat-open .app-shell,
-.app-layout--chat-open .right-side-nav,
 .app-layout--chat-open .floating-controls,
 .app-layout--chat-open .top-right-controls,
 .app-layout--chat-open .bottom-left-controls {
@@ -5014,6 +5013,13 @@ input {
 .app-layout--chat-open .app-shell {
   right: 0;
   width: auto;
+}
+
+/* Hide right side nav (focus/break/clock pills) when chat is open */
+.app-layout--chat-open .right-side-nav {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 /* ─── Persistent AI Chat Panel ────────────────────────────────────────────────── */
