@@ -5392,6 +5392,159 @@ input {
   font-family: 'Inter', sans-serif;
 }
 
+/* ─── Resize Handle ──────────────────────────────────────────────────────────── */
+.ai-chat-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-chat-resize-handle::after {
+  content: '';
+  width: 2px;
+  height: 48px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.0);
+  transition: background 0.15s ease;
+}
+
+.ai-chat-resize-handle:hover::after {
+  background: rgba(6, 182, 212, 0.5);
+}
+
+/* ─── Collapsed Mini Mode ────────────────────────────────────────────────────── */
+.ai-chat-panel--collapsed {
+  width: 52px !important;
+  min-width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.ai-chat-collapsed-expand {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(6,182,212,0.06));
+  border: 1px solid rgba(6,182,212,0.3);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-chat-collapsed-expand:hover {
+  background: rgba(6,182,212,0.25);
+  transform: scale(1.05);
+}
+
+.collapsed-loading-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  animation: spinLoader 0.8s linear infinite;
+}
+
+.ai-chat-collapsed-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-chat-collapsed-close:hover {
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+}
+
+/* ─── Copy Button + Timestamps ───────────────────────────────────────────────── */
+.chat-bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 82%;
+  gap: 3px;
+}
+
+.chat-bubble-row--user .chat-bubble-wrapper {
+  align-items: flex-end;
+}
+
+.chat-bubble-row--ai .chat-bubble-wrapper {
+  align-items: flex-start;
+}
+
+/* bubble itself loses max-width since wrapper now controls it */
+.chat-bubble-wrapper .chat-bubble {
+  max-width: 100%;
+}
+
+.chat-bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  height: 16px;
+}
+
+.chat-bubble-row:hover .chat-bubble-meta {
+  opacity: 1;
+}
+
+.chat-timestamp {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.chat-copy-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.35);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  padding: 0;
+}
+
+.chat-copy-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+}
+
+/* ─── Ask AI button loading glow ─────────────────────────────────────────────── */
+.ai-chat-btn--active {
+  background: rgba(6, 182, 212, 0.15) !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
+}
+
 /* ─── Mobile: full-width bottom sheet ───────────────────────────────────────── */
 @media (max-width: 768px) {
   :root { --chat-panel-width: 100vw; }

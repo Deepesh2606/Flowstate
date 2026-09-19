@@ -421,7 +421,7 @@ const AppShell = () => {
         {/* Bottom Left Controls */}
         <div className="bottom-left-controls">
           <button
-            className="ai-chat-btn"
+            className={`ai-chat-btn${showAIChat ? ' ai-chat-btn--active' : ''}`}
             onClick={() => setShowAIChat(v => !v)}
             id="chatgpt-btn-bottom"
             title="Ask AI"
