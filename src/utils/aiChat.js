@@ -61,7 +61,8 @@ export async function streamGeminiResponse(messages, apiKey, onChunk, onDone, on
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`Gemini API error ${response.status}: ${errText}`);
+      console.error('Gemini API raw error:', response.status, errText);
+      throw new Error(`HTTP_${response.status}: ${errText}`);
     }
 
     const reader = response.body.getReader();
