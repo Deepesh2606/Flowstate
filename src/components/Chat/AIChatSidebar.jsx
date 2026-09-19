@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { streamGeminiResponse } from '../../utils/aiChat';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const STORAGE_KEY = 'flowstate_chat_history';
+const GEMINI_KEY_STORAGE = 'flowstate_gemini_key';
+
+// User's own key takes priority over the app's default key
+const getApiKey = () => localStorage.getItem(GEMINI_KEY_STORAGE) || DEFAULT_API_KEY;
 const MIN_WIDTH = 300;
 const MAX_WIDTH = 600;
 const DEFAULT_WIDTH = 360;
@@ -230,7 +234,7 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
 
     await streamGeminiResponse(
       apiMessages,
-      API_KEY,
+      getApiKey(),
       (chunk) => {
         if (abortRef.current) return;
         setMessages((prev) =>

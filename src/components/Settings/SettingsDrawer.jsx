@@ -58,6 +58,28 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   const [shortBreak, setShortBreak]   = useState(Math.round((d.shortBreak || 300)  / 60));
   const [longBreak, setLongBreak]     = useState(Math.round((d.longBreak  || 900)  / 60));
   const [longBreakInterval, setLongBreakInterval] = useState(settings?.longBreakInterval || 4);
+
+  // Gemini API key (stored in localStorage, overrides env var)
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('flowstate_gemini_key') || '');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [geminiSaved, setGeminiSaved] = useState(false);
+
+  const handleSaveGeminiKey = () => {
+    const trimmed = geminiKey.trim();
+    if (trimmed) {
+      localStorage.setItem('flowstate_gemini_key', trimmed);
+    } else {
+      localStorage.removeItem('flowstate_gemini_key');
+    }
+    setGeminiSaved(true);
+    setTimeout(() => setGeminiSaved(false), 2000);
+  };
+
+  const handleClearGeminiKey = () => {
+    setGeminiKey('');
+    localStorage.removeItem('flowstate_gemini_key');
+  };
+
   const [dailyGoal, setDailyGoal]     = useState(settings?.dailyGoal || 8);
 
   // Behaviour toggles
@@ -752,7 +774,90 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
           </div>
         </div>
 
+        {/* Gemini AI Key */}
+        <div className="settings-section">
+          <div className="settings-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            Gemini AI Key
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+              Add your own key so the AI chat works for everyone using your deployment.{' '}
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                Get a free key →
+              </a>
+            </p>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  id="settings-gemini-key"
+                  type={showGeminiKey ? 'text' : 'password'}
+                  className="settings-input"
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  style={{ width: '100%', paddingRight: '36px', fontFamily: geminiKey ? 'monospace' : 'inherit', fontSize: '12px' }}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGeminiKey(v => !v)}
+                  style={{
+                    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0,
+                    display: 'flex', alignItems: 'center'
+                  }}
+                  aria-label={showGeminiKey ? 'Hide key' : 'Show key'}
+                  title={showGeminiKey ? 'Hide' : 'Show'}
+                >
+                  {showGeminiKey ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={handleSaveGeminiKey}
+                style={{
+                  padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
+                  background: geminiSaved ? 'rgba(16,185,129,0.15)' : 'rgba(6,182,212,0.12)',
+                  border: geminiSaved ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(6,182,212,0.3)',
+                  color: geminiSaved ? '#10b981' : 'var(--accent)',
+                  cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0
+                }}
+                id="settings-save-gemini-key"
+              >
+                {geminiSaved ? '✓ Saved' : 'Save Key'}
+              </button>
+            </div>
+            {geminiKey && (
+              <button
+                type="button"
+                onClick={handleClearGeminiKey}
+                style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+                id="settings-clear-gemini-key"
+              >
+                × Clear saved key
+              </button>
+            )}
+          </div>
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+
           <button className="save-btn" onClick={handleSave} id="settings-save-btn">
             Save & Close
           </button>
