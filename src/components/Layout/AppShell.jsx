@@ -54,6 +54,36 @@ const AppShell = () => {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
 
+  // Sync fullscreen state attributes on document element & body
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      if (isFs) {
+        document.documentElement.setAttribute('data-fullscreen', 'true');
+        document.body.classList.add('is-fullscreen');
+      } else {
+        document.documentElement.removeAttribute('data-fullscreen');
+        document.body.classList.remove('is-fullscreen');
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
   // Request notification permission once (non-intrusively)
   useEffect(() => {
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {

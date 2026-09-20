@@ -3076,19 +3076,73 @@ input {
 }
 
 
-/* Fullscreen Mode - Hide extra UI */
+/* Fullscreen Mode - Clean, centered layout with top margin */
 :fullscreen .topbar,
 :fullscreen .floating-controls,
 :fullscreen .top-right-controls,
-:fullscreen .tab-bar {
+:fullscreen .tab-bar,
+:fullscreen .right-side-nav,
+:fullscreen .bottom-left-controls,
+:-webkit-full-screen .topbar,
+:-webkit-full-screen .floating-controls,
+:-webkit-full-screen .top-right-controls,
+:-webkit-full-screen .tab-bar,
+:-webkit-full-screen .right-side-nav,
+:-webkit-full-screen .bottom-left-controls,
+[data-fullscreen="true"] .topbar,
+[data-fullscreen="true"] .floating-controls,
+[data-fullscreen="true"] .top-right-controls,
+[data-fullscreen="true"] .tab-bar,
+[data-fullscreen="true"] .right-side-nav,
+[data-fullscreen="true"] .bottom-left-controls,
+body.is-fullscreen .topbar,
+body.is-fullscreen .floating-controls,
+body.is-fullscreen .top-right-controls,
+body.is-fullscreen .tab-bar,
+body.is-fullscreen .right-side-nav,
+body.is-fullscreen .bottom-left-controls {
   display: none !important;
 }
 
-:fullscreen .content-area {
-  padding-bottom: 0 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+:fullscreen .content-area,
+:-webkit-full-screen .content-area,
+[data-fullscreen="true"] .content-area,
+body.is-fullscreen .content-area {
+  padding-top: max(48px, 6vh) !important;
+  padding-bottom: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100vh !important;
+  box-sizing: border-box !important;
+}
+
+:fullscreen .tab-content,
+:-webkit-full-screen .tab-content,
+[data-fullscreen="true"] .tab-content,
+body.is-fullscreen .tab-content {
+  margin: auto 0 !important;
+  margin-top: max(24px, 3vh) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+:fullscreen .timer-tab-wrapper,
+:-webkit-full-screen .timer-tab-wrapper,
+[data-fullscreen="true"] .timer-tab-wrapper,
+body.is-fullscreen .timer-tab-wrapper {
+  margin-top: 12px !important;
+}
+
+:fullscreen .timer-tab-bottom-spacer,
+:-webkit-full-screen .timer-tab-bottom-spacer,
+[data-fullscreen="true"] .timer-tab-bottom-spacer,
+body.is-fullscreen .timer-tab-bottom-spacer {
+  display: none !important;
+  height: 0 !important;
 }
 
 /* ─── Skip Session Confirmation Modal ─────────────────────────────────────── */
