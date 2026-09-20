@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const QUOTES = [
   { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
@@ -33,40 +33,113 @@ const QUOTES = [
   { text: "Act as if what you do makes a difference. It does.", author: "William James" },
 ];
 
-const MotivationalQuote = ({ enabled, onSessionStart }) => {
+const MotivationalQuote = ({ enabled = true, isRunning, sessionCount, onSessionStart }) => {
   const [quote, setQuote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [visible, setVisible] = useState(false);
-  const prevSessionStart = useRef(onSessionStart);
+  const [isFading, setIsFading] = useState(false);
+  const prevIsRunning = useRef(isRunning);
+  const prevSessionCount = useRef(sessionCount);
+  const fadeTimeoutRef = useRef(null);
 
-  // Show quote on new session start
+  // Smoothly rotate to a new quote
+  const rotateQuote = useCallback(() => {
+    setIsFading(true);
+    if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+    fadeTimeoutRef.current = setTimeout(() => {
+      setQuote((prev) => {
+        let next;
+        do {
+          next = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+        } while (next.text === prev?.text && QUOTES.length > 1);
+        return next;
+      });
+      setIsFading(false);
+    }, 250);
+  }, []);
+
+  // Handle genuine session start or session count advance
   useEffect(() => {
-    if (onSessionStart && onSessionStart !== prevSessionStart.current) {
-      const next = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-      setQuote(next);
+    const justStarted = !prevIsRunning.current && isRunning;
+    const sessionAdvanced = sessionCount !== undefined && sessionCount !== prevSessionCount.current;
+
+    if (justStarted || sessionAdvanced) {
+      rotateQuote();
       setVisible(true);
     }
-    prevSessionStart.current = onSessionStart;
-  }, [onSessionStart]);
+    prevIsRunning.current = isRunning;
+    prevSessionCount.current = sessionCount;
+  }, [isRunning, sessionCount, rotateQuote]);
 
-  // Show on mount after a short delay
+  // Handle backwards-compatible onSessionStart if passed without isRunning
+  const prevSessionStartProp = useRef(onSessionStart);
   useEffect(() => {
-    if (!enabled) { setVisible(false); return; }
-    const t = setTimeout(() => setVisible(true), 400);
+    if (isRunning === undefined && onSessionStart && onSessionStart !== prevSessionStartProp.current) {
+      rotateQuote();
+      setVisible(true);
+    }
+    prevSessionStartProp.current = onSessionStart;
+  }, [onSessionStart, isRunning, rotateQuote]);
+
+  // Gentle auto-rotation every 90 seconds (does not rush the reader)
+  useEffect(() => {
+    if (!enabled || !visible) return;
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        rotateQuote();
+      }
+    }, 90000);
+    return () => clearInterval(interval);
+  }, [enabled, visible, rotateQuote]);
+
+  // Initial show on mount
+  useEffect(() => {
+    if (!enabled) {
+      setVisible(false);
+      return;
+    }
+    const t = setTimeout(() => setVisible(true), 350);
     return () => clearTimeout(t);
   }, [enabled]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+    };
+  }, []);
 
   if (!enabled || !visible) return null;
 
   return (
-    <div className="motivational-quote" role="complementary">
-      <span className="quote-text">"{quote.text}"</span>
-      <span className="quote-author">— {quote.author}</span>
-      <button
-        type="button"
-        className="quote-dismiss"
-        onClick={() => setVisible(false)}
-        aria-label="Dismiss quote"
-      >×</button>
+    <div
+      className={`motivational-quote ${isFading ? 'fade-out' : 'fade-in'}`}
+      role="complementary"
+      aria-live="polite"
+    >
+      <div className="quote-content">
+        <span className="quote-text">“{quote.text}”</span>
+        <span className="quote-author">— {quote.author}</span>
+      </div>
+      <div className="quote-actions">
+        <button
+          type="button"
+          className="quote-action-btn"
+          onClick={rotateQuote}
+          title="New quote"
+          aria-label="New quote"
+        >
+          ↻
+        </button>
+        <button
+          type="button"
+          className="quote-action-btn"
+          onClick={() => setVisible(false)}
+          title="Dismiss quote"
+          aria-label="Dismiss quote"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   );
 };

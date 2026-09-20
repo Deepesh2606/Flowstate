@@ -17,7 +17,7 @@ import { useTasks } from '../../hooks/useTasks';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
-const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialModeConsumed, timerActionsRef, onModeChange }) => {
+const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initialMode, onInitialModeConsumed, timerActionsRef, onModeChange }) => {
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { tasks } = useTasks();
@@ -146,6 +146,21 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
     onModeChange?.(newMode);
   };
 
+  const handlePresetClick = (mins) => {
+    const sec = mins * 60;
+    if (onUpdateSettings) {
+      onUpdateSettings({
+        durations: {
+          ...settings?.durations,
+          pomodoro: sec,
+        },
+      });
+    }
+    if (settings?.durations?.pomodoro === sec) {
+      handleReset();
+    }
+  };
+
   // Sync external mode changes (auto-advance) back to AppShell
   useEffect(() => {
     onModeChange?.(mode);
@@ -203,6 +218,34 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
 
       {/* Mode Pills */}
       <ModePills mode={mode} onSwitch={handleSwitchMode} />
+
+      {/* Popular Focus Presets (Minimal Buttons for 15m, 25m, 45m, 50m, 60m) */}
+      {mode === 'pomodoro' && (
+        <div className="focus-presets-row" role="group" aria-label="Quick focus durations">
+          {[
+            { mins: 15, label: '15m' },
+            { mins: 25, label: '25m', popular: true },
+            { mins: 45, label: '45m' },
+            { mins: 50, label: '50m' },
+            { mins: 60, label: '60m' },
+          ].map((preset) => {
+            const currentMins = Math.round((settings?.durations?.pomodoro || 45 * 60) / 60);
+            const isSelected = currentMins === preset.mins;
+            return (
+              <button
+                key={preset.mins}
+                type="button"
+                className={`focus-preset-btn ${isSelected ? 'active' : ''}`}
+                onClick={() => handlePresetClick(preset.mins)}
+                title={preset.popular ? `Popular 25 min Pomodoro timer` : `Set focus timer to ${preset.mins} minutes`}
+              >
+                {preset.popular && <span className="focus-preset-popular-dot" aria-hidden="true" />}
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Timer Card */}
       <TimerDisplay
@@ -364,7 +407,8 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
       {/* Motivational Quote */}
       <MotivationalQuote
         enabled={settings?.showQuotes ?? true}
-        onSessionStart={isRunning ? Date.now() : null}
+        isRunning={isRunning}
+        sessionCount={sessionCount}
       />
 
       {/* Stopwatch Laps */}

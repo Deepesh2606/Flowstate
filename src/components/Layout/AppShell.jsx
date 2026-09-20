@@ -199,6 +199,7 @@ const AppShell = () => {
         return (
         <TimerTab
             settings={settings}
+            onUpdateSettings={updateSettings}
             onOpenSettings={() => setShowSettings(true)}
             hasWallpaper={!!wallpaper}
             onTabChange={handleTabChange}
