@@ -30,22 +30,36 @@ export const saveSettings = async (uid, settings) => {
 
 export const subscribeSettings = (uid, callback) => {
   const ref = doc(db, 'users', uid, 'data', 'settings');
-  return onSnapshot(ref, (snap) => {
-    callback(snap.exists() ? snap.data() : null);
-  });
+  return onSnapshot(
+    ref,
+    (snap) => {
+      callback(snap.exists() ? snap.data() : null);
+    },
+    (err) => {
+      console.warn('Firestore subscribeSettings error:', err);
+      callback(null);
+    }
+  );
 };
 
 // ─── Global App Data ──────────────────────────────────────────────────────────
 
 export const subscribeGlobalCurated = (callback) => {
   const ref = doc(db, 'appData', 'wallpapers');
-  return onSnapshot(ref, (snap) => {
-    if (snap.exists()) {
-      callback(snap.data().curated || null, snap.data().defaultWallpaper || null);
-    } else {
+  return onSnapshot(
+    ref,
+    (snap) => {
+      if (snap.exists()) {
+        callback(snap.data().curated || null, snap.data().defaultWallpaper || null);
+      } else {
+        callback(null, null);
+      }
+    },
+    (err) => {
+      console.warn('Firestore subscribeGlobalCurated error:', err);
       callback(null, null);
     }
-  });
+  );
 };
 
 export const addGlobalCurated = async (preset) => {

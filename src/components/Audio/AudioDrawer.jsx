@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAudio } from '../../contexts/AudioContext';
 import {
   IconHeadphones,
@@ -242,6 +242,37 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
 
   const isAmbientTab = activeSubTab === 'ambient';
   const isAnyMusicPlaying = spotifyActive || appleMusicActive || ytMusicActive || lofiPlaying;
+
+  const displayedStreams = (LOFI_STREAMS || []).filter((s) => {
+    if (!filterAvailableOnly) return true;
+    if (s.id === 'custom') return true;
+    return streamStatus[s.id] !== 'offline';
+  });
+
+  const renderStatusBadge = (status) => {
+    if (status === 'available') {
+      return (
+        <span className="stream-badge badge-available" style={{ fontSize: '10px', color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
+          Live
+        </span>
+      );
+    }
+    if (status === 'offline') {
+      return (
+        <span className="stream-badge badge-offline" style={{ fontSize: '10px', color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444' }} />
+          Offline
+        </span>
+      );
+    }
+    return (
+      <span className="stream-badge badge-checking" style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.5)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.4)' }} />
+        Checking
+      </span>
+    );
+  };
 
   const handleServiceChange = (serviceId) => {
     setSelectedMusicService(serviceId);
