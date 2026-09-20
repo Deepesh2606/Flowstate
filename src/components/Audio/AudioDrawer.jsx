@@ -41,7 +41,50 @@ const SOUND_THEMES = {
   thunder: { accent: '#c084fc', glow: 'rgba(192, 132, 252, 0.25)', bg: 'rgba(192, 132, 252, 0.12)' },
 };
 
-const AudioDrawer = ({ onClose }) => {
+const MUSIC_SERVICES = [
+  {
+    id: 'spotify',
+    name: 'Spotify',
+    tag: 'Web Player',
+    description: 'Chill study beats, deep focus & personal playlists',
+    icon: IconSpotify,
+    color: '#1DB954',
+    bg: 'rgba(29, 185, 84, 0.12)',
+    border: 'rgba(29, 185, 84, 0.3)',
+  },
+  {
+    id: 'applemusic',
+    name: 'Apple Music',
+    tag: 'Apple Embed',
+    description: 'Pure Focus, BEATstrumentals & Apple study playlists',
+    icon: IconAppleMusic,
+    color: '#FA2D48',
+    bg: 'rgba(250, 45, 72, 0.12)',
+    border: 'rgba(250, 45, 72, 0.3)',
+  },
+  {
+    id: 'ytmusic',
+    name: 'YouTube Music',
+    tag: 'YT Music',
+    description: 'Lofi hip-hop, instrumental study playlists & video links',
+    icon: IconYTMusic,
+    color: '#FF0000',
+    bg: 'rgba(255, 0, 0, 0.12)',
+    border: 'rgba(255, 0, 0, 0.3)',
+  },
+  {
+    id: 'lofi',
+    name: 'Lofi Radio',
+    tag: '24/7 Live',
+    description: 'Lofi Girl, Synthwave, Chillhop & ambient streams',
+    icon: IconRadio,
+    color: '#38bdf8',
+    bg: 'rgba(56, 189, 248, 0.12)',
+    border: 'rgba(56, 189, 248, 0.3)',
+  },
+];
+
+const AudioDrawer = ({ onClose, isOpen = true }) => {
   const {
     AMBIENT_SOUNDS,
     LOFI_STREAMS,
@@ -59,6 +102,8 @@ const AudioDrawer = ({ onClose }) => {
     isAnyPlaying,
     activeAmbientCount,
     activeAmbientLabels,
+    activeAudioTab,
+    setActiveAudioTab,
     lofiPlaying,
     setLofiPlaying,
     selectedStreamId,
@@ -96,7 +141,10 @@ const AudioDrawer = ({ onClose }) => {
     extractAppleMusicDetails,
   } = useAudio();
 
-  const [activeSubTab, setActiveSubTab] = useState('ambient'); // 'ambient' | 'lofi' | 'spotify' | 'ytmusic' | 'applemusic'
+  const activeSubTab = activeAudioTab || 'ambient';
+  const setActiveSubTab = (tab) => {
+    if (setActiveAudioTab) setActiveAudioTab(tab);
+  };
   const [customInput, setCustomInput] = useState(customVideoId);
   const [spotifyUrlInput, setSpotifyUrlInput] = useState('');
   const [ytMusicUrlInput, setYtMusicUrlInput] = useState('');
@@ -180,10 +228,80 @@ const AudioDrawer = ({ onClose }) => {
     }
   }
 
+  const renderMusicServiceSelector = () => (
+    <div className="music-service-selector-bar">
+      <div className="music-service-selector-header">
+        <span className="music-service-selector-label">CHOOSE MUSIC SERVICE</span>
+        <span className="music-service-selector-sub">1-Click Switcher</span>
+      </div>
+      <div className="music-service-chips-grid">
+        {MUSIC_SERVICES.map((srv) => {
+          const isCurrent = activeSubTab === srv.id;
+          const Icon = srv.icon;
+          let isPlaying = false;
+          if (srv.id === 'spotify') isPlaying = spotifyActive;
+          else if (srv.id === 'applemusic') isPlaying = appleMusicActive;
+          else if (srv.id === 'ytmusic') isPlaying = ytMusicActive;
+          else if (srv.id === 'lofi') isPlaying = lofiPlaying;
+
+          return (
+            <button
+              key={srv.id}
+              type="button"
+              className={`music-service-card-btn ${isCurrent ? 'active' : ''}`}
+              onClick={() => {
+                setActiveSubTab(srv.id);
+                if (srv.id === 'spotify') setSpotifyActive(true);
+                if (srv.id === 'applemusic') setAppleMusicActive(true);
+                if (srv.id === 'ytmusic') setYtMusicActive(true);
+                if (srv.id === 'lofi' && !lofiPlaying) setLofiPlaying(true);
+              }}
+              style={{
+                '--srv-color': srv.color,
+                '--srv-bg': srv.bg,
+                '--srv-border': srv.border,
+              }}
+              id={`select-service-${srv.id}`}
+              title={`Switch to ${srv.name}`}
+            >
+              <div className="music-service-card-top">
+                <Icon size={15} color={srv.color} />
+                <span className="music-service-card-tag">{srv.tag}</span>
+              </div>
+              <span className="music-service-card-name">{srv.name}</span>
+              {isPlaying && <span className="music-service-live-dot" />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <div className="drawer-overlay" onClick={onClose} aria-hidden="true" />
-      <aside className="drawer audio-drawer" role="dialog" aria-label="Audio and Ambience Studio">
+      <div
+        className="drawer-overlay"
+        onClick={onClose}
+        aria-hidden="true"
+        style={{
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+          visibility: isOpen ? 'visible' : 'hidden',
+          transition: 'opacity 0.25s ease, visibility 0.25s ease',
+        }}
+      />
+      <aside
+        className={`drawer audio-drawer ${isOpen ? 'open' : 'closed'}`}
+        role="dialog"
+        aria-label="Audio and Ambience Studio"
+        style={{
+          transform: isOpen ? 'translateX(0)' : 'translateX(105%)',
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+          visibility: isOpen ? 'visible' : 'hidden',
+          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.3s ease',
+        }}
+      >
         {/* Header */}
         <div className="drawer-header audio-drawer-header">
           <div className="audio-header-left">
@@ -193,7 +311,7 @@ const AudioDrawer = ({ onClose }) => {
             </div>
             <div>
               <h2 className="drawer-title" style={{ fontSize: '1.2rem', lineHeight: 1.2 }}>Music & Ambience</h2>
-              <span className="audio-header-sub">Soundscapes for deep focus</span>
+              <span className="audio-header-sub">Soundscapes & focus music</span>
             </div>
           </div>
           <div className="audio-header-actions">
@@ -253,17 +371,6 @@ const AudioDrawer = ({ onClose }) => {
             {activeAmbientCount > 0 && <span className="audio-tab-count">{activeAmbientCount}</span>}
           </button>
           <button
-            className={`audio-nav-tab ${activeSubTab === 'lofi' ? 'active' : ''}`}
-            onClick={() => setActiveSubTab('lofi')}
-            role="tab"
-            aria-selected={activeSubTab === 'lofi'}
-            id="tab-lofi-radio"
-          >
-            <IconRadio size={15} />
-            <span>Lofi Radio</span>
-            {lofiPlaying && <span className="audio-tab-live-pulse" />}
-          </button>
-          <button
             className={`audio-nav-tab ${activeSubTab === 'spotify' ? 'active' : ''}`}
             onClick={() => {
               setActiveSubTab('spotify');
@@ -276,6 +383,20 @@ const AudioDrawer = ({ onClose }) => {
             <IconSpotify size={15} color="#1DB954" />
             <span>Spotify</span>
             {spotifyActive && <span className="audio-tab-spotify-dot" />}
+          </button>
+          <button
+            className={`audio-nav-tab ${activeSubTab === 'applemusic' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSubTab('applemusic');
+              setAppleMusicActive(true);
+            }}
+            role="tab"
+            aria-selected={activeSubTab === 'applemusic'}
+            id="tab-applemusic"
+          >
+            <IconAppleMusic size={15} color="#FA2D48" />
+            <span>Apple Music</span>
+            {appleMusicActive && <span className="audio-tab-applemusic-dot" />}
           </button>
           <button
             className={`audio-nav-tab ${activeSubTab === 'ytmusic' ? 'active' : ''}`}
@@ -292,24 +413,20 @@ const AudioDrawer = ({ onClose }) => {
             {ytMusicActive && <span className="audio-tab-ytmusic-dot" />}
           </button>
           <button
-            className={`audio-nav-tab ${activeSubTab === 'applemusic' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveSubTab('applemusic');
-              setAppleMusicActive(true);
-            }}
+            className={`audio-nav-tab ${activeSubTab === 'lofi' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('lofi')}
             role="tab"
-            aria-selected={activeSubTab === 'applemusic'}
-            id="tab-applemusic"
+            aria-selected={activeSubTab === 'lofi'}
+            id="tab-lofi-radio"
           >
-            <IconAppleMusic size={15} color="#FA2D48" />
-            <span>Apple</span>
-            {appleMusicActive && <span className="audio-tab-applemusic-dot" />}
+            <IconRadio size={15} />
+            <span>Lofi Radio</span>
+            {lofiPlaying && <span className="audio-tab-live-pulse" />}
           </button>
         </div>
 
         {/* ── AMBIENT MIXER TAB ── */}
-        {activeSubTab === 'ambient' && (
-          <div className="ambient-tab-content">
+        <div className="ambient-tab-content" style={{ display: activeSubTab === 'ambient' ? 'block' : 'none' }}>
             {/* Master Volume Section */}
             <div className="master-volume-box">
               <div className="master-volume-header">
@@ -468,12 +585,11 @@ const AudioDrawer = ({ onClose }) => {
               </div>
             </div>
           </div>
-        )}
 
         {/* ── LOFI RADIO TAB ── */}
-        {activeSubTab === 'lofi' && (
-          <div className="lofi-section">
-            {/* Live Status & Main Toggle */}
+        <div className="lofi-section" style={{ display: activeSubTab === 'lofi' ? 'block' : 'none' }}>
+          {renderMusicServiceSelector()}
+          {/* Live Status & Main Toggle */}
             <div className="lofi-hero-bar">
               <div className={`lofi-status-pill ${lofiPlaying ? 'playing' : ''}`}>
                 <span className="live-dot" />
@@ -639,12 +755,11 @@ const AudioDrawer = ({ onClose }) => {
               </form>
             )}
           </div>
-        )}
 
         {/* ── SPOTIFY TAB ── */}
-        {activeSubTab === 'spotify' && (
-          <div className="spotify-section">
-            {/* Spotify Player Embed */}
+        <div className="spotify-section" style={{ display: activeSubTab === 'spotify' ? 'block' : 'none' }}>
+          {renderMusicServiceSelector()}
+          {/* Spotify Player Embed */}
             <SpotifyPlayer />
 
             {/* Curated Spotify Playlists */}
@@ -716,12 +831,11 @@ const AudioDrawer = ({ onClose }) => {
               </span>
             </form>
           </div>
-        )}
 
         {/* ── YOUTUBE MUSIC TAB ── */}
-        {activeSubTab === 'ytmusic' && (
-          <div className="ytmusic-section">
-            {/* YouTube Music Player Embed */}
+        <div className="ytmusic-section" style={{ display: activeSubTab === 'ytmusic' ? 'block' : 'none' }}>
+          {renderMusicServiceSelector()}
+          {/* YouTube Music Player Embed */}
             <YTMusicPlayer />
 
             {/* Curated YouTube Music Focus Playlists */}
@@ -794,12 +908,11 @@ const AudioDrawer = ({ onClose }) => {
               </span>
             </form>
           </div>
-        )}
 
         {/* ── APPLE MUSIC TAB ── */}
-        {activeSubTab === 'applemusic' && (
-          <div className="applemusic-section">
-            {/* Apple Music Player Embed */}
+        <div className="applemusic-section" style={{ display: activeSubTab === 'applemusic' ? 'block' : 'none' }}>
+          {renderMusicServiceSelector()}
+          {/* Apple Music Player Embed */}
             <AppleMusicPlayer />
 
             {/* Curated Apple Music Focus Playlists */}
@@ -871,7 +984,6 @@ const AudioDrawer = ({ onClose }) => {
               </span>
             </form>
           </div>
-        )}
       </aside>
     </>
   );

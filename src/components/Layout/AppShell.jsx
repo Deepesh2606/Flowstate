@@ -10,17 +10,15 @@ import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat } from '../Icons';
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
-import LofiPlayer from '../Audio/LofiPlayer';
-import YTMusicPlayer from '../Audio/YTMusicPlayer';
 import WallpaperPicker from '../WallpaperPicker';
 import InstallModal from '../InstallModal';
 import AIChatSidebar from '../Chat/AIChatSidebar';
+import AudioDrawer from '../Audio/AudioDrawer';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
 const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
 const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
-const AudioDrawer = lazy(() => import('../Audio/AudioDrawer'));
 
 import GoogleSignInButton from '../Auth/GoogleSignInButton';
 
@@ -34,7 +32,7 @@ const AppShell = () => {
   const { currentUser, signOut, openAuthModal } = useAuth();
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
-  const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying } = useAudio();
+  const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showAIChat, setShowAIChat] = useState(false);
@@ -305,9 +303,9 @@ const AppShell = () => {
             <button
               className="floating-icon-btn"
               onClick={() => setShowAudioDrawer(true)}
-              aria-label="Ambience and Lofi Radio"
+              aria-label="Music Player & Ambience (Spotify, Apple Music, YT Music, Lofi)"
               id="audio-drawer-btn"
-              title="Ambience & Lofi Radio"
+              title="Music Player & Ambience (Spotify, Apple Music, YT Music, Lofi)"
               style={{ position: 'relative' }}
             >
               <IconHeadphones size={18} />
@@ -369,13 +367,24 @@ const AppShell = () => {
                   <button
                     className="user-menu-item"
                     onClick={() => {
-                      setShowAudioDrawer(true);
+                      openMusicPlayer('spotify');
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-open-music"
+                  >
+                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Music Player (Spotify · Apple · YT)
+                  </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      openAudioDrawerWithTab('ambient');
                       setShowUserMenu(false);
                     }}
                     role="menuitem"
                     id="menu-open-ambience"
                   >
-                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Music
+                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Sounds
                   </button>
                   <button
                     className="user-menu-item"
@@ -429,13 +438,24 @@ const AppShell = () => {
                   <button
                     className="user-menu-item"
                     onClick={() => {
-                      setShowAudioDrawer(true);
+                      openMusicPlayer('spotify');
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-open-music-guest"
+                  >
+                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Music Player (Spotify · Apple · YT)
+                  </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      openAudioDrawerWithTab('ambient');
                       setShowUserMenu(false);
                     }}
                     role="menuitem"
                     id="menu-open-ambience"
                   >
-                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Music
+                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Sounds
                   </button>
                   <button
                     className="user-menu-item"
@@ -496,12 +516,6 @@ const AppShell = () => {
         {/* Floating Mini Player Pill (when soundscape/lofi is playing) */}
         <FloatingAudioWidget />
 
-        {/* Persistent Background Lofi Radio Player */}
-        <LofiPlayer inDrawer={false} />
-
-        {/* Persistent Background YouTube Music Player */}
-        <YTMusicPlayer inDrawer={false} />
-
         {/* Bottom Tab Bar */}
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
@@ -519,6 +533,9 @@ const AppShell = () => {
         <AIChatSidebar onClose={() => setShowAIChat(false)} />
       )}
 
+      {/* Persistent Audio & Music Drawer */}
+      <AudioDrawer isOpen={showAudioDrawer} onClose={() => setShowAudioDrawer(false)} />
+
       {/* Modals & Drawers */}
       {showPicker && <WallpaperPicker />}
       <Suspense fallback={null}>
@@ -531,7 +548,6 @@ const AppShell = () => {
           />
         )}
         {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
-        {showAudioDrawer && <AudioDrawer onClose={() => setShowAudioDrawer(false)} />}
       </Suspense>
 
       <InstallModal

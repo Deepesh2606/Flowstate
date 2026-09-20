@@ -7,12 +7,13 @@ import CountdownGlow from './CountdownGlow';
 import SessionNoteModal from './SessionNoteModal';
 import MotivationalQuote from './MotivationalQuote';
 import ShareCard from './ShareCard';
-import { IconBook, IconMaximize, IconMinimize, IconPip } from '../Icons';
+import { IconBook, IconMaximize, IconMinimize, IconPip, IconHeadphones } from '../Icons';
 import { usePictureInPicture, PiPWindowPortal } from './PictureInPicture';
 import PipHelpModal from './PipHelpModal';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAudio } from '../../contexts/AudioContext';
 import { useTasks } from '../../hooks/useTasks';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -21,6 +22,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { tasks } = useTasks();
+  const { isAnyPlaying, openMusicPlayer, setShowAudioDrawer } = useAudio();
 
   // ─── Session note + share state ────────────────────────────────────────────
   const [showNoteModal, setShowNoteModal] = useState(false);
@@ -388,6 +390,36 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           id="timer-pip-btn"
         >
           <IconPip size={18} />
+        </button>
+        <button
+          className={`flocus-ctrl-btn ${isAnyPlaying ? 'active' : ''}`}
+          onClick={() => {
+            if (isAnyPlaying) {
+              setShowAudioDrawer(true);
+            } else {
+              openMusicPlayer('spotify');
+            }
+          }}
+          aria-label="Focus Music Player (Spotify, Apple Music, YouTube Music)"
+          title="Focus Music (Spotify, Apple Music, YT Music, Lofi)"
+          style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+          id="timer-music-btn"
+        >
+          <IconHeadphones size={18} />
+          {isAnyPlaying && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '7px',
+                right: '7px',
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: 'var(--accent, #06b6d4)',
+                boxShadow: '0 0 6px var(--accent, #06b6d4)',
+              }}
+            />
+          )}
         </button>
       </div>
 

@@ -22,6 +22,7 @@ const FloatingAudioWidget = () => {
     showAudioDrawer,
     isMuted,
     setIsMuted,
+    openMusicPlayer,
   } = useAudio();
 
   if (!isAnyPlaying || showAudioDrawer) {
@@ -71,6 +72,37 @@ const FloatingAudioWidget = () => {
       </div>
 
       <span className="mini-pill-text">{label}</span>
+
+      {/* Quick Service Switchers */}
+      <div className="mini-pill-services" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className={`mini-pill-srv-btn ${spotifyActive ? 'active' : ''}`}
+          onClick={() => openMusicPlayer('spotify')}
+          title="Switch to Spotify"
+          aria-label="Switch to Spotify"
+        >
+          <span style={{ fontSize: '11px' }}>🟢</span>
+        </button>
+        <button
+          type="button"
+          className={`mini-pill-srv-btn ${appleMusicActive ? 'active' : ''}`}
+          onClick={() => openMusicPlayer('applemusic')}
+          title="Switch to Apple Music"
+          aria-label="Switch to Apple Music"
+        >
+          <span style={{ fontSize: '11px' }}>🍎</span>
+        </button>
+        <button
+          type="button"
+          className={`mini-pill-srv-btn ${ytMusicActive ? 'active' : ''}`}
+          onClick={() => openMusicPlayer('ytmusic')}
+          title="Switch to YouTube Music"
+          aria-label="Switch to YouTube Music"
+        >
+          <span style={{ fontSize: '11px' }}>🔴</span>
+        </button>
+      </div>
 
       <button
         className="mini-pill-btn"

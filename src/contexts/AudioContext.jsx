@@ -237,6 +237,31 @@ export const AudioProvider = ({ children }) => {
 
   const [isMuted, setIsMuted] = useState(false);
   const [showAudioDrawer, setShowAudioDrawer] = useState(false);
+  const [activeAudioTab, setActiveAudioTab] = useState('ambient'); // 'ambient' | 'spotify' | 'applemusic' | 'ytmusic' | 'lofi'
+
+  const openAudioDrawerWithTab = useCallback((tab = 'ambient') => {
+    setActiveAudioTab(tab);
+    setShowAudioDrawer(true);
+  }, []);
+
+  const openMusicPlayer = useCallback((service = 'spotify') => {
+    if (service === 'spotify') {
+      setSpotifyActive(true);
+      setActiveAudioTab('spotify');
+    } else if (service === 'ytmusic') {
+      setYtMusicActive(true);
+      setActiveAudioTab('ytmusic');
+    } else if (service === 'applemusic') {
+      setAppleMusicActive(true);
+      setActiveAudioTab('applemusic');
+    } else if (service === 'lofi') {
+      setLofiPlaying(true);
+      setActiveAudioTab('lofi');
+    } else {
+      setActiveAudioTab('ambient');
+    }
+    setShowAudioDrawer(true);
+  }, []);
 
   // Lofi Radio state
   const [lofiPlaying, setLofiPlaying] = useState(false);
@@ -653,9 +678,13 @@ export const AudioProvider = ({ children }) => {
         customAppleMusicInput,
         setCustomAppleMusicInput,
         extractAppleMusicDetails,
-        // Drawer toggle
+        // Drawer toggle & tab controls
         showAudioDrawer,
         setShowAudioDrawer,
+        activeAudioTab,
+        setActiveAudioTab,
+        openAudioDrawerWithTab,
+        openMusicPlayer,
       }}
     >
       {children}
