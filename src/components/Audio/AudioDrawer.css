@@ -189,7 +189,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 4px;
-  gap: 3px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -205,14 +205,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 8px 6px;
+  gap: 8px;
+  padding: 10px 14px;
   border-radius: 8px;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
   font-family: 'Space Grotesk', system-ui, sans-serif;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -222,14 +222,14 @@
 
 .audio-nav-tab:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .audio-nav-tab.active {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
 .audio-tab-count {
@@ -1413,6 +1413,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.music-service-selector-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .music-service-selector-label {
@@ -1427,6 +1434,47 @@
   font-size: 11px;
   color: var(--accent, #06b6d4);
   font-weight: 600;
+}
+
+.music-service-dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.music-service-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 30px 6px 12px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.music-service-dropdown:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent, #06b6d4);
+}
+
+.music-service-dropdown:focus {
+  border-color: var(--accent, #06b6d4);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+}
+
+.music-service-dropdown option {
+  background: #0d1322;
+  color: #fff;
+  font-size: 13px;
 }
 
 .music-service-chips-grid {

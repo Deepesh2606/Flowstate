@@ -289,7 +289,11 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           setIsEditing={setIsEditingSubject}
         />
         <div className="timer-counter-wrapper">
-          <SessionCounter count={sessionCount} />
+          <SessionCounter
+            count={sessionCount}
+            dailyGoal={settings?.dailyGoal || 8}
+            longBreakInterval={settings?.longBreakInterval || 4}
+          />
         </div>
       </div>
 

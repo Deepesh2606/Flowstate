@@ -499,30 +499,45 @@ input {
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
 
+.session-counter.goal-reached {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(16, 185, 129, 0.25);
+}
+
+.session-counter-label {
+  font-family: var(--font-logo, 'Space Grotesk', sans-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
 .session-pips {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .session-pip {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.2s ease;
   color: #081226;
+  flex-shrink: 0;
 }
 
 .session-pip.filled {
   background: #10b981;
   border-color: #10b981;
   color: #081226;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
 .session-pip.empty {
@@ -530,13 +545,42 @@ input {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.session-counter-progress-bar {
+  width: 64px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.session-counter-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
 .session-counter-badge {
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #fff;
   letter-spacing: 0.04em;
   padding-left: 2px;
+  white-space: nowrap;
+}
+
+.session-counter-goal-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  white-space: nowrap;
+  animation: pulseDot 2s infinite;
 }
 
 /* ─── Subject Selector ───────────────────────────────────────────────────────── */

@@ -228,15 +228,54 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
     }
   }
 
+  const [selectedMusicService, setSelectedMusicService] = useState(() => {
+    if (activeAudioTab && activeAudioTab !== 'ambient') return activeAudioTab;
+    return 'spotify';
+  });
+
+  useEffect(() => {
+    if (activeAudioTab && activeAudioTab !== 'ambient') {
+      setSelectedMusicService(activeAudioTab);
+    }
+  }, [activeAudioTab]);
+
+  const isAmbientTab = activeSubTab === 'ambient';
+  const isAnyMusicPlaying = spotifyActive || appleMusicActive || ytMusicActive || lofiPlaying;
+
+  const handleServiceChange = (serviceId) => {
+    setSelectedMusicService(serviceId);
+    setActiveSubTab(serviceId);
+    if (serviceId === 'spotify') setSpotifyActive(true);
+    if (serviceId === 'applemusic') setAppleMusicActive(true);
+    if (serviceId === 'ytmusic') setYtMusicActive(true);
+    if (serviceId === 'lofi' && !lofiPlaying) setLofiPlaying(true);
+  };
+
   const renderMusicServiceSelector = () => (
     <div className="music-service-selector-bar">
       <div className="music-service-selector-header">
-        <span className="music-service-selector-label">CHOOSE MUSIC SERVICE</span>
-        <span className="music-service-selector-sub">1-Click Switcher</span>
+        <div className="music-service-selector-label-group">
+          <span className="music-service-selector-label">STREAMING SERVICE</span>
+          <span className="music-service-selector-sub">Select platform</span>
+        </div>
+        <div className="music-service-dropdown-wrapper">
+          <select
+            id="music-service-dropdown"
+            className="music-service-dropdown"
+            value={selectedMusicService}
+            onChange={(e) => handleServiceChange(e.target.value)}
+            aria-label="Select streaming service"
+          >
+            <option value="spotify">Spotify</option>
+            <option value="applemusic">Apple Music</option>
+            <option value="ytmusic">YouTube Music</option>
+            <option value="lofi">Lofi Hip Hop Radio</option>
+          </select>
+        </div>
       </div>
       <div className="music-service-chips-grid">
         {MUSIC_SERVICES.map((srv) => {
-          const isCurrent = activeSubTab === srv.id;
+          const isCurrent = selectedMusicService === srv.id;
           const Icon = srv.icon;
           let isPlaying = false;
           if (srv.id === 'spotify') isPlaying = spotifyActive;
@@ -249,13 +288,7 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
               key={srv.id}
               type="button"
               className={`music-service-card-btn ${isCurrent ? 'active' : ''}`}
-              onClick={() => {
-                setActiveSubTab(srv.id);
-                if (srv.id === 'spotify') setSpotifyActive(true);
-                if (srv.id === 'applemusic') setAppleMusicActive(true);
-                if (srv.id === 'ytmusic') setYtMusicActive(true);
-                if (srv.id === 'lofi' && !lofiPlaying) setLofiPlaying(true);
-              }}
+              onClick={() => handleServiceChange(srv.id)}
               style={{
                 '--srv-color': srv.color,
                 '--srv-bg': srv.bg,
@@ -360,68 +393,28 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
         {/* Tab Switcher */}
         <div className="audio-nav-tabs" role="tablist">
           <button
-            className={`audio-nav-tab ${activeSubTab === 'ambient' ? 'active' : ''}`}
+            className={`audio-nav-tab ${isAmbientTab ? 'active' : ''}`}
             onClick={() => setActiveSubTab('ambient')}
             role="tab"
-            aria-selected={activeSubTab === 'ambient'}
+            aria-selected={isAmbientTab}
             id="tab-ambient-mixer"
           >
-            <IconVolume size={15} />
+            <IconVolume size={16} />
             <span>Ambient</span>
             {activeAmbientCount > 0 && <span className="audio-tab-count">{activeAmbientCount}</span>}
           </button>
           <button
-            className={`audio-nav-tab ${activeSubTab === 'spotify' ? 'active' : ''}`}
+            className={`audio-nav-tab ${!isAmbientTab ? 'active' : ''}`}
             onClick={() => {
-              setActiveSubTab('spotify');
-              setSpotifyActive(true);
+              setActiveSubTab(selectedMusicService || 'spotify');
             }}
             role="tab"
-            aria-selected={activeSubTab === 'spotify'}
-            id="tab-spotify"
+            aria-selected={!isAmbientTab}
+            id="tab-music-player"
           >
-            <IconSpotify size={15} color="#1DB954" />
-            <span>Spotify</span>
-            {spotifyActive && <span className="audio-tab-spotify-dot" />}
-          </button>
-          <button
-            className={`audio-nav-tab ${activeSubTab === 'applemusic' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveSubTab('applemusic');
-              setAppleMusicActive(true);
-            }}
-            role="tab"
-            aria-selected={activeSubTab === 'applemusic'}
-            id="tab-applemusic"
-          >
-            <IconAppleMusic size={15} color="#FA2D48" />
-            <span>Apple Music</span>
-            {appleMusicActive && <span className="audio-tab-applemusic-dot" />}
-          </button>
-          <button
-            className={`audio-nav-tab ${activeSubTab === 'ytmusic' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveSubTab('ytmusic');
-              setYtMusicActive(true);
-            }}
-            role="tab"
-            aria-selected={activeSubTab === 'ytmusic'}
-            id="tab-ytmusic"
-          >
-            <IconYTMusic size={15} color="#FF0000" />
-            <span>YT Music</span>
-            {ytMusicActive && <span className="audio-tab-ytmusic-dot" />}
-          </button>
-          <button
-            className={`audio-nav-tab ${activeSubTab === 'lofi' ? 'active' : ''}`}
-            onClick={() => setActiveSubTab('lofi')}
-            role="tab"
-            aria-selected={activeSubTab === 'lofi'}
-            id="tab-lofi-radio"
-          >
-            <IconRadio size={15} />
-            <span>Lofi Radio</span>
-            {lofiPlaying && <span className="audio-tab-live-pulse" />}
+            <IconHeadphones size={16} />
+            <span>Music Player</span>
+            {isAnyMusicPlaying && <span className="audio-tab-live-pulse" />}
           </button>
         </div>
 
@@ -586,180 +579,13 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
             </div>
           </div>
 
-        {/* ── LOFI RADIO TAB ── */}
-        <div className="lofi-section" style={{ display: activeSubTab === 'lofi' ? 'block' : 'none' }}>
+        {/* ── MUSIC PLAYER (STREAMING SERVICE) TAB ── */}
+        <div className="music-player-tab-content" style={{ display: !isAmbientTab ? 'block' : 'none' }}>
           {renderMusicServiceSelector()}
-          {/* Live Status & Main Toggle */}
-            <div className="lofi-hero-bar">
-              <div className={`lofi-status-pill ${lofiPlaying ? 'playing' : ''}`}>
-                <span className="live-dot" />
-                <span>{lofiPlaying ? 'ON AIR' : 'RADIO PAUSED'}</span>
-              </div>
 
-              <button
-                className={`lofi-main-toggle-btn ${lofiPlaying ? 'playing' : ''}`}
-                onClick={() => setLofiPlaying(!lofiPlaying)}
-                id="lofi-main-toggle-btn"
-              >
-                {lofiPlaying ? (
-                  <>
-                    <IconPause size={14} />
-                    <span>Pause Radio</span>
-                  </>
-                ) : (
-                  <>
-                    <IconPlay size={14} />
-                    <span>Start Radio</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Video Player or Placeholder */}
-            {lofiPlaying ? (
-              <div className="lofi-player-box">
-                <LofiPlayer inDrawer={true} />
-              </div>
-            ) : (
-              <div
-                className="lofi-placeholder"
-                onClick={() => setLofiPlaying(true)}
-                title="Click to start Lofi stream"
-              >
-                <div className="lofi-placeholder-icon">📻</div>
-                <div className="lofi-placeholder-title">
-                  24/7 Lofi Hip Hop Radio
-                </div>
-                <div className="lofi-placeholder-sub">
-                  Tap to tune in to chill beats & background study streams
-                </div>
-                <button type="button" className="lofi-start-pill">
-                  <IconPlay size={12} /> Play Channel
-                </button>
-              </div>
-            )}
-
-            {/* Stream Presets Header with Filter & Refresh */}
-            <div className="audio-presets-section">
-              <div className="section-label-header">
-                <span className="section-label-small">Radio Channels</span>
-                <div className="stream-header-actions">
-                  <button
-                    type="button"
-                    className={`stream-filter-btn ${filterAvailableOnly ? 'active' : ''}`}
-                    onClick={() => setFilterAvailableOnly(!filterAvailableOnly)}
-                    title={filterAvailableOnly ? 'Show all channels' : 'Show live channels only'}
-                    id="filter-available-streams-btn"
-                  >
-                    {filterAvailableOnly ? '● Live Only' : 'All Channels'}
-                  </button>
-                  <button
-                    type="button"
-                    className={`stream-refresh-btn ${isRefreshingStreams ? 'refreshing' : ''}`}
-                    onClick={handleRefreshStreams}
-                    title="Check stream health"
-                    disabled={isRefreshingStreams}
-                  >
-                    ↻
-                  </button>
-                </div>
-              </div>
-
-              <div className="lofi-streams-list">
-                {LOFI_STREAMS.filter((s) => {
-                  if (!filterAvailableOnly) return true;
-                  if (s.id === 'custom') return true;
-                  return streamStatus[s.id] !== 'offline';
-                }).map((stream) => {
-                  const isSelected = selectedStreamId === stream.id;
-                  const isCurrentlyLive = lofiPlaying && isSelected;
-                  const status = streamStatus[stream.id]; // 'available' | 'offline' | 'checking'
-
-                  return (
-                    <div
-                      key={stream.id}
-                      className={`stream-card ${isSelected ? 'selected' : ''} ${isCurrentlyLive ? 'currently-live' : ''}`}
-                      onClick={() => {
-                        setSelectedStreamId(stream.id);
-                        if (!lofiPlaying && stream.id !== 'custom') {
-                          setLofiPlaying(true);
-                        }
-                      }}
-                      id={`stream-card-${stream.id}`}
-                    >
-                      <div className="stream-card-left">
-                        <div className="stream-icon-badge">
-                          <IconRadio size={16} />
-                        </div>
-                        <div className="stream-info">
-                          <div className="stream-title-row">
-                            <span className="stream-title">{stream.title}</span>
-                            {stream.id !== 'custom' && (
-                              <span
-                                className={`stream-badge ${
-                                  status === 'available'
-                                    ? 'badge-available'
-                                    : status === 'offline'
-                                    ? 'badge-offline'
-                                    : 'badge-checking'
-                                }`}
-                              >
-                                {status === 'available' ? 'Live' : status === 'offline' ? 'Offline' : 'Checking'}
-                              </span>
-                            )}
-                          </div>
-                          <div className="stream-subtitle">{stream.subtitle}</div>
-                        </div>
-                      </div>
-
-                      <div className="stream-card-right">
-                        {isCurrentlyLive && (
-                          <div className="stream-active-waves">
-                            <span />
-                            <span />
-                            <span />
-                          </div>
-                        )}
-                        {isSelected && !isCurrentlyLive && (
-                          <span className="stream-selected-dot" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Custom YouTube Stream URL Input */}
-            {selectedStreamId === 'custom' && (
-              <form className="custom-stream-box" onSubmit={handleCustomSubmit}>
-                <span className="section-label-small">Custom YouTube Link or ID</span>
-                <div className="custom-stream-input-group">
-                  <input
-                    type="text"
-                    placeholder="https://youtube.com/watch?v=..."
-                    value={customInput}
-                    onChange={(e) => setCustomInput(e.target.value)}
-                    className="custom-stream-input"
-                    id="custom-youtube-input"
-                  />
-                  <button type="submit" className="custom-stream-btn" id="load-custom-stream-btn">
-                    Load
-                  </button>
-                </div>
-                {customVideoId && (
-                  <span className="custom-stream-active-id">
-                    Active Video ID: <code>{customVideoId}</code>
-                  </span>
-                )}
-              </form>
-            )}
-          </div>
-
-        {/* ── SPOTIFY TAB ── */}
-        <div className="spotify-section" style={{ display: activeSubTab === 'spotify' ? 'block' : 'none' }}>
-          {renderMusicServiceSelector()}
-          {/* Spotify Player Embed */}
+          {/* ── SPOTIFY VIEW ── */}
+          <div className="spotify-section" style={{ display: selectedMusicService === 'spotify' ? 'block' : 'none' }}>
+            {/* Spotify Player Embed */}
             <SpotifyPlayer />
 
             {/* Curated Spotify Playlists */}
@@ -832,10 +658,84 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
             </form>
           </div>
 
-        {/* ── YOUTUBE MUSIC TAB ── */}
-        <div className="ytmusic-section" style={{ display: activeSubTab === 'ytmusic' ? 'block' : 'none' }}>
-          {renderMusicServiceSelector()}
-          {/* YouTube Music Player Embed */}
+          {/* ── APPLE MUSIC VIEW ── */}
+          <div className="applemusic-section" style={{ display: selectedMusicService === 'applemusic' ? 'block' : 'none' }}>
+            {/* Apple Music Player Embed */}
+            <AppleMusicPlayer />
+
+            {/* Curated Apple Music Focus Playlists */}
+            <div className="audio-presets-section">
+              <div className="section-label-header">
+                <span className="section-label-small">Curated Apple Music Playlists</span>
+                <span className="section-sub-hint">Verified Apple Music study playlists</span>
+              </div>
+              <div className="lofi-streams-list">
+                {APPLE_MUSIC_PLAYLISTS.map((playlist) => {
+                  const isSelected = selectedAppleMusicUrl === playlist.embedUrl;
+                  return (
+                    <div
+                      key={playlist.id}
+                      className={`stream-card applemusic-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedAppleMusicUrl(playlist.embedUrl);
+                        setSelectedAppleMusicTitle(playlist.title);
+                        setAppleMusicActive(true);
+                      }}
+                      id={`applemusic-playlist-${playlist.id}`}
+                    >
+                      <div className="stream-card-left">
+                        <div className="stream-icon-badge applemusic-icon-badge">
+                          <IconAppleMusic size={16} color="#FA2D48" />
+                        </div>
+                        <div className="stream-info">
+                          <div className="stream-title-row">
+                            <span className="stream-title">{playlist.title}</span>
+                            <span className="applemusic-tag-pill">Apple Music</span>
+                          </div>
+                          <div className="stream-subtitle">{playlist.subtitle}</div>
+                        </div>
+                      </div>
+
+                      <div className="stream-card-right">
+                        {isSelected && (
+                          <div className="applemusic-active-indicator" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Apple Music URL Input */}
+            <form className="custom-stream-box applemusic-custom-box" onSubmit={handleAppleMusicSubmit}>
+              <span className="section-label-small">Connect Any Apple Music Link</span>
+              <div className="custom-stream-input-group">
+                <input
+                  type="text"
+                  placeholder="Paste music.apple.com playlist, album, or song link"
+                  value={appleMusicUrlInput}
+                  onChange={(e) => setAppleMusicUrlInput(e.target.value)}
+                  className="custom-stream-input"
+                  id="custom-applemusic-input"
+                />
+                <button
+                  type="submit"
+                  className="custom-stream-btn applemusic-submit-btn"
+                  id="load-custom-applemusic-btn"
+                >
+                  Load
+                </button>
+              </div>
+              <span className="applemusic-url-hint">
+                Supports <code>music.apple.com/.../playlist/...</code> or <code>/album/...</code>
+              </span>
+            </form>
+          </div>
+
+          {/* ── YOUTUBE MUSIC VIEW ── */}
+          <div className="ytmusic-section" style={{ display: selectedMusicService === 'ytmusic' ? 'block' : 'none' }}>
+            {/* YouTube Music Player Embed */}
             <YTMusicPlayer />
 
             {/* Curated YouTube Music Focus Playlists */}
@@ -909,48 +809,122 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
             </form>
           </div>
 
-        {/* ── APPLE MUSIC TAB ── */}
-        <div className="applemusic-section" style={{ display: activeSubTab === 'applemusic' ? 'block' : 'none' }}>
-          {renderMusicServiceSelector()}
-          {/* Apple Music Player Embed */}
-            <AppleMusicPlayer />
+          {/* ── LOFI RADIO VIEW ── */}
+          <div className="lofi-section" style={{ display: selectedMusicService === 'lofi' ? 'block' : 'none' }}>
+            {/* Live Status & Main Toggle */}
+            <div className="lofi-hero-bar">
+              <div className={`lofi-status-pill ${lofiPlaying ? 'playing' : ''}`}>
+                <span className="live-dot" />
+                <span>{lofiPlaying ? 'ON AIR' : 'RADIO PAUSED'}</span>
+              </div>
 
-            {/* Curated Apple Music Focus Playlists */}
+              <button
+                className={`lofi-main-toggle-btn ${lofiPlaying ? 'playing' : ''}`}
+                onClick={() => setLofiPlaying(!lofiPlaying)}
+                id="lofi-main-toggle-btn"
+              >
+                {lofiPlaying ? (
+                  <>
+                    <IconPause size={14} />
+                    <span>Pause Radio</span>
+                  </>
+                ) : (
+                  <>
+                    <IconPlay size={14} />
+                    <span>Start Radio</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Video Player or Placeholder */}
+            {lofiPlaying ? (
+              <div className="lofi-player-box">
+                <LofiPlayer inDrawer={true} />
+              </div>
+            ) : (
+              <div
+                className="lofi-placeholder"
+                onClick={() => setLofiPlaying(true)}
+                title="Click to start Lofi stream"
+              >
+                <div className="lofi-placeholder-icon">📻</div>
+                <div className="lofi-placeholder-title">
+                  24/7 Lofi Hip Hop Radio
+                </div>
+                <div className="lofi-placeholder-sub">
+                  Tap to tune in to chill beats & background study streams
+                </div>
+                <button type="button" className="lofi-start-pill">
+                  <IconPlay size={12} /> Play Channel
+                </button>
+              </div>
+            )}
+
+            {/* Stream Presets Header with Filter & Refresh */}
             <div className="audio-presets-section">
               <div className="section-label-header">
-                <span className="section-label-small">Curated Apple Music Playlists</span>
-                <span className="section-sub-hint">Verified Apple Music study playlists</span>
+                <span className="section-label-small">Radio Channels</span>
+                <div className="stream-header-actions">
+                  <button
+                    type="button"
+                    className={`stream-filter-btn ${filterAvailableOnly ? 'active' : ''}`}
+                    onClick={() => setFilterAvailableOnly(!filterAvailableOnly)}
+                    title={filterAvailableOnly ? 'Showing verified live streams' : 'Show all streams'}
+                  >
+                    {filterAvailableOnly ? '🟢 Verified Live' : 'All Streams'}
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`stream-refresh-btn ${isRefreshingStreams ? 'refreshing' : ''}`}
+                    onClick={handleRefreshStreams}
+                    disabled={isRefreshingStreams}
+                    title="Check stream availability"
+                  >
+                    <IconRefreshCw size={11} />
+                    <span>{isRefreshingStreams ? 'Checking...' : 'Check Status'}</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Streams Grid */}
               <div className="lofi-streams-list">
-                {APPLE_MUSIC_PLAYLISTS.map((playlist) => {
-                  const isSelected = selectedAppleMusicUrl === playlist.embedUrl;
+                {displayedStreams.map((stream) => {
+                  const isSelected = selectedStreamId === stream.id && !customVideoId;
+                  const isPlayingThis = isSelected && lofiPlaying;
+                  const status = streamStatus[stream.id] || 'checking';
+
                   return (
                     <div
-                      key={playlist.id}
-                      className={`stream-card applemusic-card ${isSelected ? 'selected' : ''}`}
+                      key={stream.id}
+                      className={`stream-card ${isSelected ? 'selected' : ''}`}
                       onClick={() => {
-                        setSelectedAppleMusicUrl(playlist.embedUrl);
-                        setSelectedAppleMusicTitle(playlist.title);
-                        setAppleMusicActive(true);
+                        setSelectedStreamId(stream.id);
+                        setCustomVideoId('');
+                        if (!lofiPlaying) setLofiPlaying(true);
                       }}
-                      id={`applemusic-playlist-${playlist.id}`}
+                      id={`stream-card-${stream.id}`}
                     >
                       <div className="stream-card-left">
-                        <div className="stream-icon-badge applemusic-icon-badge">
-                          <IconAppleMusic size={16} color="#FA2D48" />
+                        <div className="stream-icon-badge">
+                          <IconRadio size={16} />
                         </div>
                         <div className="stream-info">
                           <div className="stream-title-row">
-                            <span className="stream-title">{playlist.title}</span>
-                            <span className="applemusic-tag-pill">Apple Music</span>
+                            <span className="stream-title">{stream.title}</span>
+                            {renderStatusBadge(status)}
                           </div>
-                          <div className="stream-subtitle">{playlist.subtitle}</div>
+                          <div className="stream-subtitle">{stream.subtitle}</div>
                         </div>
                       </div>
 
                       <div className="stream-card-right">
-                        {isSelected && (
-                          <div className="applemusic-active-indicator" />
+                        {isPlayingThis && (
+                          <div className="stream-live-indicator">
+                            <span className="live-dot" />
+                            <span>LIVE</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -959,31 +933,30 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
               </div>
             </div>
 
-            {/* Custom Apple Music URL Input */}
-            <form className="custom-stream-box applemusic-custom-box" onSubmit={handleAppleMusicSubmit}>
-              <span className="section-label-small">Connect Any Apple Music Link</span>
+            {/* Custom Stream Input */}
+            <form className="custom-stream-box" onSubmit={handleCustomSubmit}>
+              <span className="section-label-small">Custom YouTube Stream</span>
               <div className="custom-stream-input-group">
                 <input
                   type="text"
-                  placeholder="Paste music.apple.com playlist, album, or song link"
-                  value={appleMusicUrlInput}
-                  onChange={(e) => setAppleMusicUrlInput(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=..."
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
                   className="custom-stream-input"
-                  id="custom-applemusic-input"
+                  id="custom-youtube-input"
                 />
-                <button
-                  type="submit"
-                  className="custom-stream-btn applemusic-submit-btn"
-                  id="load-custom-applemusic-btn"
-                >
+                <button type="submit" className="custom-stream-btn" id="load-custom-stream-btn">
                   Load
                 </button>
               </div>
-              <span className="applemusic-url-hint">
-                Supports <code>music.apple.com/.../playlist/...</code> or <code>/album/...</code>
-              </span>
+              {customVideoId && (
+                <span className="custom-stream-active-id">
+                  Active Video ID: <code>{customVideoId}</code>
+                </span>
+              )}
             </form>
           </div>
+        </div>
       </aside>
     </>
   );
