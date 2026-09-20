@@ -14,9 +14,13 @@ import {
   IconThunder,
   IconRadio,
   IconSpotify,
+  IconYTMusic,
+  IconAppleMusic,
 } from '../Icons';
 import LofiPlayer from './LofiPlayer';
 import SpotifyPlayer from './SpotifyPlayer';
+import YTMusicPlayer from './YTMusicPlayer';
+import AppleMusicPlayer from './AppleMusicPlayer';
 import './AudioDrawer.css';
 
 const ICON_MAP = {
@@ -70,16 +74,33 @@ const AudioDrawer = ({ onClose }) => {
     setSpotifyActive,
     selectedSpotifyId,
     setSelectedSpotifyId,
-    spotifyType,
     setSpotifyType,
-    customSpotifyInput,
-    setCustomSpotifyInput,
     extractSpotifyDetails,
+    // YouTube Music
+    YT_MUSIC_PLAYLISTS,
+    ytMusicActive,
+    setYtMusicActive,
+    selectedYtMusicId,
+    setSelectedYtMusicId,
+    setYtMusicType,
+    setYtMusicVideoId,
+    extractYtMusicDetails,
+    // Apple Music
+    APPLE_MUSIC_PLAYLISTS,
+    appleMusicActive,
+    setAppleMusicActive,
+    selectedAppleMusicUrl,
+    setSelectedAppleMusicUrl,
+    selectedAppleMusicTitle,
+    setSelectedAppleMusicTitle,
+    extractAppleMusicDetails,
   } = useAudio();
 
-  const [activeSubTab, setActiveSubTab] = useState('ambient'); // 'ambient' | 'lofi' | 'spotify'
+  const [activeSubTab, setActiveSubTab] = useState('ambient'); // 'ambient' | 'lofi' | 'spotify' | 'ytmusic' | 'applemusic'
   const [customInput, setCustomInput] = useState(customVideoId);
   const [spotifyUrlInput, setSpotifyUrlInput] = useState('');
+  const [ytMusicUrlInput, setYtMusicUrlInput] = useState('');
+  const [appleMusicUrlInput, setAppleMusicUrlInput] = useState('');
   const [isRefreshingStreams, setIsRefreshingStreams] = useState(false);
 
   const handleCustomSubmit = (e) => {
@@ -102,6 +123,33 @@ const AudioDrawer = ({ onClose }) => {
     }
   };
 
+  const handleYtMusicSubmit = (e) => {
+    if (e) e.preventDefault();
+    const details = extractYtMusicDetails(ytMusicUrlInput);
+    if (details) {
+      if (details.type === 'playlist') {
+        setSelectedYtMusicId(details.playlistId);
+        setYtMusicType('playlist');
+        setYtMusicVideoId(details.videoId || '');
+      } else {
+        setSelectedYtMusicId(details.videoId);
+        setYtMusicType('video');
+        setYtMusicVideoId(details.videoId);
+      }
+      setYtMusicActive(true);
+    }
+  };
+
+  const handleAppleMusicSubmit = (e) => {
+    if (e) e.preventDefault();
+    const details = extractAppleMusicDetails(appleMusicUrlInput);
+    if (details) {
+      setSelectedAppleMusicUrl(details.embedUrl);
+      setSelectedAppleMusicTitle('Custom Apple Music');
+      setAppleMusicActive(true);
+    }
+  };
+
   const handleRefreshStreams = async () => {
     setIsRefreshingStreams(true);
     await refreshStreamStatuses();
@@ -113,17 +161,23 @@ const AudioDrawer = ({ onClose }) => {
   if (lofiPlaying) {
     const stream = LOFI_STREAMS.find(s => s.id === selectedStreamId);
     playingLabel = stream ? `Radio: ${stream.title}` : 'Lofi Radio';
-    if (activeAmbientCount > 0) {
-      playingLabel += ` + ${activeAmbientLabels[0]}`;
-    }
+  } else if (ytMusicActive) {
+    const ytp = YT_MUSIC_PLAYLISTS.find(p => p.id === selectedYtMusicId);
+    playingLabel = ytp ? `YT Music: ${ytp.title}` : 'YouTube Music';
+  } else if (appleMusicActive) {
+    const amp = APPLE_MUSIC_PLAYLISTS.find(p => p.embedUrl === selectedAppleMusicUrl);
+    playingLabel = amp ? `Apple Music: ${amp.title}` : (selectedAppleMusicTitle || 'Apple Music');
   } else if (spotifyActive) {
     const sp = SPOTIFY_PLAYLISTS.find(p => p.id === selectedSpotifyId);
     playingLabel = sp ? `Spotify: ${sp.title}` : 'Spotify';
-    if (activeAmbientCount > 0) {
+  }
+
+  if (activeAmbientCount > 0) {
+    if (playingLabel) {
       playingLabel += ` + ${activeAmbientLabels[0]}`;
+    } else {
+      playingLabel = activeAmbientLabels.join(' + ');
     }
-  } else if (activeAmbientCount > 0) {
-    playingLabel = activeAmbientLabels.join(' + ');
   }
 
   return (
@@ -222,6 +276,34 @@ const AudioDrawer = ({ onClose }) => {
             <IconSpotify size={15} color="#1DB954" />
             <span>Spotify</span>
             {spotifyActive && <span className="audio-tab-spotify-dot" />}
+          </button>
+          <button
+            className={`audio-nav-tab ${activeSubTab === 'ytmusic' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSubTab('ytmusic');
+              setYtMusicActive(true);
+            }}
+            role="tab"
+            aria-selected={activeSubTab === 'ytmusic'}
+            id="tab-ytmusic"
+          >
+            <IconYTMusic size={15} color="#FF0000" />
+            <span>YT Music</span>
+            {ytMusicActive && <span className="audio-tab-ytmusic-dot" />}
+          </button>
+          <button
+            className={`audio-nav-tab ${activeSubTab === 'applemusic' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSubTab('applemusic');
+              setAppleMusicActive(true);
+            }}
+            role="tab"
+            aria-selected={activeSubTab === 'applemusic'}
+            id="tab-applemusic"
+          >
+            <IconAppleMusic size={15} color="#FA2D48" />
+            <span>Apple</span>
+            {appleMusicActive && <span className="audio-tab-applemusic-dot" />}
           </button>
         </div>
 
@@ -631,6 +713,161 @@ const AudioDrawer = ({ onClose }) => {
               </div>
               <span className="spotify-url-hint">
                 Supports <code>open.spotify.com/playlist/...</code>, <code>/album/...</code>, or <code>/track/...</code>
+              </span>
+            </form>
+          </div>
+        )}
+
+        {/* ── YOUTUBE MUSIC TAB ── */}
+        {activeSubTab === 'ytmusic' && (
+          <div className="ytmusic-section">
+            {/* YouTube Music Player Embed */}
+            <YTMusicPlayer />
+
+            {/* Curated YouTube Music Focus Playlists */}
+            <div className="audio-presets-section">
+              <div className="section-label-header">
+                <span className="section-label-small">Curated Focus Playlists</span>
+                <span className="section-sub-hint">Verified YouTube Music playlists</span>
+              </div>
+              <div className="lofi-streams-list">
+                {YT_MUSIC_PLAYLISTS.map((playlist) => {
+                  const isSelected = selectedYtMusicId === playlist.id;
+                  return (
+                    <div
+                      key={playlist.id}
+                      className={`stream-card ytmusic-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedYtMusicId(playlist.id);
+                        setYtMusicType(playlist.type || 'playlist');
+                        setYtMusicVideoId('');
+                        setYtMusicActive(true);
+                      }}
+                      id={`ytmusic-playlist-${playlist.id}`}
+                    >
+                      <div className="stream-card-left">
+                        <div className="stream-icon-badge ytmusic-icon-badge">
+                          <IconYTMusic size={16} color="#FF0000" />
+                        </div>
+                        <div className="stream-info">
+                          <div className="stream-title-row">
+                            <span className="stream-title">{playlist.title}</span>
+                            <span className="ytmusic-tag-pill">YT Music</span>
+                          </div>
+                          <div className="stream-subtitle">{playlist.subtitle}</div>
+                        </div>
+                      </div>
+
+                      <div className="stream-card-right">
+                        {isSelected && (
+                          <div className="ytmusic-active-indicator" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom YouTube Music URL Input */}
+            <form className="custom-stream-box ytmusic-custom-box" onSubmit={handleYtMusicSubmit}>
+              <span className="section-label-small">Connect Any YouTube Music Link</span>
+              <div className="custom-stream-input-group">
+                <input
+                  type="text"
+                  placeholder="Paste music.youtube.com playlist or song link"
+                  value={ytMusicUrlInput}
+                  onChange={(e) => setYtMusicUrlInput(e.target.value)}
+                  className="custom-stream-input"
+                  id="custom-ytmusic-input"
+                />
+                <button
+                  type="submit"
+                  className="custom-stream-btn ytmusic-submit-btn"
+                  id="load-custom-ytmusic-btn"
+                >
+                  Load
+                </button>
+              </div>
+              <span className="ytmusic-url-hint">
+                Supports <code>music.youtube.com/playlist?list=...</code>, <code>watch?v=...</code>, or standard YouTube links
+              </span>
+            </form>
+          </div>
+        )}
+
+        {/* ── APPLE MUSIC TAB ── */}
+        {activeSubTab === 'applemusic' && (
+          <div className="applemusic-section">
+            {/* Apple Music Player Embed */}
+            <AppleMusicPlayer />
+
+            {/* Curated Apple Music Focus Playlists */}
+            <div className="audio-presets-section">
+              <div className="section-label-header">
+                <span className="section-label-small">Curated Apple Music Playlists</span>
+                <span className="section-sub-hint">Verified Apple Music study playlists</span>
+              </div>
+              <div className="lofi-streams-list">
+                {APPLE_MUSIC_PLAYLISTS.map((playlist) => {
+                  const isSelected = selectedAppleMusicUrl === playlist.embedUrl;
+                  return (
+                    <div
+                      key={playlist.id}
+                      className={`stream-card applemusic-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedAppleMusicUrl(playlist.embedUrl);
+                        setSelectedAppleMusicTitle(playlist.title);
+                        setAppleMusicActive(true);
+                      }}
+                      id={`applemusic-playlist-${playlist.id}`}
+                    >
+                      <div className="stream-card-left">
+                        <div className="stream-icon-badge applemusic-icon-badge">
+                          <IconAppleMusic size={16} color="#FA2D48" />
+                        </div>
+                        <div className="stream-info">
+                          <div className="stream-title-row">
+                            <span className="stream-title">{playlist.title}</span>
+                            <span className="applemusic-tag-pill">Apple Music</span>
+                          </div>
+                          <div className="stream-subtitle">{playlist.subtitle}</div>
+                        </div>
+                      </div>
+
+                      <div className="stream-card-right">
+                        {isSelected && (
+                          <div className="applemusic-active-indicator" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Apple Music URL Input */}
+            <form className="custom-stream-box applemusic-custom-box" onSubmit={handleAppleMusicSubmit}>
+              <span className="section-label-small">Connect Any Apple Music Link</span>
+              <div className="custom-stream-input-group">
+                <input
+                  type="text"
+                  placeholder="Paste music.apple.com playlist, album, or song link"
+                  value={appleMusicUrlInput}
+                  onChange={(e) => setAppleMusicUrlInput(e.target.value)}
+                  className="custom-stream-input"
+                  id="custom-applemusic-input"
+                />
+                <button
+                  type="submit"
+                  className="custom-stream-btn applemusic-submit-btn"
+                  id="load-custom-applemusic-btn"
+                >
+                  Load
+                </button>
+              </div>
+              <span className="applemusic-url-hint">
+                Supports <code>music.apple.com/.../playlist/...</code> or <code>/album/...</code>
               </span>
             </form>
           </div>

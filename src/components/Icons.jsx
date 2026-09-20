@@ -156,6 +156,24 @@ export const IconSpotify = ({ size = 16, color = 'currentColor', className = '' 
   </svg>
 );
 
+export const IconYTMusic = ({ size = 16, color = '#FF0000', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="12" fill={color} />
+    <circle cx="12" cy="12" r="7.5" stroke="#ffffff" strokeWidth="1.5" fill="none" />
+    <polygon points="10,8.5 16,12 10,15.5" fill="#ffffff" />
+  </svg>
+);
+
+export const IconAppleMusic = ({ size = 16, color = '#FA2D48', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="12" fill={color} />
+    <path
+      d="M15.5 6.8v6.7a2.5 2.5 0 1 1-1.8-2.4V8.3l-4 1v5.2a2.5 2.5 0 1 1-1.8-2.4V7.5a.8.8 0 0 1 .6-.8l6.4-1.4a.8.8 0 0 1 .6.7z"
+      fill="#ffffff"
+    />
+  </svg>
+);
+
 export const IconMinimize = ({ size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />

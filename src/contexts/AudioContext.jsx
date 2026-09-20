@@ -87,6 +87,82 @@ export const SPOTIFY_PLAYLISTS = [
   },
 ];
 
+export const YT_MUSIC_PLAYLISTS = [
+  {
+    id: 'RDCLAK5uy_m_d74y9P42646d5q7c9757',
+    title: 'Lofi Chill & Study',
+    subtitle: 'Peaceful lofi hip hop beats',
+    type: 'playlist',
+    listId: 'RDCLAK5uy_m_d74y9P42646d5q7c9757',
+  },
+  {
+    id: 'RDCLAK5uy_n9Fmy5nF4B6wQYmQ8_iR4qV5aX5t0',
+    title: 'Deep Focus',
+    subtitle: 'Atmospheric post-rock & ambient',
+    type: 'playlist',
+    listId: 'RDCLAK5uy_n9Fmy5nF4B6wQYmQ8_iR4qV5aX5t0',
+  },
+  {
+    id: 'PLOzDu-MXXLhhpw8IuL9uVbA_n9-V_9w0t',
+    title: 'Peaceful Piano',
+    subtitle: 'Gentle classical piano for concentration',
+    type: 'playlist',
+    listId: 'PLOzDu-MXXLhhpw8IuL9uVbA_n9-V_9w0t',
+  },
+  {
+    id: 'PL859EEB4CD1D904E0',
+    title: 'Synthwave Study',
+    subtitle: 'Retro synthesizer focus beats',
+    type: 'playlist',
+    listId: 'PL859EEB4CD1D904E0',
+  },
+  {
+    id: 'PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj',
+    title: 'Acoustic Study',
+    subtitle: 'Calm acoustic guitar melodies',
+    type: 'playlist',
+    listId: 'PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj',
+  },
+];
+
+export const APPLE_MUSIC_PLAYLISTS = [
+  {
+    id: 'pure-focus',
+    title: 'Pure Focus',
+    subtitle: 'Ambient & electronic soundscapes',
+    embedUrl: 'https://embed.music.apple.com/us/playlist/pure-focus/pl.u-a1699mD31114',
+    webUrl: 'https://music.apple.com/us/playlist/pure-focus/pl.u-a1699mD31114',
+  },
+  {
+    id: 'beatstrumentals',
+    title: 'BEATstrumentals',
+    subtitle: 'Instrumental hip-hop & lofi head-nodders',
+    embedUrl: 'https://embed.music.apple.com/us/playlist/beatstrumentals/pl.u-zPyLm49t222',
+    webUrl: 'https://music.apple.com/us/playlist/beatstrumentals/pl.u-zPyLm49t222',
+  },
+  {
+    id: 'peaceful-piano',
+    title: 'Peaceful Piano',
+    subtitle: 'Mellow acoustic piano for deep flow',
+    embedUrl: 'https://embed.music.apple.com/us/playlist/peaceful-piano/pl.u-b3b88G5u222',
+    webUrl: 'https://music.apple.com/us/playlist/peaceful-piano/pl.u-b3b88G5u222',
+  },
+  {
+    id: 'classical-focus',
+    title: 'Classical Focus',
+    subtitle: 'Subtle classical gems for studying',
+    embedUrl: 'https://embed.music.apple.com/us/playlist/classical-focus/pl.6022e4d0cb5a420ba6f9fe3ab77d4023',
+    webUrl: 'https://music.apple.com/us/playlist/classical-focus/pl.6022e4d0cb5a420ba6f9fe3ab77d4023',
+  },
+  {
+    id: 'best-of-lofi',
+    title: 'Best of Lofi',
+    subtitle: 'Relaxing beats curated by Lofi Girl',
+    embedUrl: 'https://embed.music.apple.com/us/playlist/best-of-lofi/pl.u-4Jpea1JIoq4B',
+    webUrl: 'https://music.apple.com/us/playlist/best-of-lofi/pl.u-4Jpea1JIoq4B',
+  },
+];
+
 export const SOUND_PRESETS = [
   {
     id: 'focus-storm',
@@ -175,6 +251,19 @@ export const AudioProvider = ({ children }) => {
   const [spotifyType, setSpotifyType] = useState('playlist');
   const [customSpotifyInput, setCustomSpotifyInput] = useState('');
 
+  // YouTube Music state
+  const [ytMusicActive, setYtMusicActive] = useState(false);
+  const [selectedYtMusicId, setSelectedYtMusicId] = useState('RDCLAK5uy_m_d74y9P42646d5q7c9757');
+  const [ytMusicType, setYtMusicType] = useState('playlist'); // 'playlist' | 'video'
+  const [ytMusicVideoId, setYtMusicVideoId] = useState('');
+  const [customYtMusicInput, setCustomYtMusicInput] = useState('');
+
+  // Apple Music state
+  const [appleMusicActive, setAppleMusicActive] = useState(false);
+  const [selectedAppleMusicUrl, setSelectedAppleMusicUrl] = useState('https://embed.music.apple.com/us/playlist/pure-focus/pl.u-a1699mD31114');
+  const [selectedAppleMusicTitle, setSelectedAppleMusicTitle] = useState('Pure Focus');
+  const [customAppleMusicInput, setCustomAppleMusicInput] = useState('');
+
   // Audio HTML elements map: { [id]: HTMLAudioElement }
   const audioRefs = useRef({});
 
@@ -257,6 +346,85 @@ export const AudioProvider = ({ children }) => {
     if (/^[a-zA-Z0-9]{22}$/.test(trimmed)) {
       return { type: 'playlist', id: trimmed };
     }
+    return null;
+  }, []);
+
+  // Helper to extract YouTube Music details
+  const extractYtMusicDetails = useCallback((input) => {
+    if (!input) return null;
+    const trimmed = input.trim();
+
+    // Check for list= query parameter (playlist)
+    let listMatch = trimmed.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+    // Check for v= query parameter (video)
+    let videoMatch = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    // Short youtu.be link
+    if (!videoMatch) {
+      videoMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    }
+
+    if (listMatch) {
+      return {
+        type: 'playlist',
+        playlistId: listMatch[1],
+        videoId: videoMatch ? videoMatch[1] : '',
+      };
+    }
+
+    if (videoMatch) {
+      return {
+        type: 'video',
+        videoId: videoMatch[1],
+      };
+    }
+
+    // Direct playlist id (e.g. starts with PL, RD, OLAK)
+    if (/^(PL|RD|OLAK)[a-zA-Z0-9_-]+$/.test(trimmed)) {
+      return {
+        type: 'playlist',
+        playlistId: trimmed,
+      };
+    }
+
+    // Direct video id (11 chars)
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+      return {
+        type: 'video',
+        videoId: trimmed,
+      };
+    }
+
+    return null;
+  }, []);
+
+  // Helper to extract Apple Music embed details
+  const extractAppleMusicDetails = useCallback((input) => {
+    if (!input) return null;
+    let trimmed = input.trim();
+
+    // If iframe tag pasted by user, extract src
+    const iframeSrcMatch = trimmed.match(/src=["']([^"']+)["']/);
+    if (iframeSrcMatch) {
+      trimmed = iframeSrcMatch[1];
+    }
+
+    // Already an embed URL
+    if (trimmed.includes('embed.music.apple.com')) {
+      return {
+        embedUrl: trimmed,
+        webUrl: trimmed.replace('embed.music.apple.com', 'music.apple.com'),
+      };
+    }
+
+    // Standard music.apple.com URL
+    if (trimmed.includes('music.apple.com')) {
+      const embedUrl = trimmed.replace('music.apple.com', 'embed.music.apple.com');
+      return {
+        embedUrl,
+        webUrl: trimmed,
+      };
+    }
+
     return null;
   }, []);
 
@@ -383,6 +551,8 @@ export const AudioProvider = ({ children }) => {
     stopAllAmbient();
     setLofiPlaying(false);
     setSpotifyActive(false);
+    setYtMusicActive(false);
+    setAppleMusicActive(false);
   }, [stopAllAmbient]);
 
   // Parse YouTube video ID from various formats
@@ -408,7 +578,8 @@ export const AudioProvider = ({ children }) => {
       : LOFI_STREAMS.find((s) => s.id === selectedStreamId)?.videoId || '';
 
   const activeAmbientCount = Object.values(tracks).filter((t) => t.playing).length;
-  const isAnyPlaying = activeAmbientCount > 0 || lofiPlaying || spotifyActive;
+  const isAnyPlaying =
+    activeAmbientCount > 0 || lofiPlaying || spotifyActive || ytMusicActive || appleMusicActive;
 
   const activeAmbientLabels = AMBIENT_SOUNDS.filter((s) => tracks[s.id]?.playing).map(
     (s) => s.label
@@ -458,6 +629,30 @@ export const AudioProvider = ({ children }) => {
         customSpotifyInput,
         setCustomSpotifyInput,
         extractSpotifyDetails,
+        // YouTube Music
+        YT_MUSIC_PLAYLISTS,
+        ytMusicActive,
+        setYtMusicActive,
+        selectedYtMusicId,
+        setSelectedYtMusicId,
+        ytMusicType,
+        setYtMusicType,
+        ytMusicVideoId,
+        setYtMusicVideoId,
+        customYtMusicInput,
+        setCustomYtMusicInput,
+        extractYtMusicDetails,
+        // Apple Music
+        APPLE_MUSIC_PLAYLISTS,
+        appleMusicActive,
+        setAppleMusicActive,
+        selectedAppleMusicUrl,
+        setSelectedAppleMusicUrl,
+        selectedAppleMusicTitle,
+        setSelectedAppleMusicTitle,
+        customAppleMusicInput,
+        setCustomAppleMusicInput,
+        extractAppleMusicDetails,
         // Drawer toggle
         showAudioDrawer,
         setShowAudioDrawer,

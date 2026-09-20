@@ -139,7 +139,9 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [errorDetails, setErrorDetails] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [panelWidth, setPanelWidth] = useState(() => {
     return parseInt(localStorage.getItem('flowstate_chat_width') || DEFAULT_WIDTH, 10);
   });
@@ -151,6 +153,13 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(0);
   const panelRef = useRef(null);
+
+  // Auto-focus input box whenever chat opens or uncollapses
+  useEffect(() => {
+    if (!collapsed) {
+      inputRef.current?.focus();
+    }
+  }, [collapsed]);
 
   // Persist chat history
   useEffect(() => {
@@ -215,9 +224,13 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
     if (!trimmed || isLoading) return;
 
     setError(null);
+    setErrorDetails(null);
     setInput('');
     abortRef.current = false;
     if (collapsed) setCollapsed(false);
+
+    // Keep cursor in the chat box immediately after sending
+    inputRef.current?.focus();
 
     const userMsg = { role: 'user', content: trimmed, id: Date.now(), ts: Date.now() };
     const historyWithUser = [...messages.filter((m) => !m.streaming), userMsg];
@@ -250,24 +263,41 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
             m.id === assistantId ? { ...m, streaming: false } : m
           )
         );
+        // Ensure cursor remains in the chat box when response completes
+        inputRef.current?.focus();
       },
       (err) => {
         setIsLoading(false);
         setMessages((prev) => prev.filter((m) => m.id !== assistantId));
-        if (err.message === 'MISSING_KEY') {
+        inputRef.current?.focus();
+
+        const msg = err?.message || '';
+        if (msg === 'MISSING_KEY') {
           setError('missing_key');
+        } else if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+          setError('rate_limit');
+          setErrorDetails(trimmed);
         } else {
           setError('api_error');
+          setErrorDetails(trimmed);
           console.error('Gemini error:', err);
         }
       }
     );
   }, [messages, isLoading, collapsed]);
 
+  const retryLastMessage = () => {
+    if (errorDetails) {
+      sendMessage(errorDetails);
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage(input);
+      if (!isLoading && input.trim()) {
+        sendMessage(input);
+      }
     }
   };
 
@@ -275,6 +305,7 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
     abortRef.current = true;
     setMessages([WELCOME_MESSAGE]);
     setError(null);
+    setErrorDetails(null);
     setIsLoading(false);
     localStorage.removeItem(STORAGE_KEY);
   };
@@ -368,9 +399,9 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
               </svg>
             </button>
           )}
-          {/* Clear */}
+          {/* Clear with confirmation */}
           {hasMsgs && (
-            <button className="ai-chat-header-btn" onClick={clearChat} title="Clear chat" aria-label="Clear chat history">
+            <button className="ai-chat-header-btn" onClick={() => setShowResetConfirm(true)} title="Clear chat" aria-label="Clear chat history">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6l-1 14H6L5 6"/>
@@ -396,7 +427,7 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
       </div>
 
       {/* Messages */}
-      <div className="ai-chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
+      <div className="ai-chat-messages" role="log" aria-live="polite" aria-label="Chat messages" onClick={() => inputRef.current?.focus()}>
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
@@ -416,12 +447,44 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
           </span>
         </div>
       )}
+      {error === 'rate_limit' && (
+        <div className="ai-chat-error" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Gemini rate limit reached. Wait a few seconds or retry.</span>
+          </div>
+          {errorDetails && (
+            <button
+              type="button"
+              className="skip-btn-cancel"
+              onClick={retryLastMessage}
+              style={{ padding: '4px 10px', fontSize: '11px', flexShrink: 0 }}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      )}
       {error === 'api_error' && (
-        <div className="ai-chat-error">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span>Something went wrong. Check your API key and try again.</span>
+        <div className="ai-chat-error" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Unable to get response. Please try again.</span>
+          </div>
+          {errorDetails && (
+            <button
+              type="button"
+              className="skip-btn-cancel"
+              onClick={retryLastMessage}
+              style={{ padding: '4px 10px', fontSize: '11px', flexShrink: 0 }}
+            >
+              Retry
+            </button>
+          )}
         </div>
       )}
 
@@ -429,25 +492,31 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
       {messages.length === 1 && !isLoading && (
         <div className="ai-chat-suggestions">
           {SUGGESTED_PROMPTS.map((prompt) => (
-            <button key={prompt} className="ai-chat-suggestion-chip" onClick={() => sendMessage(prompt)}>
+            <button
+              key={prompt}
+              className="ai-chat-suggestion-chip"
+              onClick={() => {
+                sendMessage(prompt);
+                inputRef.current?.focus();
+              }}
+            >
               {prompt}
             </button>
           ))}
         </div>
       )}
 
-      {/* Input */}
-      <div className="ai-chat-input-area">
+      {/* Input — always keeps cursor focused */}
+      <div className="ai-chat-input-area" onClick={() => inputRef.current?.focus()}>
         <textarea
           ref={inputRef}
           className="ai-chat-textarea"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask Flowstate AI…"
+          placeholder={isLoading ? 'Flowstate AI is thinking…' : 'Ask Flowstate AI…'}
           rows={1}
           aria-label="Chat input"
-          disabled={isLoading}
         />
         <button
           className={`ai-chat-send-btn ${isLoading ? 'ai-chat-send-btn--loading' : ''}`}
@@ -466,6 +535,63 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
         </button>
       </div>
       <p className="ai-chat-footer-note">Powered by Gemini · Shift+Enter for newline · ⌘J to collapse</p>
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div
+          className="drawer-overlay"
+          style={{ zIndex: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          onClick={() => {
+            setShowResetConfirm(false);
+            inputRef.current?.focus();
+          }}
+        >
+          <div
+            className="skip-confirm-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-chat-title"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '340px' }}
+          >
+            <div className="skip-confirm-header">
+              <span className="skip-confirm-icon" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ef4444' }}>
+                🗑️
+              </span>
+              <h3 id="reset-chat-title" className="skip-confirm-title" style={{ fontSize: '1.1rem' }}>
+                Reset Conversation?
+              </h3>
+            </div>
+            <div className="skip-confirm-desc">
+              Are you sure you want to <strong>clear all messages</strong> in this study session? This cannot be undone.
+            </div>
+            <div className="skip-confirm-actions">
+              <button
+                type="button"
+                className="skip-btn-cancel"
+                onClick={() => {
+                  setShowResetConfirm(false);
+                  inputRef.current?.focus();
+                }}
+              >
+                Keep Chat
+              </button>
+              <button
+                type="button"
+                className="skip-btn-confirm"
+                style={{ background: '#ef4444', color: '#fff', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)' }}
+                onClick={() => {
+                  setShowResetConfirm(false);
+                  clearChat();
+                  inputRef.current?.focus();
+                }}
+              >
+                Yes, Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

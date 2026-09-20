@@ -11,6 +11,7 @@ import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat 
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import LofiPlayer from '../Audio/LofiPlayer';
+import YTMusicPlayer from '../Audio/YTMusicPlayer';
 import WallpaperPicker from '../WallpaperPicker';
 import InstallModal from '../InstallModal';
 import AIChatSidebar from '../Chat/AIChatSidebar';
@@ -497,6 +498,9 @@ const AppShell = () => {
 
         {/* Persistent Background Lofi Radio Player */}
         <LofiPlayer inDrawer={false} />
+
+        {/* Persistent Background YouTube Music Player */}
+        <YTMusicPlayer inDrawer={false} />
 
         {/* Bottom Tab Bar */}
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />

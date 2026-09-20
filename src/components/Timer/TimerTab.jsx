@@ -141,6 +141,19 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     setShowSkipConfirm(false);
     skip();
   };
+
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const handleResetClick = () => {
+    if (isRunning || timeLeft < totalDuration) {
+      setShowResetConfirm(true);
+    } else {
+      handleReset();
+    }
+  };
+  const handleConfirmReset = () => {
+    setShowResetConfirm(false);
+    handleReset();
+  };
   const handleSwitchMode = (newMode) => {
     switchMode(newMode);
     onModeChange?.(newMode);
@@ -170,8 +183,10 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   useEffect(() => {
     if (timerActionsRef) {
       timerActionsRef.current = {
+        play: handlePlay,
+        pause: handlePause,
         togglePlay: () => (isRunning ? handlePause() : handlePlay()),
-        reset: handleReset,
+        reset: handleResetClick,
         skip: mode !== 'stopwatch' ? handleSkipClick : undefined,
       };
     }
@@ -331,7 +346,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         >
           {isRunning ? '⏸' : '▶'}
         </button>
-        <button className="flocus-ctrl-btn" onClick={handleReset} aria-label="Reset" title="Reset (R)">
+        <button className="flocus-ctrl-btn" onClick={handleResetClick} aria-label="Reset" title="Reset (R)">
           ↺
         </button>
         {mode === 'stopwatch' && isRunning && (
@@ -446,6 +461,38 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
             <div className="skip-confirm-actions">
               <button type="button" className="skip-btn-cancel" onClick={() => setShowSkipConfirm(false)}>Keep Going</button>
               <button type="button" className="skip-btn-confirm" onClick={handleConfirmSkip}>Yes, Skip</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showResetConfirm && (
+        <div
+          className="drawer-overlay"
+          style={{ zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          onClick={() => setShowResetConfirm(false)}
+        >
+          <div
+            className="skip-confirm-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-confirm-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="skip-confirm-header">
+              <span className="skip-confirm-icon" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ef4444' }}>
+                ↺
+              </span>
+              <h3 id="reset-confirm-title" className="skip-confirm-title">
+                Reset {mode === 'pomodoro' ? 'Focus Session' : mode === 'stopwatch' ? 'Stopwatch' : 'Timer'}?
+              </h3>
+            </div>
+            <div className="skip-confirm-desc">
+              Are you sure you want to <strong>reset the timer</strong> back to the beginning? Any unrecorded progress in this session will be reset.
+            </div>
+            <div className="skip-confirm-actions">
+              <button type="button" className="skip-btn-cancel" onClick={() => setShowResetConfirm(false)}>Keep Going</button>
+              <button type="button" className="skip-btn-confirm" style={{ background: '#ef4444', color: '#fff', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)' }} onClick={handleConfirmReset}>Yes, Reset</button>
             </div>
           </div>
         </div>

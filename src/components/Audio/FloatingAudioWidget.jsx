@@ -10,6 +10,13 @@ const FloatingAudioWidget = () => {
     spotifyActive,
     selectedSpotifyId,
     SPOTIFY_PLAYLISTS,
+    ytMusicActive,
+    selectedYtMusicId,
+    YT_MUSIC_PLAYLISTS,
+    appleMusicActive,
+    selectedAppleMusicUrl,
+    selectedAppleMusicTitle,
+    APPLE_MUSIC_PLAYLISTS,
     stopAll,
     setShowAudioDrawer,
     showAudioDrawer,
@@ -24,8 +31,18 @@ const FloatingAudioWidget = () => {
   // Construct label text
   let label = '';
   const currentSpotify = SPOTIFY_PLAYLISTS?.find((p) => p.id === selectedSpotifyId)?.title || 'Spotify Player';
+  const currentYtMusic = YT_MUSIC_PLAYLISTS?.find((p) => p.id === selectedYtMusicId)?.title || 'YouTube Music';
+  const currentAppleMusic = APPLE_MUSIC_PLAYLISTS?.find((p) => p.embedUrl === selectedAppleMusicUrl)?.title || selectedAppleMusicTitle || 'Apple Music';
 
-  if (spotifyActive && activeAmbientLabels.length > 0) {
+  if (ytMusicActive && activeAmbientLabels.length > 0) {
+    label = `🔴 ${currentYtMusic} + ${activeAmbientLabels[0]}`;
+  } else if (ytMusicActive) {
+    label = `🔴 YT Music: ${currentYtMusic}`;
+  } else if (appleMusicActive && activeAmbientLabels.length > 0) {
+    label = `🍎 ${currentAppleMusic} + ${activeAmbientLabels[0]}`;
+  } else if (appleMusicActive) {
+    label = `🍎 Apple Music: ${currentAppleMusic}`;
+  } else if (spotifyActive && activeAmbientLabels.length > 0) {
     label = `🟢 ${currentSpotify} + ${activeAmbientLabels[0]}`;
   } else if (spotifyActive) {
     label = `🟢 Spotify: ${currentSpotify}`;
