@@ -38,6 +38,13 @@ const AppShell = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showAIChat, setShowAIChat] = useState(false);
   const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip
+  const [activeTab, setActiveTab] = useState('timer');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showTasks, setShowTasks] = useState(false);
+  const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
+  const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const handleBeforeInstall = (e) => {
@@ -67,6 +74,16 @@ const AppShell = () => {
                       document.activeElement?.isContentEditable;
       if (isInput) return;
 
+      if (e.key === 'Escape') {
+        setShowSettings(false);
+        setShowTasks(false);
+        setShowAudioDrawer(false);
+        setShowUserMenu(false);
+        return;
+      }
+
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         timerActionsRef.current?.togglePlay?.();
@@ -74,11 +91,29 @@ const AppShell = () => {
         timerActionsRef.current?.reset?.();
       } else if (e.key === 's' || e.key === 'S') {
         timerActionsRef.current?.skip?.();
-      } else if (e.key === 'Escape') {
-        setShowSettings(false);
-        setShowTasks(false);
-        setShowAudioDrawer(false);
-        setShowUserMenu(false);
+      } else if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        setActiveTab('timer');
+        setPendingSwitchMode('pomodoro');
+        setCurrentTimerMode('pomodoro');
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          const docEl = document.documentElement;
+          const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+          if (req) {
+            req.call(docEl).catch((err) => {
+              console.warn('Error attempting to enable fullscreen:', err);
+            });
+          }
+        } else {
+          const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+          if (exit) {
+            exit.call(document).catch((err) => {
+              console.warn('Error attempting to exit fullscreen:', err);
+            });
+          }
+        }
       }
     };
     window.addEventListener('keydown', handler);
@@ -134,11 +169,6 @@ const AppShell = () => {
     };
   }, [settings?.clockColor, settings?.textColor, settings?.autoClockColor, settings?.clockFont, wallpaper]);
 
-  const [activeTab, setActiveTab] = useState('timer');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showTasks, setShowTasks] = useState(false);
-  const menuRef = useRef(null);
 
   // Close menu on outside click
   useEffect(() => {
@@ -151,8 +181,6 @@ const AppShell = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
-  const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
 
   const handleTabChange = (tab, subMode = null) => {
     setActiveTab(tab);

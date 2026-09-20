@@ -335,6 +335,7 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
           className="flocus-ctrl-btn"
           onClick={toggleFullscreen}
           aria-label="Toggle Fullscreen"
+          title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
           style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           {isFullscreen ? <IconMinimize size={20} /> : <IconMaximize size={20} />}
@@ -356,6 +357,8 @@ const TimerTab = ({ settings, hasWallpaper, onTabChange, initialMode, onInitialM
         <span>Space <span className="keyboard-hint-sep">·</span> play/pause</span>
         <span>R <span className="keyboard-hint-sep">·</span> reset</span>
         {mode !== 'stopwatch' && <span>S <span className="keyboard-hint-sep">·</span> skip</span>}
+        <span>F <span className="keyboard-hint-sep">·</span> fullscreen</span>
+        {mode !== 'pomodoro' && <span>T <span className="keyboard-hint-sep">·</span> timer</span>}
       </div>
 
       {/* Motivational Quote */}

@@ -203,9 +203,19 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
     <div className="live-clock-tab-wrapper">
       {!hasWallpaper && <div className="liquid-orb" />}
 
-      {/* Top Header Mode Pills for Live Clock — Stopwatch | Clock */}
+      {/* Top Header Mode Pills for Live Clock — Timer | Stopwatch | Clock */}
       <div className="liquid-pills-wrapper" role="group" aria-label="Clock mode navigation">
         <div className="liquid-pill-track">
+          {onTabChange && (
+            <button
+              type="button"
+              className="liquid-pill-btn"
+              onClick={() => onTabChange('timer', 'pomodoro')}
+              title="Switch to Timer (T)"
+            >
+              <span className="liquid-pill-label">TIMER</span>
+            </button>
+          )}
           {onTabChange && (
             <button
               type="button"
@@ -345,7 +355,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
           className="flocus-ctrl-btn"
           onClick={toggleFullscreen}
           aria-label="Toggle Fullscreen"
-          title="Fullscreen desk mode"
+          title={isFullscreen ? "Exit Fullscreen (F)" : "Fullscreen desk mode (F)"}
           style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           {isFullscreen ? <IconMinimize size={20} /> : <IconMaximize size={20} />}
@@ -362,6 +372,12 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         >
           <IconPip size={18} />
         </button>
+      </div>
+
+      {/* Keyboard shortcut hint */}
+      <div className="keyboard-hints" style={{ marginTop: '14px' }}>
+        <span>T <span className="keyboard-hint-sep">·</span> timer</span>
+        <span>F <span className="keyboard-hint-sep">·</span> fullscreen</span>
       </div>
 
       {/* Hidden canvas & video elements for Picture-in-Picture fallback */}
