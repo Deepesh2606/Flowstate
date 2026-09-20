@@ -261,35 +261,16 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
 
       {/* Centered Focus Topic Badge & Session Counter */}
       <div className="timer-focus-center-container">
-        {subject ? (
-          <div
-            className="current-focus-badge"
-            onClick={() => setIsEditingSubject(true)}
-            title="Click to change what you are focusing on"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setIsEditingSubject(true)}
-            id="current-focus-badge"
-          >
-            <span className="focus-badge-pulse" />
-            <span className="focus-badge-tag">FOCUSING ON</span>
-            <span className="focus-badge-text">{subject}</span>
-            <span className="focus-badge-edit-icon" aria-hidden="true">✎</span>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="current-focus-prompt-btn"
-            onClick={() => {
-              setIsEditingSubject(true);
-              setTimeout(() => { const el = document.getElementById('subject-text-input'); if (el) el.focus(); }, 60);
-            }}
-            id="btn-set-focus-prompt"
-          >
-            <span className="focus-prompt-plus">+</span>
-            <span>Set what you're focusing on</span>
-          </button>
-        )}
+        <SubjectSelector
+          subject={subject}
+          setSubject={setSubject}
+          studyMode={studyMode}
+          setStudyMode={setStudyMode}
+          targets={settings?.targets || []}
+          isRunning={isRunning}
+          isEditing={isEditingSubject}
+          setIsEditing={setIsEditingSubject}
+        />
         <div className="timer-counter-wrapper">
           <SessionCounter count={sessionCount} />
         </div>
@@ -432,17 +413,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         </div>
       )}
 
-      {/* Subject Selector */}
-      <SubjectSelector
-        subject={subject}
-        setSubject={setSubject}
-        studyMode={studyMode}
-        setStudyMode={setStudyMode}
-        targets={settings?.targets || []}
-        isRunning={isRunning}
-        isEditing={isEditingSubject}
-        setIsEditing={setIsEditingSubject}
-      />
+      {/* Bottom clearance spacer to prevent any overlap with bottom bar */}
+      <div className="timer-tab-bottom-spacer" aria-hidden="true" />
 
       {/* Skip Confirmation Dialog */}
       {showSkipConfirm && (

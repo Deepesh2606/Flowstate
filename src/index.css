@@ -188,10 +188,10 @@ input {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Increased bottom padding so SubjectSelector + controls don't hide under tab bar / bottom controls */
-  padding: 28px 16px calc(var(--tab-height) + 80px);
+  padding: 24px 16px calc(var(--tab-height) + 40px);
   display: flex;
   justify-content: center;
+  scroll-padding-bottom: calc(var(--tab-height) + 40px);
 }
 
 .content-area::-webkit-scrollbar {
@@ -648,6 +648,144 @@ input {
 .focus-prompt-plus {
   color: var(--accent);
   font-weight: bold;
+}
+
+.focus-badge-clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 2px 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.focus-badge-clear-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Inline Focus Center Form */
+.focus-center-input-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  animation: fadeIn 0.22s ease;
+}
+
+.focus-center-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.focus-center-input {
+  width: 100%;
+  height: 40px;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 100px;
+  padding: 0 75px 0 16px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(6, 182, 212, 0.15);
+  transition: all 0.2s ease;
+}
+
+.focus-center-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 6px 24px var(--accent-glow);
+}
+
+.focus-center-submit-btn {
+  position: absolute;
+  right: 32px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 100px;
+  background: var(--accent);
+  color: #081226;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.focus-center-submit-btn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+}
+
+.focus-center-cancel-btn {
+  position: absolute;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.focus-center-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text-primary);
+}
+
+.focus-center-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.focus-center-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.focus-center-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.focus-center-chip.active {
+  background: var(--accent);
+  color: #081226;
+  border-color: var(--accent);
+  font-weight: 700;
 }
 
 .timer-counter-wrapper {
@@ -2862,6 +3000,7 @@ input {
   align-items: center;
   min-height: 100%;
   width: 100%;
+  margin: auto 0;
 }
 
 .timer-tab-wrapper {
@@ -2870,7 +3009,14 @@ input {
   gap: 14px;
   position: relative;
   width: 100%;
-  margin-block: auto;
+  margin: 0 auto;
+}
+
+.timer-tab-bottom-spacer {
+  height: calc(var(--tab-height) + 36px);
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 /* Liquid Blob Animation — soft, diffuse atmospheric orb */

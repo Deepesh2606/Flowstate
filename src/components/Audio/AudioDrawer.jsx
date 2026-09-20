@@ -28,6 +28,15 @@ const ICON_MAP = {
   IconThunder,
 };
 
+const SOUND_THEMES = {
+  rain: { accent: '#38bdf8', glow: 'rgba(56, 189, 248, 0.25)', bg: 'rgba(56, 189, 248, 0.12)' },
+  fire: { accent: '#f97316', glow: 'rgba(249, 115, 22, 0.25)', bg: 'rgba(249, 115, 22, 0.12)' },
+  cafe: { accent: '#eab308', glow: 'rgba(234, 179, 8, 0.25)', bg: 'rgba(234, 179, 8, 0.12)' },
+  waves: { accent: '#14b8a6', glow: 'rgba(20, 184, 166, 0.25)', bg: 'rgba(20, 184, 166, 0.12)' },
+  wind: { accent: '#818cf8', glow: 'rgba(129, 140, 248, 0.25)', bg: 'rgba(129, 140, 248, 0.12)' },
+  thunder: { accent: '#c084fc', glow: 'rgba(192, 132, 252, 0.25)', bg: 'rgba(192, 132, 252, 0.12)' },
+};
+
 const AudioDrawer = ({ onClose }) => {
   const {
     AMBIENT_SOUNDS,
@@ -44,6 +53,8 @@ const AudioDrawer = ({ onClose }) => {
     applyPreset,
     stopAll,
     isAnyPlaying,
+    activeAmbientCount,
+    activeAmbientLabels,
     lofiPlaying,
     setLofiPlaying,
     selectedStreamId,
@@ -72,7 +83,7 @@ const AudioDrawer = ({ onClose }) => {
   const [isRefreshingStreams, setIsRefreshingStreams] = useState(false);
 
   const handleCustomSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const id = extractVideoId(customInput);
     if (id) {
       setCustomVideoId(id);
@@ -82,7 +93,7 @@ const AudioDrawer = ({ onClose }) => {
   };
 
   const handleSpotifySubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const details = extractSpotifyDetails(spotifyUrlInput);
     if (details) {
       setSelectedSpotifyId(details.id);
@@ -97,15 +108,39 @@ const AudioDrawer = ({ onClose }) => {
     setIsRefreshingStreams(false);
   };
 
+  // Build live playback descriptor
+  let playingLabel = '';
+  if (lofiPlaying) {
+    const stream = LOFI_STREAMS.find(s => s.id === selectedStreamId);
+    playingLabel = stream ? `Radio: ${stream.title}` : 'Lofi Radio';
+    if (activeAmbientCount > 0) {
+      playingLabel += ` + ${activeAmbientLabels[0]}`;
+    }
+  } else if (spotifyActive) {
+    const sp = SPOTIFY_PLAYLISTS.find(p => p.id === selectedSpotifyId);
+    playingLabel = sp ? `Spotify: ${sp.title}` : 'Spotify';
+    if (activeAmbientCount > 0) {
+      playingLabel += ` + ${activeAmbientLabels[0]}`;
+    }
+  } else if (activeAmbientCount > 0) {
+    playingLabel = activeAmbientLabels.join(' + ');
+  }
+
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} aria-hidden="true" />
       <aside className="drawer audio-drawer" role="dialog" aria-label="Audio and Ambience Studio">
         {/* Header */}
-        <div className="drawer-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <IconHeadphones size={20} color="var(--accent)" />
-            <h2 className="drawer-title" style={{ fontSize: '1.25rem' }}>Ambience</h2>
+        <div className="drawer-header audio-drawer-header">
+          <div className="audio-header-left">
+            <div className="audio-header-icon-box">
+              <IconHeadphones size={20} color="var(--accent)" />
+              {isAnyPlaying && <span className="audio-header-live-dot" />}
+            </div>
+            <div>
+              <h2 className="drawer-title" style={{ fontSize: '1.2rem', lineHeight: 1.2 }}>Music & Ambience</h2>
+              <span className="audio-header-sub">Soundscapes for deep focus</span>
+            </div>
           </div>
           <div className="audio-header-actions">
             {isAnyPlaying && (
@@ -115,7 +150,8 @@ const AudioDrawer = ({ onClose }) => {
                 title="Stop all sounds and music"
                 id="stop-all-audio-btn"
               >
-                Stop All
+                <IconPause size={12} />
+                <span>Stop All</span>
               </button>
             )}
             <button className="drawer-close" onClick={onClose} aria-label="Close audio drawer">
@@ -124,21 +160,54 @@ const AudioDrawer = ({ onClose }) => {
           </div>
         </div>
 
+        {/* Dynamic Now Playing Banner */}
+        {isAnyPlaying && (
+          <div className="now-playing-banner">
+            <div className="now-playing-left">
+              <div className="now-playing-equalizer">
+                <span className="eq-bar" />
+                <span className="eq-bar" />
+                <span className="eq-bar" />
+                <span className="eq-bar" />
+              </div>
+              <div className="now-playing-info">
+                <span className="now-playing-tag">NOW PLAYING</span>
+                <span className="now-playing-text" title={playingLabel}>{playingLabel}</span>
+              </div>
+            </div>
+            <button
+              className="now-playing-mute-btn"
+              onClick={() => setIsMuted(!isMuted)}
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? <IconVolumeX size={14} /> : <IconVolume size={14} />}
+            </button>
+          </div>
+        )}
+
         {/* Tab Switcher */}
-        <div className="audio-nav-tabs">
+        <div className="audio-nav-tabs" role="tablist">
           <button
             className={`audio-nav-tab ${activeSubTab === 'ambient' ? 'active' : ''}`}
             onClick={() => setActiveSubTab('ambient')}
+            role="tab"
+            aria-selected={activeSubTab === 'ambient'}
             id="tab-ambient-mixer"
           >
-            <IconVolume size={15} /> Ambient
+            <IconVolume size={15} />
+            <span>Ambient</span>
+            {activeAmbientCount > 0 && <span className="audio-tab-count">{activeAmbientCount}</span>}
           </button>
           <button
             className={`audio-nav-tab ${activeSubTab === 'lofi' ? 'active' : ''}`}
             onClick={() => setActiveSubTab('lofi')}
+            role="tab"
+            aria-selected={activeSubTab === 'lofi'}
             id="tab-lofi-radio"
           >
-            <IconRadio size={15} /> Lofi Radio
+            <IconRadio size={15} />
+            <span>Lofi Radio</span>
+            {lofiPlaying && <span className="audio-tab-live-pulse" />}
           </button>
           <button
             className={`audio-nav-tab ${activeSubTab === 'spotify' ? 'active' : ''}`}
@@ -146,20 +215,27 @@ const AudioDrawer = ({ onClose }) => {
               setActiveSubTab('spotify');
               setSpotifyActive(true);
             }}
+            role="tab"
+            aria-selected={activeSubTab === 'spotify'}
             id="tab-spotify"
           >
-            <IconSpotify size={15} color="#1DB954" /> Spotify
+            <IconSpotify size={15} color="#1DB954" />
+            <span>Spotify</span>
+            {spotifyActive && <span className="audio-tab-spotify-dot" />}
           </button>
         </div>
 
         {/* ── AMBIENT MIXER TAB ── */}
         {activeSubTab === 'ambient' && (
-          <>
+          <div className="ambient-tab-content">
             {/* Master Volume Section */}
             <div className="master-volume-box">
               <div className="master-volume-header">
-                <span>Master Soundscape Volume</span>
-                <span>{isMuted ? 'Muted' : `${Math.round(masterVolume * 100)}%`}</span>
+                <div className="master-volume-title-group">
+                  <IconVolume size={14} color="var(--accent)" />
+                  <span>Master Soundscape Volume</span>
+                </div>
+                <span className="master-volume-value">{isMuted ? 'Muted' : `${Math.round(masterVolume * 100)}%`}</span>
               </div>
               <div className="master-volume-controls">
                 <button
@@ -170,25 +246,49 @@ const AudioDrawer = ({ onClose }) => {
                 >
                   {isMuted ? <IconVolumeX size={16} /> : <IconVolume size={16} />}
                 </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={isMuted ? 0 : Math.round(masterVolume * 100)}
-                  onChange={(e) => {
-                    setMasterVolume(parseFloat(e.target.value) / 100);
-                    if (isMuted) setIsMuted(false);
-                  }}
-                  className="audio-slider"
-                  id="master-volume-slider"
-                  aria-label="Master ambient volume"
-                />
+                <div className="slider-track-wrap">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={isMuted ? 0 : Math.round(masterVolume * 100)}
+                    onChange={(e) => {
+                      setMasterVolume(parseFloat(e.target.value) / 100);
+                      if (isMuted) setIsMuted(false);
+                    }}
+                    className="audio-slider master-slider"
+                    id="master-volume-slider"
+                    aria-label="Master ambient volume"
+                    style={{
+                      '--slider-progress': `${isMuted ? 0 : Math.round(masterVolume * 100)}%`
+                    }}
+                  />
+                </div>
+              </div>
+              {/* Quick volume jump presets */}
+              <div className="master-volume-quick-steps">
+                {[25, 50, 75, 100].map(pct => (
+                  <button
+                    key={pct}
+                    type="button"
+                    className={`vol-quick-btn ${Math.round(masterVolume * 100) === pct && !isMuted ? 'active' : ''}`}
+                    onClick={() => {
+                      setMasterVolume(pct / 100);
+                      if (isMuted) setIsMuted(false);
+                    }}
+                  >
+                    {pct}%
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Soundscape Presets */}
             <div className="audio-presets-section">
-              <span className="section-label-small">Instant Soundscapes</span>
+              <div className="section-label-header">
+                <span className="section-label-small">Instant Soundscapes</span>
+                <span className="section-sub-hint">One-click focus mixes</span>
+              </div>
               <div className="presets-chips">
                 {SOUND_PRESETS.map((p) => (
                   <button
@@ -197,95 +297,121 @@ const AudioDrawer = ({ onClose }) => {
                     onClick={() => applyPreset(p)}
                     id={`preset-${p.id}`}
                   >
-                    <span>{p.icon}</span> {p.name}
+                    <span className="preset-chip-icon">{p.icon}</span>
+                    <span className="preset-chip-name">{p.name}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Ambient Sound Cards Grid */}
-            <div className="ambient-tracks-grid">
-              {AMBIENT_SOUNDS.map((sound) => {
-                const trackState = tracks[sound.id] || { playing: false, volume: sound.defaultVol };
-                const IconComponent = ICON_MAP[sound.icon] || IconVolume;
-                const isPlaying = trackState.playing;
+            <div className="ambient-tracks-section">
+              <div className="section-label-header">
+                <span className="section-label-small">Natural Elements</span>
+                <span className="section-sub-hint">Mix and adjust levels</span>
+              </div>
+              <div className="ambient-tracks-grid">
+                {AMBIENT_SOUNDS.map((sound) => {
+                  const trackState = tracks[sound.id] || { playing: false, volume: sound.defaultVol };
+                  const IconComponent = ICON_MAP[sound.icon] || IconVolume;
+                  const isPlaying = trackState.playing;
+                  const theme = SOUND_THEMES[sound.id] || { accent: 'var(--accent)', glow: 'rgba(6,182,212,0.25)', bg: 'rgba(6,182,212,0.12)' };
 
-                return (
-                  <div
-                    key={sound.id}
-                    className={`ambient-track-card ${isPlaying ? 'active' : ''}`}
-                    id={`ambient-card-${sound.id}`}
-                  >
-                    <div className="track-top-row">
-                      <div className="track-info" onClick={() => toggleTrack(sound.id)}>
-                        <div className="track-icon-wrapper">
-                          <IconComponent size={16} />
+                  return (
+                    <div
+                      key={sound.id}
+                      className={`ambient-track-card ${isPlaying ? 'active' : ''}`}
+                      id={`ambient-card-${sound.id}`}
+                      style={{
+                        '--card-accent': theme.accent,
+                        '--card-glow': theme.glow,
+                        '--card-bg-accent': theme.bg,
+                      }}
+                    >
+                      <div className="track-top-row">
+                        <div className="track-info" onClick={() => toggleTrack(sound.id)}>
+                          <div className="track-icon-wrapper">
+                            <IconComponent size={16} />
+                          </div>
+                          <span className="track-name">{sound.label}</span>
                         </div>
-                        <span className="track-name">{sound.label}</span>
+                        <div className="track-actions">
+                          {isPlaying && (
+                            <div className="track-mini-eq">
+                              <span />
+                              <span />
+                              <span />
+                            </div>
+                          )}
+                          <button
+                            className="track-play-btn"
+                            onClick={() => toggleTrack(sound.id)}
+                            title={isPlaying ? `Pause ${sound.label}` : `Play ${sound.label}`}
+                            id={`play-btn-${sound.id}`}
+                          >
+                            {isPlaying ? <IconPause size={12} /> : <IconPlay size={12} />}
+                          </button>
+                        </div>
                       </div>
-                      <div className="track-actions">
-                        <button
-                          className="track-play-btn"
-                          onClick={() => toggleTrack(sound.id)}
-                          title={isPlaying ? `Pause ${sound.label}` : `Play ${sound.label}`}
-                          id={`play-btn-${sound.id}`}
-                        >
-                          {isPlaying ? <IconPause size={12} /> : <IconPlay size={12} />}
-                        </button>
-                      </div>
-                    </div>
 
-                    <div className="track-slider-row">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={Math.round(trackState.volume * 100)}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) / 100;
-                          setTrackVolume(sound.id, val);
-                          if (!isPlaying && val > 0) {
-                            toggleTrack(sound.id);
-                          }
-                        }}
-                        className="audio-slider"
-                        id={`volume-slider-${sound.id}`}
-                        aria-label={`${sound.label} volume`}
-                      />
-                      <span className="track-volume-pct">
-                        {Math.round(trackState.volume * 100)}%
-                      </span>
+                      <div className="track-slider-row">
+                        <div className="slider-track-wrap">
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={Math.round(trackState.volume * 100)}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) / 100;
+                              setTrackVolume(sound.id, val);
+                              if (!isPlaying && val > 0) {
+                                toggleTrack(sound.id);
+                              }
+                            }}
+                            className="audio-slider track-slider"
+                            id={`volume-slider-${sound.id}`}
+                            aria-label={`${sound.label} volume`}
+                            style={{
+                              '--slider-progress': `${Math.round(trackState.volume * 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="track-volume-pct">
+                          {Math.round(trackState.volume * 100)}%
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* ── LOFI RADIO TAB ── */}
         {activeSubTab === 'lofi' && (
           <div className="lofi-section">
             {/* Live Status & Main Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="lofi-hero-bar">
               <div className={`lofi-status-pill ${lofiPlaying ? 'playing' : ''}`}>
                 <span className="live-dot" />
-                {lofiPlaying ? 'Playing Stream' : 'Stream Paused'}
+                <span>{lofiPlaying ? 'ON AIR' : 'RADIO PAUSED'}</span>
               </div>
 
               <button
-                className="custom-stream-btn"
+                className={`lofi-main-toggle-btn ${lofiPlaying ? 'playing' : ''}`}
                 onClick={() => setLofiPlaying(!lofiPlaying)}
                 id="lofi-main-toggle-btn"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 {lofiPlaying ? (
                   <>
-                    <IconPause size={13} /> Pause Radio
+                    <IconPause size={14} />
+                    <span>Pause Radio</span>
                   </>
                 ) : (
                   <>
-                    <IconPlay size={13} /> Play Radio
+                    <IconPlay size={14} />
+                    <span>Start Radio</span>
                   </>
                 )}
               </button>
@@ -293,46 +419,50 @@ const AudioDrawer = ({ onClose }) => {
 
             {/* Video Player or Placeholder */}
             {lofiPlaying ? (
-              <LofiPlayer inDrawer={true} />
+              <div className="lofi-player-box">
+                <LofiPlayer inDrawer={true} />
+              </div>
             ) : (
               <div
                 className="lofi-placeholder"
                 onClick={() => setLofiPlaying(true)}
-                style={{ cursor: 'pointer' }}
                 title="Click to start Lofi stream"
               >
                 <div className="lofi-placeholder-icon">📻</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Lofi Hip Hop Radio
+                <div className="lofi-placeholder-title">
+                  24/7 Lofi Hip Hop Radio
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Click Play to start 24/7 background beats
+                <div className="lofi-placeholder-sub">
+                  Tap to tune in to chill beats & background study streams
                 </div>
+                <button type="button" className="lofi-start-pill">
+                  <IconPlay size={12} /> Play Channel
+                </button>
               </div>
             )}
 
             {/* Stream Presets Header with Filter & Refresh */}
             <div className="audio-presets-section">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="section-label-header">
                 <span className="section-label-small">Radio Channels</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="stream-header-actions">
                   <button
                     type="button"
                     className={`stream-filter-btn ${filterAvailableOnly ? 'active' : ''}`}
                     onClick={() => setFilterAvailableOnly(!filterAvailableOnly)}
-                    title={filterAvailableOnly ? 'Show all streams' : 'Show available streams only'}
+                    title={filterAvailableOnly ? 'Show all channels' : 'Show live channels only'}
                     id="filter-available-streams-btn"
                   >
-                    {filterAvailableOnly ? '● Available Only' : 'All Streams'}
+                    {filterAvailableOnly ? '● Live Only' : 'All Channels'}
                   </button>
                   <button
                     type="button"
-                    className="stream-refresh-btn"
+                    className={`stream-refresh-btn ${isRefreshingStreams ? 'refreshing' : ''}`}
                     onClick={handleRefreshStreams}
-                    title="Check streams availability"
+                    title="Check stream health"
                     disabled={isRefreshingStreams}
                   >
-                    {isRefreshingStreams ? 'Checking…' : '↻'}
+                    ↻
                   </button>
                 </div>
               </div>
@@ -344,11 +474,13 @@ const AudioDrawer = ({ onClose }) => {
                   return streamStatus[s.id] !== 'offline';
                 }).map((stream) => {
                   const isSelected = selectedStreamId === stream.id;
+                  const isCurrentlyLive = lofiPlaying && isSelected;
                   const status = streamStatus[stream.id]; // 'available' | 'offline' | 'checking'
+
                   return (
                     <div
                       key={stream.id}
-                      className={`stream-card ${isSelected ? 'selected' : ''}`}
+                      className={`stream-card ${isSelected ? 'selected' : ''} ${isCurrentlyLive ? 'currently-live' : ''}`}
                       onClick={() => {
                         setSelectedStreamId(stream.id);
                         if (!lofiPlaying && stream.id !== 'custom') {
@@ -357,36 +489,43 @@ const AudioDrawer = ({ onClose }) => {
                       }}
                       id={`stream-card-${stream.id}`}
                     >
-                      <div className="stream-info">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="stream-title">{stream.title}</span>
-                          {stream.id !== 'custom' && (
-                            <span
-                              className={`stream-badge ${
-                                status === 'available'
-                                  ? 'badge-available'
-                                  : status === 'offline'
-                                  ? 'badge-offline'
-                                  : 'badge-checking'
-                              }`}
-                            >
-                              {status === 'available' ? 'Live' : status === 'offline' ? 'Offline' : 'Checking'}
-                            </span>
-                          )}
+                      <div className="stream-card-left">
+                        <div className="stream-icon-badge">
+                          <IconRadio size={16} />
                         </div>
-                        <div className="stream-subtitle">{stream.subtitle}</div>
+                        <div className="stream-info">
+                          <div className="stream-title-row">
+                            <span className="stream-title">{stream.title}</span>
+                            {stream.id !== 'custom' && (
+                              <span
+                                className={`stream-badge ${
+                                  status === 'available'
+                                    ? 'badge-available'
+                                    : status === 'offline'
+                                    ? 'badge-offline'
+                                    : 'badge-checking'
+                                }`}
+                              >
+                                {status === 'available' ? 'Live' : status === 'offline' ? 'Offline' : 'Checking'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="stream-subtitle">{stream.subtitle}</div>
+                        </div>
                       </div>
-                      {isSelected && (
-                        <div
-                          style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: 'var(--accent)',
-                            boxShadow: '0 0 8px var(--accent)',
-                          }}
-                        />
-                      )}
+
+                      <div className="stream-card-right">
+                        {isCurrentlyLive && (
+                          <div className="stream-active-waves">
+                            <span />
+                            <span />
+                            <span />
+                          </div>
+                        )}
+                        {isSelected && !isCurrentlyLive && (
+                          <span className="stream-selected-dot" />
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -396,11 +535,11 @@ const AudioDrawer = ({ onClose }) => {
             {/* Custom YouTube Stream URL Input */}
             {selectedStreamId === 'custom' && (
               <form className="custom-stream-box" onSubmit={handleCustomSubmit}>
-                <span className="section-label-small">Custom YouTube Stream / Video</span>
+                <span className="section-label-small">Custom YouTube Link or ID</span>
                 <div className="custom-stream-input-group">
                   <input
                     type="text"
-                    placeholder="Paste YouTube Link or Video ID"
+                    placeholder="https://youtube.com/watch?v=..."
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
                     className="custom-stream-input"
@@ -411,8 +550,8 @@ const AudioDrawer = ({ onClose }) => {
                   </button>
                 </div>
                 {customVideoId && (
-                  <span style={{ fontSize: '11px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
-                    Active ID: {customVideoId}
+                  <span className="custom-stream-active-id">
+                    Active Video ID: <code>{customVideoId}</code>
                   </span>
                 )}
               </form>
@@ -428,7 +567,10 @@ const AudioDrawer = ({ onClose }) => {
 
             {/* Curated Spotify Playlists */}
             <div className="audio-presets-section">
-              <span className="section-label-small">Curated Spotify Playlists</span>
+              <div className="section-label-header">
+                <span className="section-label-small">Curated Focus Playlists</span>
+                <span className="section-sub-hint">Verified Spotify playlists</span>
+              </div>
               <div className="lofi-streams-list">
                 {SPOTIFY_PLAYLISTS.map((playlist) => {
                   const isSelected = selectedSpotifyId === playlist.id;
@@ -443,24 +585,24 @@ const AudioDrawer = ({ onClose }) => {
                       }}
                       id={`spotify-playlist-${playlist.id}`}
                     >
-                      <div className="stream-info">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <IconSpotify size={14} color={isSelected ? '#1DB954' : 'var(--text-secondary)'} />
-                          <span className="stream-title">{playlist.title}</span>
+                      <div className="stream-card-left">
+                        <div className="stream-icon-badge spotify-icon-badge">
+                          <IconSpotify size={16} color="#1DB954" />
                         </div>
-                        <div className="stream-subtitle">{playlist.subtitle}</div>
+                        <div className="stream-info">
+                          <div className="stream-title-row">
+                            <span className="stream-title">{playlist.title}</span>
+                            <span className="spotify-tag-pill">Spotify</span>
+                          </div>
+                          <div className="stream-subtitle">{playlist.subtitle}</div>
+                        </div>
                       </div>
-                      {isSelected && (
-                        <div
-                          style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: '#1DB954',
-                            boxShadow: '0 0 8px #1DB954',
-                          }}
-                        />
-                      )}
+
+                      <div className="stream-card-right">
+                        {isSelected && (
+                          <div className="spotify-active-indicator" />
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -468,8 +610,8 @@ const AudioDrawer = ({ onClose }) => {
             </div>
 
             {/* Custom Spotify URL Input */}
-            <form className="custom-stream-box" onSubmit={handleSpotifySubmit}>
-              <span className="section-label-small">Connect Custom Spotify Link</span>
+            <form className="custom-stream-box spotify-custom-box" onSubmit={handleSpotifySubmit}>
+              <span className="section-label-small">Connect Any Spotify Link</span>
               <div className="custom-stream-input-group">
                 <input
                   type="text"
@@ -481,15 +623,14 @@ const AudioDrawer = ({ onClose }) => {
                 />
                 <button
                   type="submit"
-                  className="custom-stream-btn"
-                  style={{ background: '#1DB954', color: '#fff' }}
+                  className="custom-stream-btn spotify-submit-btn"
                   id="load-custom-spotify-btn"
                 >
                   Load
                 </button>
               </div>
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                Supports open.spotify.com/playlist/... or album/track links
+              <span className="spotify-url-hint">
+                Supports <code>open.spotify.com/playlist/...</code>, <code>/album/...</code>, or <code>/track/...</code>
               </span>
             </form>
           </div>
