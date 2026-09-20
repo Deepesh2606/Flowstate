@@ -2789,31 +2789,35 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 1.8vw, 20px);
-  margin-bottom: 32px;
+  gap: clamp(10px, 2.2vw, 28px);
+  margin-bottom: clamp(24px, 4vw, 42px);
   user-select: none;
+  perspective: 1600px;
 }
 
 .flip-card-unit {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: clamp(10px, 1.4vw, 16px);
 }
 
 .flip-card-wrapper {
   position: relative;
-  width: clamp(74px, 13vw, 145px);
-  height: clamp(88px, 15vw, 165px);
-  perspective: 1000px;
+  width: clamp(88px, 15.5vw, 190px);
+  height: clamp(110px, 18.5vw, 225px);
+  perspective: 1200px;
   transform-style: preserve-3d;
-  border-radius: 16px;
-  /* Substantially lessened box-shadow: clean, ambient, not heavy */
-  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.22),
-              0 3px 8px -2px rgba(0, 0, 0, 0.12),
-              inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(12px) saturate(140%) brightness(1.05);
-  -webkit-backdrop-filter: blur(12px) saturate(140%) brightness(1.05);
+  border-radius: clamp(16px, 2vw, 24px);
+  /* Soft, expansive ambient blur and multi-tiered diffuse shadow */
+  box-shadow: 
+    0 28px 60px -15px rgba(0, 0, 0, 0.42),
+    0 14px 28px -8px rgba(0, 0, 0, 0.22),
+    0 0 45px -5px rgba(255, 255, 255, 0.05),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(32px) saturate(160%) brightness(1.08);
+  -webkit-backdrop-filter: blur(32px) saturate(160%) brightness(1.08);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
 }
 
 /* Liquid curved gloss highlight on the card surface */
@@ -2821,15 +2825,31 @@ input {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 16px;
+  border-radius: inherit;
   background: linear-gradient(
-    180deg,
+    160deg,
     rgba(255, 255, 255, 0.22) 0%,
-    rgba(255, 255, 255, 0.05) 45%,
+    rgba(255, 255, 255, 0.06) 40%,
     transparent 70%
   );
   pointer-events: none;
   z-index: 12;
+}
+
+/* Tactile split-flap side axle hinge notches */
+.flip-card-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -3px;
+  right: -3px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 3px;
+  background: radial-gradient(circle at 1px 50%, rgba(255, 255, 255, 0.35), transparent 4px),
+              radial-gradient(circle at calc(100% - 1px) 50%, rgba(255, 255, 255, 0.35), transparent 4px);
+  pointer-events: none;
+  z-index: 13;
 }
 
 .flip-flap {
@@ -2838,15 +2858,15 @@ input {
   width: 100%;
   height: 50%;
   overflow: hidden;
-  /* Liquid design: soft translucent aqueous glass */
+  /* Soft, dreamy aqueous glassmorphism instead of harsh opaque block */
   background: linear-gradient(
-    170deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(255, 255, 255, 0.07) 40%,
-    rgba(255, 255, 255, 0.02) 65%,
-    rgba(255, 255, 255, 0.10) 100%
-  ), rgba(12, 18, 38, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+    175deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.05) 45%,
+    rgba(255, 255, 255, 0.02) 75%,
+    rgba(255, 255, 255, 0.08) 100%
+  ), rgba(15, 23, 42, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   display: flex;
@@ -2862,23 +2882,23 @@ input {
   align-items: center;
   justify-content: center;
   font-family: var(--clock-font-family, 'Space Grotesk', sans-serif);
-  font-size: clamp(3.2rem, 7.5vw, 7.2rem);
+  font-size: clamp(4.4rem, 9.6vw, 10.5rem);
   font-weight: 800;
   line-height: 1;
   color: var(--clock-text-color, #ffffff);
-  text-shadow: var(--clock-text-shadow, 0 2px 14px rgba(0, 0, 0, 0.3));
+  text-shadow: var(--clock-text-shadow, 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 30px color-mix(in srgb, var(--clock-text-color, #ffffff) 18%, transparent));
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
 }
 
 .flip-top-static,
 .flip-leaf-top {
   top: 0;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.55),
-              inset 0 -1px 2px 0 rgba(0, 0, 0, 0.08);
+  border-top-left-radius: clamp(16px, 2vw, 24px);
+  border-top-right-radius: clamp(16px, 2vw, 24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45),
+              inset 0 -1px 2px 0 rgba(0, 0, 0, 0.12);
   transform-origin: bottom center;
 }
 
@@ -2890,11 +2910,11 @@ input {
 .flip-bottom-static,
 .flip-leaf-bottom {
   bottom: 0;
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.22),
-              inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.35);
+  border-bottom-left-radius: clamp(16px, 2vw, 24px);
+  border-bottom-right-radius: clamp(16px, 2vw, 24px);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.18),
+              inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.28);
   transform-origin: top center;
 }
 
@@ -2903,7 +2923,7 @@ input {
   bottom: 0;
 }
 
-/* Liquid Card divider seam */
+/* Recessed seam divider with authentic depth */
 .flip-divider-seam {
   position: absolute;
   left: 0;
@@ -2911,8 +2931,9 @@ input {
   top: 50%;
   height: 2px;
   margin-top: -1px;
-  background: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15), 0 -1px 1px rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 1.5px 0 rgba(255, 255, 255, 0.14),
+              0 -1px 1.5px 0 rgba(0, 0, 0, 0.25);
   z-index: 10;
   pointer-events: none;
 }
@@ -2930,12 +2951,12 @@ input {
 
 /* 3D Flip Keyframes: Phase 1 (top flips down) then Phase 2 (bottom flips down) */
 .flip-card-wrapper.flipping .flip-leaf-top {
-  animation: flipTopAnimation 0.5s ease-in forwards;
+  animation: flipTopAnimation 0.52s cubic-bezier(0.38, 0.04, 0.6, 0.95) forwards;
   z-index: 5;
 }
 
 .flip-card-wrapper.flipping .flip-leaf-bottom {
-  animation: flipBottomAnimation 0.5s ease-out forwards;
+  animation: flipBottomAnimation 0.52s cubic-bezier(0.15, 0.85, 0.35, 1.05) forwards;
   z-index: 6;
 }
 
@@ -2947,7 +2968,7 @@ input {
   }
   49.9% {
     transform: rotateX(-90deg);
-    filter: brightness(0.85);
+    filter: brightness(0.72) drop-shadow(0 12px 16px rgba(0, 0, 0, 0.3));
     opacity: 1;
   }
   50%, 100% {
@@ -2959,12 +2980,12 @@ input {
 @keyframes flipBottomAnimation {
   0%, 50% {
     transform: rotateX(90deg);
-    filter: brightness(0.85);
+    filter: brightness(0.75);
     opacity: 0;
   }
   50.1% {
     transform: rotateX(90deg);
-    filter: brightness(0.88);
+    filter: brightness(0.78);
     opacity: 1;
   }
   100% {
@@ -2976,30 +2997,42 @@ input {
 
 .flip-clock-colon {
   font-family: var(--clock-font-family, 'Space Grotesk', sans-serif);
-  font-size: clamp(2.2rem, 5vw, 5rem);
+  font-size: clamp(3.2rem, 7vw, 7.5rem);
   font-weight: 800;
   color: var(--clock-text-color, #ffffff);
-  text-shadow: var(--clock-text-shadow, 0 2px 10px rgba(0, 0, 0, 0.25));
+  text-shadow: var(--clock-text-shadow, 0 2px 16px rgba(0, 0, 0, 0.3), 0 0 24px color-mix(in srgb, var(--clock-text-color, #ffffff) 20%, transparent));
   line-height: 1;
   opacity: 0.9;
+  animation: colonGentleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes colonGentleGlow {
+  0% { opacity: 0.75; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
 }
 
 .flip-card-label {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 11px;
+  font-family: var(--font-logo, 'Space Grotesk', sans-serif);
+  font-size: clamp(10px, 1.1vw, 12px);
   font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+  letter-spacing: 0.16em;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.65));
   text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .flip-card-wrapper.flip-ms-wrapper {
-  width: clamp(50px, 8vw, 92px);
-  opacity: 0.9;
+  width: clamp(62px, 9.5vw, 120px);
+  opacity: 0.95;
 }
 
 .flip-card-wrapper.flip-ms-wrapper .flip-flap span {
-  font-size: clamp(1.8rem, 4.2vw, 3.8rem);
+  font-size: clamp(2.4rem, 5vw, 5.2rem);
   font-variant-numeric: tabular-nums;
 }
 
@@ -3638,30 +3671,34 @@ body.is-fullscreen .timer-tab-bottom-spacer {
 }
 
 [data-theme="light"] .flip-card-wrapper {
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12),
-              0 2px 6px -1px rgba(0, 0, 0, 0.06),
-              inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 24px 50px -12px rgba(0, 0, 0, 0.09),
+    0 10px 22px -6px rgba(0, 0, 0, 0.05),
+    0 0 40px 0 rgba(255, 255, 255, 0.7),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(32px) saturate(160%) brightness(1.04);
+  -webkit-backdrop-filter: blur(32px) saturate(160%) brightness(1.04);
 }
 
 [data-theme="light"] .flip-card-wrapper::before {
   background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(255, 255, 255, 0.2) 45%,
+    160deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.25) 45%,
     transparent 70%
   );
 }
 
 [data-theme="light"] .flip-flap {
   background: linear-gradient(
-    168deg,
+    175deg,
     rgba(255, 255, 255, 0.92) 0%,
-    rgba(255, 255, 255, 0.65) 45%,
-    rgba(255, 255, 255, 0.55) 70%,
+    rgba(255, 255, 255, 0.70) 45%,
+    rgba(255, 255, 255, 0.58) 75%,
     rgba(255, 255, 255, 0.82) 100%
-  ), rgba(241, 245, 249, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  ), rgba(248, 250, 252, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="light"] .flip-top-static,
@@ -3673,14 +3710,20 @@ body.is-fullscreen .timer-tab-bottom-spacer {
 
 [data-theme="light"] .flip-bottom-static,
 [data-theme="light"] .flip-leaf-bottom {
-  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.6),
-              inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.7),
+              inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.04);
   border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="light"] .flip-divider-seam {
-  background: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 1px 1px rgba(255, 255, 255, 0.8), 0 -1px 1px rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.10);
+  box-shadow: 0 1px 1px rgba(255, 255, 255, 0.9), 0 -1px 1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .flip-card-label {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--text-secondary, rgba(0, 0, 0, 0.6));
 }
 
 [data-theme="light"] .flip-card-wrapper.flip-ms-wrapper {
@@ -4209,18 +4252,51 @@ body.is-fullscreen .timer-tab-bottom-spacer {
 /* 12-Hour AM / PM Flip Card Unit */
 .flip-card-unit.flip-card-ampm-unit {
   align-self: flex-start;
-  margin-top: clamp(2px, 0.8vw, 8px);
+  margin-top: clamp(4px, 1vw, 12px);
 }
 
 .flip-card-wrapper.flip-ampm-wrapper {
-  width: clamp(52px, 8.5vw, 92px);
-  height: clamp(62px, 10.5vw, 115px);
+  width: clamp(66px, 10vw, 125px);
+  height: clamp(82px, 12.5vw, 150px);
 }
 
 .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
-  font-size: clamp(1.4rem, 3.2vw, 3rem);
+  font-size: clamp(1.8rem, 3.8vw, 3.8rem);
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+/* Fullscreen Desk Mode Scale-up for Flip Clock */
+:fullscreen .flip-card-wrapper,
+body.fullscreen-mode .flip-card-wrapper,
+[data-fullscreen="true"] .flip-card-wrapper {
+  width: clamp(115px, 18vw, 245px);
+  height: clamp(145px, 22vw, 290px);
+}
+
+:fullscreen .flip-flap span,
+body.fullscreen-mode .flip-flap span,
+[data-fullscreen="true"] .flip-flap span {
+  font-size: clamp(5.6rem, 12.5vw, 14rem);
+}
+
+:fullscreen .flip-clock-colon,
+body.fullscreen-mode .flip-clock-colon,
+[data-fullscreen="true"] .flip-clock-colon {
+  font-size: clamp(4.2rem, 9vw, 9.5rem);
+}
+
+:fullscreen .flip-card-wrapper.flip-ampm-wrapper,
+body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper,
+[data-fullscreen="true"] .flip-card-wrapper.flip-ampm-wrapper {
+  width: clamp(80px, 12vw, 155px);
+  height: clamp(100px, 15vw, 185px);
+}
+
+:fullscreen .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
+body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
+[data-fullscreen="true"] .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+  font-size: clamp(2.4rem, 4.5vw, 4.8rem);
 }
 
 /* Live Date, Day, Year Capsule */
