@@ -46,7 +46,7 @@ const QUOTES = [
   { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche", tag: "Resilience" }
 ];
 
-const ROTATION_INTERVAL_MS = 15000; // 15 seconds
+const ROTATION_INTERVAL_MS = 30000; // 30 seconds
 
 const MotivationalQuote = ({ enabled = true, isRunning, sessionCount, onSessionStart }) => {
   const [quote, setQuote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
@@ -146,7 +146,7 @@ const MotivationalQuote = ({ enabled = true, isRunning, sessionCount, onSessionS
             type="button"
             className="quote-action-btn"
             onClick={rotateQuote}
-            title="Next quote (changes automatically every 15s)"
+            title="Next quote (changes automatically every 30s)"
             aria-label="Next quote"
           >
             ↻
@@ -168,7 +168,7 @@ const MotivationalQuote = ({ enabled = true, isRunning, sessionCount, onSessionS
         <span className="quote-author">— {quote.author}</span>
       </div>
 
-      {/* Subtle 15-second timer progress indicator */}
+      {/* Subtle 30-second timer progress indicator */}
       <div className="quote-progress-track">
         <div key={cycleKey} className="quote-progress-bar" />
       </div>

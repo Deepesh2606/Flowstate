@@ -34,7 +34,12 @@ const SessionCounter = ({ count = 0 }) => {
           );
         })}
       </div>
-      <span className="session-counter-badge">{completed}/4</span>
+      <span className="session-counter-badge" title="Current cycle">{completed}/4</span>
+      {count > 0 && (
+        <span className="session-counter-total" title="Total focuses today" style={{ marginLeft: '12px', fontSize: '0.85em', color: 'var(--text-secondary)', fontWeight: 500 }}>
+          Total: {count}
+        </span>
+      )}
     </div>
   );
 };

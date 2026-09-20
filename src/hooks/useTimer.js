@@ -94,7 +94,18 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
   const [mode, setMode] = useState(MODES.pomodoro);
   const [timeLeft, setTimeLeft] = useState(durations.pomodoro);
   const [isRunning, setIsRunning] = useState(false);
-  const [sessionCount, setSessionCount] = useState(0);
+  const [sessionCount, setSessionCount] = useState(() => {
+    try {
+      const saved = localStorage.getItem('flowstate_sessionCount');
+      if (saved) {
+        const { count, date } = JSON.parse(saved);
+        if (date === new Date().toISOString().split('T')[0]) {
+          return parseInt(count, 10);
+        }
+      }
+    } catch (e) {}
+    return 0;
+  });
   const [subject, setSubject] = useState('');
   const [studyMode, setStudyMode] = useState(settings?.modePreference || settings?.targets?.[0]?.name || '');
   const [sessionStart, setSessionStart] = useState(null);
@@ -170,6 +181,12 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
       const newCount = currentCount + 1;
       setSessionCount(newCount);
       sessionCountRef.current = newCount;
+      try {
+        localStorage.setItem('flowstate_sessionCount', JSON.stringify({
+          count: newCount,
+          date: new Date().toISOString().split('T')[0]
+        }));
+      } catch(e) {}
 
       if (newCount % longBreakInterval === 0) {
         const msg = `${newCount} sessions done — long break time! 🎉`;
