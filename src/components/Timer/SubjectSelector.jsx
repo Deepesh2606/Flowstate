@@ -35,6 +35,13 @@ const SubjectSelector = ({
     }
   };
 
+  const handleKeyDown = (e) => {
+    e.stopPropagation();
+    if (e.key === 'Escape') {
+      setEditingState(false);
+    }
+  };
+
   const handleChipClick = (s) => {
     const next = subject === s ? '' : s;
     setSubject(next);
@@ -126,7 +133,9 @@ const SubjectSelector = ({
                 placeholder="What are you focusing on? (Press Enter to set)"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
+                onKeyDown={handleKeyDown}
                 maxLength={50}
+                autoFocus
                 id="subject-text-input"
                 aria-label="Study subject"
               />

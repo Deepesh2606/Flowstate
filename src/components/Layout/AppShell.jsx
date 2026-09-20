@@ -69,9 +69,22 @@ const AppShell = () => {
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
-      const tag = document.activeElement?.tagName?.toLowerCase();
-      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' ||
-                      document.activeElement?.isContentEditable;
+      // Don't trigger if user is interacting with an input, textarea, select, or contenteditable
+      const target = e.target;
+      const targetTag = target?.tagName?.toLowerCase();
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      const isInput =
+        targetTag === 'input' ||
+        targetTag === 'textarea' ||
+        targetTag === 'select' ||
+        Boolean(target?.isContentEditable) ||
+        Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]')) ||
+        activeTag === 'input' ||
+        activeTag === 'textarea' ||
+        activeTag === 'select' ||
+        Boolean(document.activeElement?.isContentEditable) ||
+        Boolean(document.activeElement?.closest?.('input, textarea, select, [contenteditable="true"]'));
+
       if (isInput) return;
 
       if (e.key === 'Escape') {
@@ -82,21 +95,25 @@ const AppShell = () => {
         return;
       }
 
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Block all shortcuts if ANY modifier key is held (Shift, Ctrl, Meta/Cmd, Alt)
+      // e.g. Shift + S (typing capital S) should never trigger skip
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+
+      const key = e.key.toLowerCase();
 
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         timerActionsRef.current?.togglePlay?.();
-      } else if (e.key === 'r' || e.key === 'R') {
+      } else if (key === 'r') {
         timerActionsRef.current?.reset?.();
-      } else if (e.key === 's' || e.key === 'S') {
+      } else if (key === 's') {
         timerActionsRef.current?.skip?.();
-      } else if (e.key === 't' || e.key === 'T') {
+      } else if (key === 't') {
         e.preventDefault();
         setActiveTab('timer');
         setPendingSwitchMode('pomodoro');
         setCurrentTimerMode('pomodoro');
-      } else if (e.key === 'f' || e.key === 'F') {
+      } else if (key === 'f') {
         e.preventDefault();
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
           const docEl = document.documentElement;

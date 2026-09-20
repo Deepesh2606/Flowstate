@@ -91,6 +91,7 @@ const SessionNoteModal = ({ isOpen, onClose, onSave, sessionInfo }) => {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => {
+              e.stopPropagation();
               if (e.key === 'Enter') handleSave();
               if (e.key === 'Escape') handleSkip();
             }}

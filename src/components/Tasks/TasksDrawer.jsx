@@ -57,6 +57,7 @@ const TasksDrawer = ({ onClose }) => {
             placeholder="Add a new task..."
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
+            onKeyDown={(e) => e.stopPropagation()}
             autoFocus
           />
           <button
