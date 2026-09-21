@@ -213,10 +213,22 @@ const AppShell = () => {
       document.documentElement.style.setProperty('--clock-font-family', "'Inter', system-ui, sans-serif");
     }
 
+    if (settings?.clockFontWeight) {
+      document.documentElement.style.setProperty('--clock-font-weight', settings.clockFontWeight);
+    } else {
+      document.documentElement.style.setProperty('--clock-font-weight', '800');
+    }
+
+    if (settings?.clockLetterSpacing) {
+      document.documentElement.style.setProperty('--clock-letter-spacing', settings.clockLetterSpacing);
+    } else {
+      document.documentElement.style.setProperty('--clock-letter-spacing', '-0.04em');
+    }
+
     return () => {
       cancelled = true;
     };
-  }, [settings?.clockColor, settings?.textColor, settings?.autoClockColor, settings?.clockFont, wallpaper]);
+  }, [settings?.clockColor, settings?.textColor, settings?.autoClockColor, settings?.clockFont, settings?.clockFontWeight, settings?.clockLetterSpacing, wallpaper]);
 
 
   // Close menu on outside click

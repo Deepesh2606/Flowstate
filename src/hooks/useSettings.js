@@ -22,6 +22,9 @@ const DEFAULT_SETTINGS = {
   theme: 'dark', // 'dark' | 'light'
   subjectColor: '#06b6d4',
   clockFont: "'Inter', system-ui, sans-serif",
+  clockFontWeight: '800',
+  clockLetterSpacing: '-0.04em',
+  clockTimerStyle: 'default-bold',
   targets: [],
 };
 
@@ -63,6 +66,10 @@ export const useSettings = () => {
           showTaskInPip: data.showTaskInPip !== undefined ? data.showTaskInPip : true,
           showSeconds: data.showSeconds !== undefined ? data.showSeconds : true,
           clockFormat: data.clockFormat || '12h',
+          clockFont: data.clockFont || DEFAULT_SETTINGS.clockFont,
+          clockFontWeight: data.clockFontWeight || DEFAULT_SETTINGS.clockFontWeight,
+          clockLetterSpacing: data.clockLetterSpacing || DEFAULT_SETTINGS.clockLetterSpacing,
+          clockTimerStyle: data.clockTimerStyle || DEFAULT_SETTINGS.clockTimerStyle,
           clockColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.clockColor,
           textColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.textColor,
           durations: {

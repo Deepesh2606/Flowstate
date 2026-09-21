@@ -247,39 +247,69 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div
-          className="flip-clock-container live-flip-clock-container active"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {/* Hours Card */}
-          <FlipCard value={displayHours} label="HOURS" />
+        {settings?.clockStyle === 'flip' ? (
+          <div
+            className="flip-clock-container live-flip-clock-container active"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {/* Hours Card */}
+            <FlipCard value={displayHours} label="HOURS" />
 
-          <div className="flip-clock-colon">:</div>
+            <div className="flip-clock-colon">:</div>
 
-          {/* Minutes Card */}
-          <FlipCard value={minutes} label="MINUTES" />
+            {/* Minutes Card */}
+            <FlipCard value={minutes} label="MINUTES" />
 
-          {/* Optional Seconds Card */}
-          {showSeconds && (
-            <>
-              <div className="flip-clock-colon">:</div>
-              <FlipCard value={seconds} label="SECONDS" />
-            </>
-          )}
+            {/* Optional Seconds Card */}
+            {showSeconds && (
+              <>
+                <div className="flip-clock-colon">:</div>
+                <FlipCard value={seconds} label="SECONDS" />
+              </>
+            )}
 
-          {/* 12-Hour AM/PM Flip Indicator */}
-          {is12Hour && (
-            <div className="flip-card-unit flip-card-ampm-unit">
-              <FlipCard
-                value={ampm}
-                label="FORMAT"
-                pad={false}
-                wrapperClassName="flip-ampm-wrapper"
-              />
+            {/* 12-Hour AM/PM Flip Indicator */}
+            {is12Hour && (
+              <div className="flip-card-unit flip-card-ampm-unit">
+                <FlipCard
+                  value={ampm}
+                  label="FORMAT"
+                  pad={false}
+                  wrapperClassName="flip-ampm-wrapper"
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div
+            className="digital-clock-container active"
+            aria-live="polite"
+            aria-atomic="true"
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+          >
+            <div
+              className="flocus-timer-digits"
+              style={{
+                fontFamily: 'var(--clock-font-family, "Inter", sans-serif)',
+                fontWeight: 'var(--clock-font-weight, 800)',
+                letterSpacing: 'var(--clock-letter-spacing, -0.04em)',
+              }}
+            >
+              <span>{String(displayHours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}</span>
+              {showSeconds && (
+                <span style={{ fontSize: '0.45em', opacity: 0.8, marginLeft: '12px', alignSelf: 'center' }}>
+                  :{String(seconds).padStart(2, '0')}
+                </span>
+              )}
+              {is12Hour && (
+                <span style={{ fontSize: '0.22em', opacity: 0.65, marginLeft: '16px', textTransform: 'uppercase', alignSelf: 'flex-start', paddingTop: '12px' }}>
+                  {ampm}
+                </span>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Hover Edit Color Button */}
         <div style={{
