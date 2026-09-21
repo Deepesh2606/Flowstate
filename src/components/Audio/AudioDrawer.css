@@ -137,6 +137,41 @@
   100% { height: 14px; }
 }
 
+.now-playing-banner.is-paused {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.now-playing-banner.is-paused .now-playing-tag {
+  color: var(--text-muted);
+}
+
+.now-playing-equalizer.paused .eq-bar {
+  animation-play-state: paused;
+  opacity: 0.4;
+}
+
+.now-playing-playpause-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.now-playing-playpause-btn:hover {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .now-playing-info {
   display: flex;
   flex-direction: column;
@@ -1396,6 +1431,33 @@
   background: rgba(239, 68, 68, 0.25);
   border-color: rgba(239, 68, 68, 0.4);
   color: #ff5050;
+}
+
+.mini-pill-playpause-btn:hover {
+  background: rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: var(--accent);
+}
+
+.mini-pill-close-btn {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.mini-pill-close-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ff5050;
+}
+
+.audio-mini-pill.is-paused {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.audio-mini-pill.is-paused .wave-bar {
+  animation-play-state: paused;
+  opacity: 0.35;
 }
 
 .audio-badge-active {

@@ -236,6 +236,7 @@ export const AudioProvider = ({ children }) => {
   });
 
   const [isMuted, setIsMuted] = useState(false);
+  const [isPlaybackPaused, setIsPlaybackPaused] = useState(false);
   const [showAudioDrawer, setShowAudioDrawer] = useState(false);
   const [activeAudioTab, setActiveAudioTab] = useState('ambient'); // 'ambient' | 'spotify' | 'applemusic' | 'ytmusic' | 'lofi'
 
@@ -245,6 +246,7 @@ export const AudioProvider = ({ children }) => {
   }, []);
 
   const openMusicPlayer = useCallback((service = 'spotify') => {
+    setIsPlaybackPaused(false);
     if (service === 'spotify') {
       setSpotifyActive(true);
       setActiveAudioTab('spotify');
@@ -487,7 +489,7 @@ export const AudioProvider = ({ children }) => {
       const effectiveVolume = isMuted ? 0 : trackState.volume * masterVolume;
       el.volume = Math.max(0, Math.min(1, effectiveVolume));
 
-      if (trackState.playing && !isMuted) {
+      if (trackState.playing && !isMuted && !isPlaybackPaused) {
         if (el.paused) {
           el.play().catch((err) => {
             console.warn(`Autoplay prevented for ${sound.id}:`, err);
@@ -499,7 +501,19 @@ export const AudioProvider = ({ children }) => {
         }
       }
     });
-  }, [tracks, masterVolume, isMuted]);
+  }, [tracks, masterVolume, isMuted, isPlaybackPaused]);
+
+  // Sync YouTube / Lofi / YTMusic iframe playback when isPlaybackPaused toggles
+  useEffect(() => {
+    const cmd = isPlaybackPaused ? 'pauseVideo' : 'playVideo';
+    document.querySelectorAll('iframe').forEach((iframe) => {
+      try {
+        iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: cmd, args: '' }), '*');
+      } catch {
+        // ignore cross-origin error
+      }
+    });
+  }, [isPlaybackPaused]);
 
   // Clean up audio elements on unmount
   useEffect(() => {
@@ -519,11 +533,15 @@ export const AudioProvider = ({ children }) => {
   const toggleTrack = useCallback((id) => {
     setTracks((prev) => {
       const current = prev[id] || { playing: false, volume: 0.5 };
+      const willPlay = !current.playing;
+      if (willPlay) {
+        setIsPlaybackPaused(false);
+      }
       return {
         ...prev,
         [id]: {
           ...current,
-          playing: !current.playing,
+          playing: willPlay,
         },
       };
     });
@@ -543,6 +561,7 @@ export const AudioProvider = ({ children }) => {
   }, []);
 
   const applyPreset = useCallback((preset) => {
+    setIsPlaybackPaused(false);
     setTracks((prev) => {
       const updated = {};
       AMBIENT_SOUNDS.forEach((s) => {
@@ -572,7 +591,12 @@ export const AudioProvider = ({ children }) => {
     });
   }, []);
 
+  const togglePlayPause = useCallback(() => {
+    setIsPlaybackPaused((prev) => !prev);
+  }, []);
+
   const stopAll = useCallback(() => {
+    setIsPlaybackPaused(false);
     stopAllAmbient();
     setLofiPlaying(false);
     setSpotifyActive(false);
@@ -627,6 +651,9 @@ export const AudioProvider = ({ children }) => {
         applyPreset,
         stopAllAmbient,
         stopAll,
+        togglePlayPause,
+        isPlaybackPaused,
+        setIsPlaybackPaused,
         activeAmbientCount,
         activeAmbientLabels,
         isAnyPlaying,

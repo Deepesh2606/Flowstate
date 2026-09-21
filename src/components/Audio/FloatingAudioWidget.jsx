@@ -5,6 +5,8 @@ import { IconPause, IconPlay, IconVolume, IconVolumeX, IconSkipBack, IconSkipFor
 const FloatingAudioWidget = () => {
   const {
     isAnyPlaying,
+    isPlaybackPaused,
+    togglePlayPause,
     activeAmbientLabels,
     lofiPlaying,
     selectedStreamId,
@@ -37,7 +39,9 @@ const FloatingAudioWidget = () => {
     setIsMuted,
   } = useAudio();
 
-  if (!isAnyPlaying || showAudioDrawer) {
+  const hasActiveAudio = isAnyPlaying || isPlaybackPaused;
+
+  if (!hasActiveAudio || showAudioDrawer) {
     return null;
   }
 
@@ -132,7 +136,7 @@ const FloatingAudioWidget = () => {
 
   return (
     <div
-      className="audio-mini-pill"
+      className={`audio-mini-pill ${isPlaybackPaused ? 'is-paused' : ''}`}
       onClick={() => setShowAudioDrawer(true)}
       title="Click to open Ambience Studio"
       id="floating-audio-mini-pill"
@@ -144,7 +148,7 @@ const FloatingAudioWidget = () => {
         <span className="wave-bar" />
       </div>
 
-      <span className="mini-pill-text">{label}</span>
+      <span className="mini-pill-text">{isPlaybackPaused ? `${label} (Paused)` : label}</span>
 
       {/* Track Skip Controls (Previous / Next) */}
       <div className="mini-pill-controls" onClick={(e) => e.stopPropagation()}>
@@ -183,17 +187,34 @@ const FloatingAudioWidget = () => {
         {isMuted ? <IconVolumeX size={13} /> : <IconVolume size={13} />}
       </button>
 
+      {/* Play / Pause Toggle Button */}
       <button
-        className="mini-pill-btn mini-pill-stop-btn"
+        type="button"
+        className="mini-pill-btn mini-pill-playpause-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          togglePlayPause();
+        }}
+        title={isPlaybackPaused ? 'Resume audio' : 'Pause audio'}
+        id="mini-pill-playpause-btn"
+        aria-label={isPlaybackPaused ? 'Resume audio' : 'Pause audio'}
+      >
+        {isPlaybackPaused ? <IconPlay size={12} /> : <IconPause size={12} />}
+      </button>
+
+      {/* Dedicated Stop & Close Button */}
+      <button
+        type="button"
+        className="mini-pill-btn mini-pill-close-btn"
         onClick={(e) => {
           e.stopPropagation();
           stopAll();
         }}
-        title="Stop All"
-        id="mini-pill-stop-btn"
-        aria-label="Stop audio"
+        title="Stop & Close Player"
+        id="mini-pill-close-btn"
+        aria-label="Stop audio and close player"
       >
-        <IconPause size={12} />
+        ✕
       </button>
     </div>
   );

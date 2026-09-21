@@ -100,6 +100,8 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
     setIsMuted,
     applyPreset,
     stopAll,
+    togglePlayPause,
+    isPlaybackPaused,
     isAnyPlaying,
     activeAmbientCount,
     activeAmbientLabels,
@@ -349,7 +351,7 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
           <div className="audio-header-left">
             <div className="audio-header-icon-box">
               <IconHeadphones size={20} color="var(--accent)" />
-              {isAnyPlaying && <span className="audio-header-live-dot" />}
+              {(isAnyPlaying || isPlaybackPaused) && <span className="audio-header-live-dot" />}
             </div>
             <div>
               <h2 className="drawer-title" style={{ fontSize: '1.2rem', lineHeight: 1.2 }}>Music & Ambience</h2>
@@ -357,14 +359,13 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
             </div>
           </div>
           <div className="audio-header-actions">
-            {isAnyPlaying && (
+            {(isAnyPlaying || isPlaybackPaused) && (
               <button
                 className="stop-all-btn"
                 onClick={stopAll}
                 title="Stop all sounds and music"
                 id="stop-all-audio-btn"
               >
-                <IconPause size={12} />
                 <span>Stop All</span>
               </button>
             )}
@@ -375,27 +376,39 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
         </div>
 
         {/* Dynamic Now Playing Banner */}
-        {isAnyPlaying && (
-          <div className="now-playing-banner">
+        {(isAnyPlaying || isPlaybackPaused) && (
+          <div className={`now-playing-banner ${isPlaybackPaused ? 'is-paused' : ''}`}>
             <div className="now-playing-left">
-              <div className="now-playing-equalizer">
+              <div className={`now-playing-equalizer ${isPlaybackPaused ? 'paused' : ''}`}>
                 <span className="eq-bar" />
                 <span className="eq-bar" />
                 <span className="eq-bar" />
                 <span className="eq-bar" />
               </div>
               <div className="now-playing-info">
-                <span className="now-playing-tag">NOW PLAYING</span>
+                <span className="now-playing-tag">{isPlaybackPaused ? 'PAUSED' : 'NOW PLAYING'}</span>
                 <span className="now-playing-text" title={playingLabel}>{playingLabel}</span>
               </div>
             </div>
-            <button
-              className="now-playing-mute-btn"
-              onClick={() => setIsMuted(!isMuted)}
-              title={isMuted ? 'Unmute' : 'Mute'}
-            >
-              {isMuted ? <IconVolumeX size={14} /> : <IconVolume size={14} />}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                className="now-playing-playpause-btn"
+                onClick={togglePlayPause}
+                title={isPlaybackPaused ? 'Resume' : 'Pause'}
+                id="now-playing-playpause-btn"
+                aria-label={isPlaybackPaused ? 'Resume audio' : 'Pause audio'}
+              >
+                {isPlaybackPaused ? <IconPlay size={13} /> : <IconPause size={13} />}
+              </button>
+              <button
+                className="now-playing-mute-btn"
+                onClick={() => setIsMuted(!isMuted)}
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? <IconVolumeX size={14} /> : <IconVolume size={14} />}
+              </button>
+            </div>
           </div>
         )}
 

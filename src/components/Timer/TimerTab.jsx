@@ -22,7 +22,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { tasks } = useTasks();
-  const { isAnyPlaying, openMusicPlayer, setShowAudioDrawer } = useAudio();
+  const { isAnyPlaying, isPlaybackPaused, openMusicPlayer, setShowAudioDrawer } = useAudio();
 
   // ─── Session note + share state ────────────────────────────────────────────
   const [showNoteModal, setShowNoteModal] = useState(false);
@@ -396,9 +396,9 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           <IconPip size={18} />
         </button>
         <button
-          className={`flocus-ctrl-btn ${isAnyPlaying ? 'active' : ''}`}
+          className={`flocus-ctrl-btn ${(isAnyPlaying || isPlaybackPaused) ? 'active' : ''}`}
           onClick={() => {
-            if (isAnyPlaying) {
+            if (isAnyPlaying || isPlaybackPaused) {
               setShowAudioDrawer(true);
             } else {
               openMusicPlayer('spotify');
@@ -410,7 +410,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           id="timer-music-btn"
         >
           <IconHeadphones size={18} />
-          {isAnyPlaying && (
+          {(isAnyPlaying || isPlaybackPaused) && (
             <span
               style={{
                 position: 'absolute',

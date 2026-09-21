@@ -1419,6 +1419,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .drawer-header-actions {
@@ -2566,8 +2567,11 @@ input {
   border-radius: 12px;
   padding: 4px;
   gap: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  min-height: 44px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 
@@ -2576,13 +2580,13 @@ input {
 }
 
 .settings-nav-tab {
-  flex: 1;
-  min-width: 0;
+  flex: 1 0 auto;
+  min-width: max-content;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: 9px;
   border: 1px solid transparent;
   background: transparent;
@@ -2608,12 +2612,14 @@ input {
 }
 
 .settings-nav-tab-icon {
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .settings-nav-tab-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .settings-section-sub {
@@ -2889,6 +2895,7 @@ input {
   padding-bottom: 20px;
   border-bottom: 1px solid var(--glass-border);
   margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .settings-section:last-of-type {

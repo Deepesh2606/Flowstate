@@ -32,7 +32,7 @@ const AppShell = () => {
   const { currentUser, signOut, openAuthModal } = useAuth();
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
   const { settings, updateSettings } = useSettings();
-  const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
+  const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, isPlaybackPaused, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showAIChat, setShowAIChat] = useState(false);
@@ -339,7 +339,7 @@ const AppShell = () => {
               style={{ position: 'relative' }}
             >
               <IconHeadphones size={18} />
-              {isAnyPlaying && <span className="audio-badge-active" />}
+              {(isAnyPlaying || isPlaybackPaused) && <span className="audio-badge-active" />}
             </button>
 
             {/* Wallpaper change button */}
