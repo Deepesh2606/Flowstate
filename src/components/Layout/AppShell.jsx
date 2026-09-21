@@ -7,13 +7,14 @@ import RightSideNav from './RightSideNav';
 import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat } from '../Icons';
+import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat, IconEdit, IconMusicNote, IconDockTasks } from '../Icons';
 import { getWallpaperContrast, isVideoUrl } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import WallpaperPicker from '../WallpaperPicker';
 import InstallModal from '../InstallModal';
 import AIChatSidebar from '../Chat/AIChatSidebar';
 import AudioDrawer from '../Audio/AudioDrawer';
+import Notepad from '../Notepad/Notepad';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
@@ -41,6 +42,7 @@ const AppShell = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
+  const [showNotepad, setShowNotepad] = useState(false);
   const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
   const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
   const menuRef = useRef(null);
@@ -121,6 +123,7 @@ const AppShell = () => {
         setShowTasks(false);
         setShowAudioDrawer(false);
         setShowUserMenu(false);
+        setShowNotepad(false);
         return;
       }
 
@@ -531,11 +534,52 @@ const AppShell = () => {
           )}
         </div>
 
-        {/* Bottom Left Controls */}
-        <div className="bottom-left-controls">
+        {/* Floating Notepad (Matching Screenshot) */}
+        {showNotepad && (
+          <div className="bottom-left-notepad-floating">
+            <Notepad onClose={() => setShowNotepad(false)} />
+          </div>
+        )}
+
+        {/* Bottom Left Dock (Tasks, Music, Notepad, Ask AI) */}
+        <div className="bottom-left-dock">
           <button
+            type="button"
+            className={`bottom-dock-btn${showTasks ? ' active' : ''}`}
+            onClick={() => setShowTasks((v) => !v)}
+            title="Tasks & Todos"
+            aria-label="Tasks & Todos"
+            id="dock-tasks-btn"
+          >
+            <IconDockTasks size={18} />
+          </button>
+
+          <button
+            type="button"
+            className={`bottom-dock-btn${showAudioDrawer ? ' active' : ''}`}
+            onClick={() => setShowAudioDrawer((v) => !v)}
+            title="Music Player & Ambience"
+            aria-label="Music Player & Ambience"
+            id="dock-music-btn"
+          >
+            <IconMusicNote size={18} />
+          </button>
+
+          <button
+            type="button"
+            className={`bottom-dock-btn${showNotepad ? ' active' : ''}`}
+            onClick={() => setShowNotepad((v) => !v)}
+            title="Notepad"
+            aria-label="Notepad"
+            id="dock-notepad-btn"
+          >
+            <IconEdit size={18} />
+          </button>
+
+          <button
+            type="button"
             className={`ai-chat-btn${showAIChat ? ' ai-chat-btn--active' : ''}`}
-            onClick={() => setShowAIChat(v => !v)}
+            onClick={() => setShowAIChat((v) => !v)}
             id="chatgpt-btn-bottom"
             title="Ask AI"
             aria-label="Open AI Chat"

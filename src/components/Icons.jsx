@@ -482,3 +482,21 @@ export const IconQuotes = ({ size = 16, color = 'currentColor', className = '' }
   </svg>
 );
 
+export const IconMusicNote = ({ size = 18, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+  </svg>
+);
+
+export const IconDockTasks = ({ size = 18, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="14" width="4" height="4" rx="1" />
+    <path d="M10 16h11" />
+    <path d="M10 8h11" />
+    <path d="M3 8h4" />
+    <circle cx="5" cy="8" r="1.8" />
+  </svg>
+);
+
