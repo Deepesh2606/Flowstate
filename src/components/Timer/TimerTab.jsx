@@ -7,7 +7,7 @@ import CountdownGlow from './CountdownGlow';
 import SessionNoteModal from './SessionNoteModal';
 import MotivationalQuote from './MotivationalQuote';
 import ShareCard from './ShareCard';
-import { IconBook, IconMaximize, IconMinimize, IconPip, IconHeadphones, IconRotateCcw, IconX, IconSave, IconTrash, IconClock, IconPlay, IconPause, IconSkipForward } from '../Icons';
+import { IconBook, IconMaximize, IconMinimize, IconPip, IconRotateCcw, IconX, IconSave, IconTrash, IconClock, IconPlay, IconPause, IconSkipForward } from '../Icons';
 import { usePictureInPicture, PiPWindowPortal } from './PictureInPicture';
 import PipHelpModal from './PipHelpModal';
 import GhostPacer from './GhostPacer';
@@ -16,7 +16,6 @@ import ActiveRecallModal from './ActiveRecallModal';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 import { useAuth } from '../../contexts/AuthContext';
-import { useAudio } from '../../contexts/AudioContext';
 import { useTasks } from '../../hooks/useTasks';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -25,7 +24,6 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { tasks } = useTasks();
-  const { isAnyPlaying, isPlaybackPaused, openMusicPlayer, setShowAudioDrawer } = useAudio();
 
   // ─── Session note + share state ────────────────────────────────────────────
   const [showNoteModal, setShowNoteModal] = useState(false);
@@ -320,7 +318,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       </div>
 
       {/* Ghost Pacer: Race Against Yesterday's You */}
-      <GhostPacer />
+      {settings?.showGhostPacer && <GhostPacer />}
 
       {/* Session Scratchpad for active notes & flashcard generation */}
       <SessionScratchpad onTriggerRecall={handleTriggerRecall} subject={subject} />
@@ -422,36 +420,6 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           id="timer-pip-btn"
         >
           <IconPip size={18} />
-        </button>
-        <button
-          className={`flocus-ctrl-btn ${(isAnyPlaying || isPlaybackPaused) ? 'active' : ''}`}
-          onClick={() => {
-            if (isAnyPlaying || isPlaybackPaused) {
-              setShowAudioDrawer(true);
-            } else {
-              openMusicPlayer('spotify');
-            }
-          }}
-          aria-label="Focus Music Player (Spotify, Apple Music, YouTube Music)"
-          title="Focus Music (Spotify, Apple Music, YT Music, Lofi)"
-          style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
-          id="timer-music-btn"
-        >
-          <IconHeadphones size={18} />
-          {(isAnyPlaying || isPlaybackPaused) && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '7px',
-                right: '7px',
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: 'var(--accent, #06b6d4)',
-                boxShadow: '0 0 6px var(--accent, #06b6d4)',
-              }}
-            />
-          )}
         </button>
       </div>
 

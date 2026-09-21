@@ -70,7 +70,6 @@ const Notepad = ({ onClose, onTriggerRecall, subject }) => {
           <div>
             <div className="notepad-title-row">
               <span className="notepad-title">Notepad</span>
-              <span className="notepad-badge-plus">⚡ PLUS</span>
             </div>
             <div className="notepad-counter-sub">
               {wordCount} {wordCount === 1 ? 'word' : 'words'} · {charCount} chars
@@ -176,7 +175,7 @@ const Notepad = ({ onClose, onTriggerRecall, subject }) => {
           placeholder=""
         />
 
-        {/* Placeholder overlay when notes is empty (matching screenshot) */}
+        {/* Placeholder overlay when notes is empty */}
         {!notes.trim() && (
           <div
             className="notepad-empty-placeholder"
@@ -185,16 +184,6 @@ const Notepad = ({ onClose, onTriggerRecall, subject }) => {
             <p className="notepad-placeholder-text">
               Brain dump your best ideas without distractions. Track word and character counts.
             </p>
-            <button
-              type="button"
-              className="notepad-placeholder-upgrade-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                textareaRef.current?.focus();
-              }}
-            >
-              ⚡ Upgrade Now
-            </button>
           </div>
         )}
       </div>

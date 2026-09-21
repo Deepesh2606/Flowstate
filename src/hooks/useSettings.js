@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
   showTimerProgressBar: true,
   showStreakCounter: true,
   showTaskInPip: true,
+  showGhostPacer: false,
   showSeconds: true,
   clockFormat: '12h', // '12h' | '24h'
   theme: 'dark', // 'dark' | 'light'
@@ -64,6 +65,7 @@ export const useSettings = () => {
           showTimerProgressBar: data.showTimerProgressBar !== undefined ? data.showTimerProgressBar : true,
           showStreakCounter: data.showStreakCounter !== undefined ? data.showStreakCounter : true,
           showTaskInPip: data.showTaskInPip !== undefined ? data.showTaskInPip : true,
+          showGhostPacer: data.showGhostPacer !== undefined ? data.showGhostPacer : false,
           showSeconds: data.showSeconds !== undefined ? data.showSeconds : true,
           clockFormat: data.clockFormat || '12h',
           clockFont: data.clockFont || DEFAULT_SETTINGS.clockFont,

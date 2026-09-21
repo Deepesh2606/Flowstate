@@ -127,6 +127,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   const [showTimerProgressBar, setShowTimerProgressBar] = useState(settings?.showTimerProgressBar ?? true);
   const [showStreakCounter, setShowStreakCounter]   = useState(settings?.showStreakCounter ?? true);
   const [showTaskInPip, setShowTaskInPip]           = useState(settings?.showTaskInPip ?? true);
+  const [showGhostPacer, setShowGhostPacer]         = useState(settings?.showGhostPacer ?? false);
 
   // Customization
   const [clockStyle, setClockStyle]                 = useState(settings?.clockStyle || 'digital');
@@ -147,6 +148,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       if (settings.showTimerProgressBar !== undefined) setShowTimerProgressBar(settings.showTimerProgressBar);
       if (settings.showStreakCounter !== undefined) setShowStreakCounter(settings.showStreakCounter);
       if (settings.showTaskInPip !== undefined) setShowTaskInPip(settings.showTaskInPip);
+      if (settings.showGhostPacer !== undefined) setShowGhostPacer(settings.showGhostPacer);
       if (settings.autoClockColor !== undefined) setAutoClockColor(settings.autoClockColor);
       if (settings.clockStyle) setClockStyle(settings.clockStyle);
       if (settings.showSeconds !== undefined) setShowSeconds(settings.showSeconds);
@@ -357,6 +359,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
       showTimerProgressBar,
       showStreakCounter,
       showTaskInPip,
+      showGhostPacer,
       clockStyle: timerStyle === 'flip' ? 'flip' : clockStyle,
       showSeconds,
       clockFormat,
@@ -723,6 +726,14 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
                   label="Show task in picture-in-picture"
                   sub="Display your current focus topic or linked task in the floating mini window."
                   badge="⚡ PLUS"
+                />
+
+                <Toggle
+                  id="toggle-ghost-pacer"
+                  checked={showGhostPacer}
+                  onChange={(val) => handleToggleChange('showGhostPacer', setShowGhostPacer, val)}
+                  label="Ghost Pacer"
+                  sub="Race against yesterday's focus time with a pacing bar."
                 />
               </div>
 

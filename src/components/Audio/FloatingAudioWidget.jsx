@@ -39,9 +39,9 @@ const FloatingAudioWidget = () => {
     setIsMuted,
   } = useAudio();
 
-  const hasActiveAudio = isAnyPlaying || isPlaybackPaused;
+  const isMusicPlaying = isAnyPlaying && !isPlaybackPaused;
 
-  if (!hasActiveAudio || showAudioDrawer) {
+  if (!isMusicPlaying || showAudioDrawer) {
     return null;
   }
 
