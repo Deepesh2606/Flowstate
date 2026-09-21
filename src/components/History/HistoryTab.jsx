@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStats } from '../../hooks/useStats';
-import { deleteSession } from '../../firebase/firestore';
-import { IconHistory, IconTrash } from '../Icons';
+import { useToast } from '../Toast/ToastProvider';
+import { deleteSession, updateSession } from '../../firebase/firestore';
+import { IconHistory, IconTrash, IconEdit, IconCheck } from '../Icons';
+import GoogleSignInButton from '../Auth/GoogleSignInButton';
 
 const formatTime = (seconds) => {
   if (!seconds) return '0m';
@@ -22,16 +24,18 @@ const formatDate = (dateStr) => {
   }
 };
 
-import GoogleSignInButton from '../Auth/GoogleSignInButton';
-
 const HistoryTab = () => {
   const { currentUser } = useAuth();
+  const { toast } = useToast();
   const { sessions, loading } = useStats();
 
   const [filterSubject, setFilterSubject] = useState('');
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
   const [deleting, setDeleting] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   if (!currentUser) {
     return (
@@ -66,11 +70,39 @@ const HistoryTab = () => {
     setDeleting(sessionId);
     try {
       await deleteSession(currentUser.uid, sessionId);
+      toast?.('Session deleted', 'info', 2000);
     } catch (e) {
       console.error('Delete failed:', e);
+      toast?.('Failed to delete session', 'error', 3000);
     } finally {
       setDeleting(null);
     }
+  };
+
+  const handleStartEdit = (session) => {
+    setEditingId(session.id);
+    setEditName(session.subject || '');
+  };
+
+  const handleSaveEdit = async (sessionId) => {
+    if (!currentUser) return;
+    const trimmed = editName.trim() || 'Untitled Session';
+    setSaving(true);
+    try {
+      await updateSession(currentUser.uid, sessionId, { subject: trimmed });
+      setEditingId(null);
+      toast?.('Session renamed', 'success', 2000);
+    } catch (e) {
+      console.error('Rename failed:', e);
+      toast?.('Failed to rename session', 'error', 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditName('');
   };
 
   if (loading) return <div className="spinner" />;
@@ -149,7 +181,68 @@ const HistoryTab = () => {
             <div key={session.id} className="history-item">
               <div className="history-dot" />
               <div className="history-info">
-                <div className="history-subject">{session.subject || 'Unknown'}</div>
+                {editingId === session.id ? (
+                  <form
+                    className="history-edit-form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveEdit(session.id);
+                    }}
+                  >
+                    <input
+                      type="text"
+                      className="history-edit-input"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Session name..."
+                      autoFocus
+                      disabled={saving}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') handleCancelEdit();
+                      }}
+                      id={`edit-input-${session.id}`}
+                    />
+                    <div className="history-edit-actions">
+                      <button
+                        type="submit"
+                        className="history-edit-btn history-edit-save"
+                        disabled={saving || !editName.trim()}
+                        title="Save changes (Enter)"
+                        aria-label="Save session name"
+                        id={`save-session-${session.id}`}
+                      >
+                        {saving ? '…' : <IconCheck size={14} />}
+                      </button>
+                      <button
+                        type="button"
+                        className="history-edit-btn history-edit-cancel"
+                        onClick={handleCancelEdit}
+                        disabled={saving}
+                        title="Cancel (Esc)"
+                        aria-label="Cancel editing"
+                        id={`cancel-edit-${session.id}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="history-subject-row">
+                    <span className="history-subject" title={session.subject || 'Unknown'}>
+                      {session.subject || 'Unknown'}
+                    </span>
+                    <button
+                      type="button"
+                      className="history-edit-trigger-btn"
+                      onClick={() => handleStartEdit(session)}
+                      title="Edit session name"
+                      aria-label={`Edit session name: ${session.subject || 'Unknown'}`}
+                      id={`edit-session-${session.id}`}
+                    >
+                      <IconEdit size={13} />
+                    </button>
+                  </div>
+                )}
                 <div className="history-meta">
                   {formatDate(session.date)}
                   {session.mode && (

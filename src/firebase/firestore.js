@@ -108,6 +108,11 @@ export const deleteSession = async (uid, sessionId) => {
   await deleteDoc(ref);
 };
 
+export const updateSession = async (uid, sessionId, updates) => {
+  const ref = doc(db, 'users', uid, 'sessions', sessionId);
+  await updateDoc(ref, updates);
+};
+
 export const subscribeSessions = (uid, callback) => {
   const ref = collection(db, 'users', uid, 'sessions');
   const q = query(ref, orderBy('timestamp', 'desc'));
