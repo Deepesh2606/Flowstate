@@ -240,31 +240,6 @@ export const AudioProvider = ({ children }) => {
   const [showAudioDrawer, setShowAudioDrawer] = useState(false);
   const [activeAudioTab, setActiveAudioTab] = useState('ambient'); // 'ambient' | 'spotify' | 'applemusic' | 'ytmusic' | 'lofi'
 
-  const openAudioDrawerWithTab = useCallback((tab = 'ambient') => {
-    setActiveAudioTab(tab);
-    setShowAudioDrawer(true);
-  }, []);
-
-  const openMusicPlayer = useCallback((service = 'spotify') => {
-    setIsPlaybackPaused(false);
-    if (service === 'spotify') {
-      setSpotifyActive(true);
-      setActiveAudioTab('spotify');
-    } else if (service === 'ytmusic') {
-      setYtMusicActive(true);
-      setActiveAudioTab('ytmusic');
-    } else if (service === 'applemusic') {
-      setAppleMusicActive(true);
-      setActiveAudioTab('applemusic');
-    } else if (service === 'lofi') {
-      setLofiPlaying(true);
-      setActiveAudioTab('lofi');
-    } else {
-      setActiveAudioTab('ambient');
-    }
-    setShowAudioDrawer(true);
-  }, []);
-
   // Lofi Radio state
   const [lofiPlaying, setLofiPlaying] = useState(false);
   const [selectedStreamId, setSelectedStreamId] = useState('lofi-girl');
@@ -290,6 +265,31 @@ export const AudioProvider = ({ children }) => {
   const [selectedAppleMusicUrl, setSelectedAppleMusicUrl] = useState('https://embed.music.apple.com/us/playlist/pure-focus/pl.u-a1699mD31114');
   const [selectedAppleMusicTitle, setSelectedAppleMusicTitle] = useState('Pure Focus');
   const [customAppleMusicInput, setCustomAppleMusicInput] = useState('');
+
+  const openAudioDrawerWithTab = useCallback((tab = 'ambient') => {
+    setActiveAudioTab(tab);
+    setShowAudioDrawer(true);
+  }, []);
+
+  const openMusicPlayer = useCallback((service = 'spotify') => {
+    setIsPlaybackPaused(false);
+    if (service === 'spotify') {
+      setSpotifyActive(true);
+      setActiveAudioTab('spotify');
+    } else if (service === 'ytmusic') {
+      setYtMusicActive(true);
+      setActiveAudioTab('ytmusic');
+    } else if (service === 'applemusic') {
+      setAppleMusicActive(true);
+      setActiveAudioTab('applemusic');
+    } else if (service === 'lofi') {
+      setLofiPlaying(true);
+      setActiveAudioTab('lofi');
+    } else {
+      setActiveAudioTab('ambient');
+    }
+    setShowAudioDrawer(true);
+  }, []);
 
   // Audio HTML elements map: { [id]: HTMLAudioElement }
   const audioRefs = useRef({});

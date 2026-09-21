@@ -128,7 +128,7 @@ const SUGGESTED_PROMPTS = [
   "Explain Pomodoro to me",
 ];
 
-const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
+const AIChatSidebar = ({ onClose }) => {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);

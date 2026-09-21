@@ -119,25 +119,6 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
 
   // Date formatting
   const dayName = time.toLocaleDateString(undefined, { weekday: 'long' });
-  const monthName = time.toLocaleDateString(undefined, { month: 'long' });
-  const dayOfMonth = time.getDate();
-  const year = time.getFullYear();
-
-  // Timezone representation
-  const timeZoneName = (() => {
-    try {
-      const match = time.toTimeString().match(/\((.+)\)$/);
-      if (match && match[1]) return match[1];
-      const offset = -time.getTimezoneOffset();
-      const sign = offset >= 0 ? '+' : '-';
-      const absOffset = Math.abs(offset);
-      const h = String(Math.floor(absOffset / 60)).padStart(2, '0');
-      const m = String(absOffset % 60).padStart(2, '0');
-      return `GMT${sign}${h}:${m}`;
-    } catch {
-      return '';
-    }
-  })();
 
   // Floating PiP support via Canvas & Video element
   const togglePip = async () => {

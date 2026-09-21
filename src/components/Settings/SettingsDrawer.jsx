@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
 import {
-  IconSettings,
-  IconFocus,
-  IconInfo,
-  IconBook,
-  IconMac,
   IconSun,
   IconMoon,
   IconTrash,
@@ -802,6 +797,37 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
                     <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak + 1)}>+</button>
                   </div>
                 </div>
+
+                <div className="setting-item">
+                  <label className="setting-label" htmlFor="setting-long-break-interval">Long Break Interval (sessions)</label>
+                  <div className="setting-input-row">
+                    <button className="setting-stepper" onClick={() => setLongBreakInterval(prev => Math.max(1, Number(prev) - 1))}>−</button>
+                    <input
+                      id="setting-long-break-interval"
+                      className="setting-input setting-input-center"
+                      type="number" min="1" max="12"
+                      value={longBreakInterval}
+                      onChange={(e) => setLongBreakInterval(Math.max(1, Number(e.target.value)))}
+                    />
+                    <button className="setting-stepper" onClick={() => setLongBreakInterval(prev => Math.min(12, Number(prev) + 1))}>+</button>
+                  </div>
+                </div>
+
+                <div className="setting-item" style={{ marginTop: '12px' }}>
+                  <label className="setting-label">Quick Presets</label>
+                  <div className="setting-preset-pills">
+                    {presets.map(p => (
+                      <button
+                        key={p.name}
+                        type="button"
+                        className="setting-preset-pill"
+                        onClick={() => handlePresetApply(p)}
+                      >
+                        {p.name} ({p.pomodoro}/{p.shortBreak})
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1069,7 +1095,14 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
             <div className="settings-tab-section">
               {/* Chime Sound */}
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Timer Chime Style</div>
+                <Toggle
+                  id="toggle-sound-enabled"
+                  checked={soundEnabled}
+                  onChange={(val) => handleToggleChange('soundEnabled', setSoundEnabled, val)}
+                  label="Timer Chime Sound"
+                  sub="Play sound chime when your session or break completes."
+                />
+                <div className="settings-section-header-title" style={{ marginTop: '16px' }}>Timer Chime Style</div>
                 <p className="settings-section-subtitle">Chime plays gently when your session completes.</p>
                 <div className="chime-options-row">
                   {CHIME_OPTIONS.map(c => (

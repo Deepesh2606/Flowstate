@@ -38,15 +38,6 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const [linkedTaskId, setLinkedTaskId] = useState(null);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
 
-  // ─── Active Recall state ───────────────────────────────────────────────────
-  const [showActiveRecall, setShowActiveRecall] = useState(false);
-  const [recallContext, setRecallContext] = useState({ notes: '', subject: '' });
-
-  const handleTriggerRecall = useCallback((notes, subj) => {
-    setRecallContext({ notes: notes || '', subject: subj || subject || '' });
-    setShowActiveRecall(true);
-  }, [subject]);
-
   const handleTaskComplete = useCallback(async (taskId) => {
     if (!currentUser || !taskId) return;
     try {
@@ -78,6 +69,15 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     skip,
     switchMode,
   } = useTimer(settings, toast, { linkedTaskId, onTaskComplete: handleTaskComplete });
+
+  // ─── Active Recall state ───────────────────────────────────────────────────
+  const [showActiveRecall, setShowActiveRecall] = useState(false);
+  const [recallContext, setRecallContext] = useState({ notes: '', subject: '' });
+
+  const handleTriggerRecall = useCallback((notes, subj) => {
+    setRecallContext({ notes: notes || '', subject: subj || subject || '' });
+    setShowActiveRecall(true);
+  }, [subject]);
 
   // ─── Stopwatch laps ────────────────────────────────────────────────────────
   const [laps, setLaps] = useState([]);
