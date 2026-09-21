@@ -1,4 +1,18 @@
 /**
+ * Checks if a given wallpaper URL is a video file.
+ * Supports MP4, WebM, MOV, OGG, and Cloudinary video URLs.
+ */
+export const isVideoUrl = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  return (
+    url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) !== null ||
+    url.includes('/video/upload/') ||
+    url.includes('resource_type=video') ||
+    url.startsWith('data:video/')
+  );
+};
+
+/**
  * Analyzes wallpaper luminance and color distribution, specifically weighting the center region
  * where the clock sits, to calculate optimal contrast color and shadows.
  *
@@ -7,7 +21,7 @@
  */
 export const getWallpaperContrast = (imageUrl) => {
   return new Promise((resolve) => {
-    if (!imageUrl) {
+    if (!imageUrl || isVideoUrl(imageUrl)) {
       resolve({
         color: '#ffffff',
         shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',

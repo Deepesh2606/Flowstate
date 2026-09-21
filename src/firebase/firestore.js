@@ -167,3 +167,33 @@ export const subscribeTasks = (uid, callback) => {
     }
   );
 };
+
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+
+export const updateLeaderboardUser = async (uid, data) => {
+  try {
+    const ref = doc(db, 'leaderboard', uid);
+    await setDoc(ref, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Leaderboard update error:', err);
+  }
+};
+
+export const subscribeLeaderboard = (callback) => {
+  const ref = collection(db, 'leaderboard');
+  const q = query(ref, orderBy('todaySeconds', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      callback(list);
+    },
+    (err) => {
+      console.warn('Firestore leaderboard subscribe error:', err);
+      callback([]);
+    }
+  );
+};

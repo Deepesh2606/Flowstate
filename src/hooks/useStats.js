@@ -17,9 +17,22 @@ export const useStats = () => {
 
   useEffect(() => {
     if (!currentUser) {
-      setSessions([]);
+      try {
+        const saved = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+        setSessions(saved);
+      } catch (e) {
+        setSessions([]);
+      }
       setLoading(false);
-      return;
+
+      const handleGuestUpdate = () => {
+        try {
+          const saved = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+          setSessions(saved);
+        } catch (e) {}
+      };
+      window.addEventListener('flowstate_guest_sessions_updated', handleGuestUpdate);
+      return () => window.removeEventListener('flowstate_guest_sessions_updated', handleGuestUpdate);
     }
     setLoading(true);
     const unsub = subscribeSessions(currentUser.uid, (data, err) => {

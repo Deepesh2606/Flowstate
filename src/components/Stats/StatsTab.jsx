@@ -9,6 +9,7 @@ import SubjectBreakdown from './SubjectBreakdown';
 import HeatmapCalendar from './HeatmapCalendar';
 import SubjectTrendChart from './SubjectTrendChart';
 import ReportCard from './ReportCard';
+import LeaderboardView from './LeaderboardView';
 
 const formatTime = (seconds) => {
   if (!seconds) return '0m';
@@ -72,7 +73,7 @@ const exportSessions = (sessions, format = 'csv') => {
   }
 };
 
-const StatsTab = () => {
+const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed }) => {
   const { currentUser } = useAuth();
   const { settings } = useSettings();
   const {
@@ -90,17 +91,68 @@ const StatsTab = () => {
     totalFocusTime,
   } = useStats();
 
+  const [subTab, setSubTab] = useState(initialSubTab);
   const [showDetails, setShowDetails] = useState(true);
   const [showReport, setShowReport] = useState(false);
 
+  useEffect(() => {
+    if (initialSubTab) {
+      setSubTab(initialSubTab);
+      onSubTabConsumed?.();
+    }
+  }, [initialSubTab, onSubTabConsumed]);
+
+  const renderSubNav = () => (
+    <div className="stats-subnav-container">
+      <div className="stats-subnav-pills" role="tablist">
+        <button
+          type="button"
+          className={`stats-subnav-pill ${subTab === 'stats' ? 'active' : ''}`}
+          onClick={() => setSubTab('stats')}
+          role="tab"
+          aria-selected={subTab === 'stats'}
+        >
+          <span>📊</span> My Stats
+        </button>
+        <button
+          type="button"
+          className={`stats-subnav-pill ${subTab === 'leaderboard' ? 'active' : ''}`}
+          onClick={() => setSubTab('leaderboard')}
+          role="tab"
+          aria-selected={subTab === 'leaderboard'}
+        >
+          <span>🏆</span> Leaderboard
+        </button>
+      </div>
+    </div>
+  );
+
+  if (subTab === 'leaderboard') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {renderSubNav()}
+        <LeaderboardView
+          todayFocusTime={todayFocusTime}
+          weeklyData={weeklyData}
+          totalFocusTime={totalFocusTime}
+          currentStreak={currentStreak}
+          subjectBreakdown={subjectBreakdown}
+        />
+      </div>
+    );
+  }
+
   if (!currentUser) {
     return (
-      <div className="auth-tab-gate">
-        <div className="auth-tab-card">
-          <div className="auth-tab-icon"><IconStats size={36} color="var(--accent)" /></div>
-          <h2 className="auth-tab-title">Focus Analytics & Streaks</h2>
-          <p className="auth-tab-desc">Sign in with Google to record your study time, monitor weekly charts, track streaks, and unlock your focus heatmap.</p>
-          <div style={{ marginTop: '20px' }}><GoogleSignInButton size="md" /></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {renderSubNav()}
+        <div className="auth-tab-gate">
+          <div className="auth-tab-card">
+            <div className="auth-tab-icon"><IconStats size={36} color="var(--accent)" /></div>
+            <h2 className="auth-tab-title">Focus Analytics & Streaks</h2>
+            <p className="auth-tab-desc">Sign in with Google to record your study time, monitor weekly charts, track streaks, and unlock your focus heatmap.</p>
+            <div style={{ marginTop: '20px' }}><GoogleSignInButton size="md" /></div>
+          </div>
         </div>
       </div>
     );
@@ -110,6 +162,7 @@ const StatsTab = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {renderSubNav()}
       {/* Top row: Goal ring + Streak */}
       <div className="stats-top-row">
         <GoalRing current={todayFocusTime} goal={settings?.dailyGoal} />

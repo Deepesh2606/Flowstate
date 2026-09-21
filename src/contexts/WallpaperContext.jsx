@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated, removeGlobalCurated, setGlobalDefault } from '../firebase/firestore';
+import { isVideoUrl } from '../utils/imageUtils';
 
 const WallpaperContext = createContext(null);
 
@@ -13,6 +14,12 @@ export const useWallpaper = () => {
 const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
 
 const DEFAULT_PRESET_WALLPAPERS = [
+  // Ambient Video Loops
+  { id: 'video-rain', label: 'Rain on Window', url: 'https://assets.mixkit.co/videos/preview/mixkit-rain-falling-on-the-water-of-a-lake-1981-large.mp4', isVideo: true },
+  { id: 'video-fire', label: 'Cozy Fireplace', url: 'https://assets.mixkit.co/videos/preview/mixkit-bonfire-burning-in-the-dark-43391-large.mp4', isVideo: true },
+  { id: 'video-waves', label: 'Sunset Waves', url: 'https://assets.mixkit.co/videos/preview/mixkit-sea-waves-crashing-on-the-beach-at-sunset-40763-large.mp4', isVideo: true },
+  { id: 'video-stars', label: 'Starry Cosmos', url: 'https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-flowing-slowly-43033-large.mp4', isVideo: true },
+  // Image Presets
   { id: 'forest', label: 'Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80&auto=format,compress' },
   { id: 'aurora', label: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80&auto=format,compress' },
   { id: 'mountains', label: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80&auto=format,compress' },
@@ -234,7 +241,8 @@ export const WallpaperProvider = ({ children }) => {
         globalDefault,
         uploadToGlobalCurated,
         deleteGlobalCurated,
-        setAsGlobalDefault
+        setAsGlobalDefault,
+        isVideoUrl
       }}
     >
       {children}

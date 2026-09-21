@@ -8,7 +8,7 @@ import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat } from '../Icons';
-import { getWallpaperContrast } from '../../utils/imageUtils';
+import { getWallpaperContrast, isVideoUrl } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import WallpaperPicker from '../WallpaperPicker';
 import InstallModal from '../InstallModal';
@@ -268,13 +268,16 @@ const AppShell = () => {
       case 'stats':
         return (
           <Suspense fallback={<FallbackLoader />}>
-            <StatsTab />
+            <StatsTab
+              initialSubTab={pendingSwitchMode === 'leaderboard' ? 'leaderboard' : 'stats'}
+              onSubTabConsumed={() => setPendingSwitchMode(null)}
+            />
           </Suspense>
         );
       case 'history':
         return (
           <Suspense fallback={<FallbackLoader />}>
-            <HistoryTab />
+            <HistoryTab onTabChange={handleTabChange} />
           </Suspense>
         );
       default:
@@ -284,13 +287,26 @@ const AppShell = () => {
 
   return (
     <div className={`app-layout${showAIChat ? ' app-layout--chat-open' : ''}`}>
-      {/* Wallpaper Background */}
-      <div
-        className="wallpaper-bg"
-        style={{ backgroundImage: wallpaper ? `url(${wallpaper})` : undefined }}
-        aria-hidden="true"
-      />
-      {!wallpaper && <div className="wallpaper-overlay" aria-hidden="true" />}
+      {/* Wallpaper Background (Video or Image) */}
+      {isVideoUrl(wallpaper) ? (
+        <video
+          key={wallpaper}
+          className="wallpaper-video-bg"
+          src={wallpaper}
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-hidden="true"
+        />
+      ) : (
+        <div
+          className="wallpaper-bg"
+          style={{ backgroundImage: wallpaper ? `url(${wallpaper})` : undefined }}
+          aria-hidden="true"
+        />
+      )}
+      <div className="wallpaper-overlay" aria-hidden="true" />
 
       {/* App Shell */}
       <div className="app-shell">

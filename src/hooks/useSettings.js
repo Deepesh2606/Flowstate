@@ -13,6 +13,10 @@ const DEFAULT_SETTINGS = {
   textColor: '#ffffff',
   autoClockColor: true,
   clockStyle: 'digital', // 'digital' | 'flip'
+  timerStyle: 'default', // 'default' | 'flip' | 'progress' | 'gauge' | 'dotmatrix' | 'pie'
+  showTimerProgressBar: true,
+  showStreakCounter: true,
+  showTaskInPip: true,
   showSeconds: true,
   clockFormat: '12h', // '12h' | '24h'
   theme: 'dark', // 'dark' | 'light'
@@ -53,6 +57,10 @@ export const useSettings = () => {
           autoClockColor: data.autoClockColor !== undefined ? data.autoClockColor : true,
           theme: data.theme || 'dark',
           clockStyle: data.clockStyle || 'digital',
+          timerStyle: data.timerStyle || (data.clockStyle === 'flip' ? 'flip' : 'default'),
+          showTimerProgressBar: data.showTimerProgressBar !== undefined ? data.showTimerProgressBar : true,
+          showStreakCounter: data.showStreakCounter !== undefined ? data.showStreakCounter : true,
+          showTaskInPip: data.showTaskInPip !== undefined ? data.showTaskInPip : true,
           showSeconds: data.showSeconds !== undefined ? data.showSeconds : true,
           clockFormat: data.clockFormat || '12h',
           clockColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.clockColor,

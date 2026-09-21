@@ -26,7 +26,7 @@ export const uploadWallpaper = (file, onProgress) => {
     formData.append('folder', 'flowstate/wallpapers');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`);
 
     if (xhr.upload && onProgress) {
       xhr.upload.onprogress = (event) => {
@@ -43,8 +43,12 @@ export const uploadWallpaper = (file, onProgress) => {
         if (onProgress) onProgress(100);
         try {
           const data = JSON.parse(xhr.responseText);
-          // Return a web-optimized URL: auto format, high efficiency quality, capped at 1600px for ultrafast loading
-          resolve(data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1600,c_limit/'));
+          const isVideo = data.resource_type === 'video' || (data.format && ['mp4', 'webm', 'mov', 'ogg'].includes(data.format.toLowerCase()));
+          if (isVideo) {
+            resolve(data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/'));
+          } else {
+            resolve(data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_1600,c_limit/'));
+          }
         } catch (err) {
           reject(new Error('Invalid response from Cloudinary'));
         }

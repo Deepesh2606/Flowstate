@@ -11,7 +11,7 @@ const MOODS = [
  * Post-session note + mood picker modal.
  * Slides up after a focus session completes.
  */
-const SessionNoteModal = ({ isOpen, onClose, onSave, sessionInfo }) => {
+const SessionNoteModal = ({ isOpen, onClose, onSave, onTriggerRecall, sessionInfo }) => {
   const [note, setNote] = useState('');
   const [mood, setMood] = useState(null);
   const inputRef = useRef(null);
@@ -34,6 +34,15 @@ const SessionNoteModal = ({ isOpen, onClose, onSave, sessionInfo }) => {
   const handleSkip = () => {
     onSave({ note: '', mood: null });
     onClose();
+  };
+
+  const handleRecall = () => {
+    const savedNote = note.trim();
+    onSave({ note: savedNote, mood });
+    onClose();
+    if (onTriggerRecall) {
+      onTriggerRecall(savedNote, sessionInfo?.subject);
+    }
   };
 
   const formatDuration = (secs) => {
@@ -100,13 +109,23 @@ const SessionNoteModal = ({ isOpen, onClose, onSave, sessionInfo }) => {
         </div>
 
         {/* Actions */}
-        <div className="session-note-actions">
-          <button type="button" className="session-note-skip" onClick={handleSkip}>
-            Skip
+        <div className="session-note-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button
+            type="button"
+            className="session-note-recall-btn"
+            onClick={handleRecall}
+            title="Generate 3 AI active recall flashcards from your study session"
+          >
+            <span>⚡</span> Test Recall (3 AI Flashcards)
           </button>
-          <button type="button" className="session-note-save" onClick={handleSave}>
-            Save Note
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button type="button" className="session-note-skip" onClick={handleSkip} style={{ flex: 1 }}>
+              Skip
+            </button>
+            <button type="button" className="session-note-save" onClick={handleSave} style={{ flex: 1 }}>
+              Save Note
+            </button>
+          </div>
         </div>
       </div>
     </div>

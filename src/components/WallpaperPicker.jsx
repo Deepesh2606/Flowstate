@@ -4,6 +4,7 @@ import { useWallpaper } from '../contexts/WallpaperContext';
 import { useToast } from './Toast/ToastProvider';
 import { uploadWallpaper } from '../cloudinary';
 import { IconImage, IconCheck, IconTrash, IconStar } from './Icons';
+import { isVideoUrl } from '../utils/imageUtils';
 
 const preloadImage = (url) => {
   return new Promise((resolve) => {
@@ -55,6 +56,8 @@ const WallpaperPicker = () => {
   const [uploadAsCurated, setUploadAsCurated] = useState(false);
   const [curatedLabel, setCuratedLabel] = useState('');
   const [uploadError, setUploadError] = useState('');
+  const [customUrlInput, setCustomUrlInput] = useState('');
+  const [customUrlError, setCustomUrlError] = useState('');
   const fileRef = useRef(null);
 
   const handlePresetSelect = (url) => {
@@ -65,12 +68,14 @@ const WallpaperPicker = () => {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please select an image file.');
+    const isVid = file.type.startsWith('video/') || Boolean(file.name.match(/\.(mp4|webm|mov)$/i));
+    if (!file.type.startsWith('image/') && !isVid) {
+      setUploadError('Please select an image or video file (MP4, WebM, JPG, PNG).');
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setUploadError('File too large. Max 10MB.');
+    const maxBytes = isVid ? 50 * 1024 * 1024 : 15 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setUploadError(`File too large. Max ${isVid ? '50MB for video' : '15MB for image'}.`);
       return;
     }
 
@@ -78,7 +83,7 @@ const WallpaperPicker = () => {
     setPreviewUrl(preview);
     setUploading(true);
     setUploadProgress(10);
-    setUploadStatus('Optimizing & uploading image...');
+    setUploadStatus(isVid ? 'Uploading & optimizing video...' : 'Optimizing & uploading image...');
     setUploadError('');
 
     try {
@@ -88,10 +93,12 @@ const WallpaperPicker = () => {
         setUploadProgress(Math.min(85, scaled));
       });
 
-      // Once uploaded, preload and cache in browser memory to eliminate blank delay
+      // Once uploaded, preload images in browser memory
       setUploadProgress(92);
-      setUploadStatus('Caching & applying wallpaper...');
-      await preloadImage(url);
+      setUploadStatus('Applying wallpaper...');
+      if (!isVid) {
+        await preloadImage(url);
+      }
 
       setUploadProgress(100);
       setUploadStatus('Wallpaper applied!');
@@ -217,20 +224,38 @@ const WallpaperPicker = () => {
                       <span style={{ fontSize: '11px' }}>Upload More</span>
                     </button>
                     {customWallpapers.map((url, i) => {
+                      const isVid = isVideoUrl(url);
                       const thumbUrl = toThumbUrl(url);
                       return (
                       <div key={`custom-${i}`} style={{ position: 'relative' }}>
                         <button
                           className={`wallpaper-thumb ${wallpaper === url ? 'selected' : ''}`}
-                          style={{ backgroundImage: `url(${thumbUrl})`, width: '100%' }}
+                          style={{ width: '100%', position: 'relative', overflow: 'hidden' }}
                           onClick={() => handlePresetSelect(url)}
                           title="Custom Wallpaper"
                           aria-label={`Select custom wallpaper ${i + 1}`}
                         >
+                          {isVid ? (
+                            <video
+                              src={url}
+                              className="wallpaper-thumb-media"
+                              muted
+                              loop
+                              playsInline
+                              onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                              onMouseLeave={(e) => e.currentTarget.pause()}
+                            />
+                          ) : (
+                            <div
+                              className="wallpaper-thumb-media"
+                              style={{ backgroundImage: `url(${thumbUrl})` }}
+                            />
+                          )}
+                          {isVid && <span className="wallpaper-video-badge">▶ Video</span>}
                           {wallpaper === url && (
                             <div style={{
                               position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)'
+                              background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)', zIndex: 3
                             }}>
                               <IconCheck size={28} color="#081226" />
                             </div>
@@ -263,19 +288,37 @@ const WallpaperPicker = () => {
                   <div className="wallpaper-grid">
                     {globalCurated.filter(wp => !hiddenCurated?.includes(wp.id)).map((wp) => {
                       const displayTitle = (wp.label && wp.label.trim().toLowerCase() !== 'user upload') ? wp.label : 'Curated Preset';
+                      const isVid = wp.isVideo || isVideoUrl(wp.url);
                       return (
                       <div key={wp.id} style={{ position: 'relative' }}>
                         <button
                           className={`wallpaper-thumb ${wallpaper === wp.url ? 'selected' : ''}`}
-                          style={{ backgroundImage: `url(${toThumbUrl(wp.url)})`, width: '100%' }}
+                          style={{ width: '100%', position: 'relative', overflow: 'hidden' }}
                           onClick={() => handlePresetSelect(wp.url)}
                           title={displayTitle}
                           aria-label={`Select ${displayTitle}`}
                         >
+                          {isVid ? (
+                            <video
+                              src={wp.url}
+                              className="wallpaper-thumb-media"
+                              muted
+                              loop
+                              playsInline
+                              onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                              onMouseLeave={(e) => e.currentTarget.pause()}
+                            />
+                          ) : (
+                            <div
+                              className="wallpaper-thumb-media"
+                              style={{ backgroundImage: `url(${toThumbUrl(wp.url)})` }}
+                            />
+                          )}
+                          {isVid && <span className="wallpaper-video-badge">▶ Video</span>}
                           {wallpaper === wp.url && (
                             <div style={{
                               position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)'
+                              background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)', zIndex: 3
                             }}>
                               <IconCheck size={28} color="#081226" />
                             </div>
@@ -412,9 +455,9 @@ const WallpaperPicker = () => {
                         <IconImage size={36} color="var(--accent)" />
                       </div>
                       <div className="upload-text">
-                        Click to upload your image
+                        Click to upload image or video
                       </div>
-                      <div className="upload-sub">JPG, PNG, WEBP — max 10MB</div>
+                      <div className="upload-sub">JPG, PNG, WEBP, MP4, WebM — max 50MB</div>
                     </>
                   )}
                 </div>
@@ -422,7 +465,7 @@ const WallpaperPicker = () => {
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/mp4,video/webm,video/quicktime"
                 style={{ display: 'none' }}
                 onChange={handleFileUpload}
                 id="wallpaper-file-input"
@@ -432,6 +475,70 @@ const WallpaperPicker = () => {
                   {uploadError}
                 </p>
               )}
+
+              {/* Direct URL Input Section */}
+              <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.05em' }}>
+                  Or Paste Link (Image or Video)
+                </h3>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const trimmed = customUrlInput.trim();
+                    if (!trimmed) return;
+                    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+                      setCustomUrlError('Please enter a valid http/https link.');
+                      return;
+                    }
+                    setCustomUrlError('');
+                    try {
+                      await addCustomWallpaper(trimmed);
+                      await setWallpaper(trimmed);
+                      toast('Custom wallpaper applied!', 'success', 3000);
+                      setCustomUrlInput('');
+                      setActiveTab('presets');
+                    } catch (err) {
+                      setCustomUrlError('Failed to apply wallpaper URL.');
+                    }
+                  }}
+                  style={{ display: 'flex', gap: '8px' }}
+                >
+                  <input
+                    type="url"
+                    placeholder="https://example.com/video.mp4"
+                    value={customUrlInput}
+                    onChange={(e) => setCustomUrlInput(e.target.value)}
+                    style={{
+                      flex: 1,
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: '10px',
+                      padding: '8px 12px',
+                      color: '#fff',
+                      fontSize: '12px',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    style={{
+                      background: 'var(--accent)',
+                      color: '#081226',
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      padding: '0 16px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Apply
+                  </button>
+                </form>
+                {customUrlError && (
+                  <p style={{ color: '#ff5050', fontSize: '12px', marginTop: '6px' }}>{customUrlError}</p>
+                )}
+              </div>
               
               {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
                 <div className={`curated-toggle-card ${uploadAsCurated ? 'active' : ''}`}>

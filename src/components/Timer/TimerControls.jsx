@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconRotateCcw, IconPlay, IconPause, IconSkipForward } from '../Icons';
 
 const TimerControls = ({ isRunning, onPlay, onPause, onReset, onSkip }) => {
   return (
@@ -10,7 +11,7 @@ const TimerControls = ({ isRunning, onPlay, onPause, onReset, onSkip }) => {
         id="timer-reset-btn"
         aria-label="Reset timer"
       >
-        ↺
+        <IconRotateCcw size={18} />
       </button>
 
       <button
@@ -20,7 +21,7 @@ const TimerControls = ({ isRunning, onPlay, onPause, onReset, onSkip }) => {
         id="timer-play-pause-btn"
         aria-label={isRunning ? 'Pause timer' : 'Start timer'}
       >
-        {isRunning ? '⏸' : '▶'}
+        {isRunning ? <IconPause size={20} /> : <IconPlay size={20} />}
       </button>
 
       <button
@@ -30,7 +31,7 @@ const TimerControls = ({ isRunning, onPlay, onPause, onReset, onSkip }) => {
         id="timer-skip-btn"
         aria-label="Skip to next session"
       >
-        ⏭
+        <IconSkipForward size={18} />
       </button>
     </div>
   );

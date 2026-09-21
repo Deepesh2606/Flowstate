@@ -24,7 +24,7 @@ const formatDate = (dateStr) => {
   }
 };
 
-const HistoryTab = () => {
+const HistoryTab = ({ onTabChange }) => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const { sessions, loading } = useStats();
@@ -115,9 +115,21 @@ const HistoryTab = () => {
           <IconHistory size={20} color="var(--accent)" />
           <h2 className="history-title">Session History</h2>
         </div>
-        <span className="history-count-badge">
-          {filtered.length} {filtered.length === 1 ? 'session' : 'sessions'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {onTabChange && (
+            <button
+              type="button"
+              className="history-leaderboard-btn"
+              onClick={() => onTabChange('stats', 'leaderboard')}
+              title="View Community Leaderboard"
+            >
+              <span>🏆</span> Leaderboard
+            </button>
+          )}
+          <span className="history-count-badge">
+            {filtered.length} {filtered.length === 1 ? 'session' : 'sessions'}
+          </span>
+        </div>
       </div>
 
       {/* Filters */}

@@ -7,9 +7,12 @@ import CountdownGlow from './CountdownGlow';
 import SessionNoteModal from './SessionNoteModal';
 import MotivationalQuote from './MotivationalQuote';
 import ShareCard from './ShareCard';
-import { IconBook, IconMaximize, IconMinimize, IconPip, IconHeadphones } from '../Icons';
+import { IconBook, IconMaximize, IconMinimize, IconPip, IconHeadphones, IconRotateCcw, IconX, IconSave, IconTrash, IconClock, IconPlay, IconPause, IconSkipForward } from '../Icons';
 import { usePictureInPicture, PiPWindowPortal } from './PictureInPicture';
 import PipHelpModal from './PipHelpModal';
+import GhostPacer from './GhostPacer';
+import SessionScratchpad from './SessionScratchpad';
+import ActiveRecallModal from './ActiveRecallModal';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 import { useAuth } from '../../contexts/AuthContext';
@@ -34,6 +37,15 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   // ─── Linked task state ─────────────────────────────────────────────────────
   const [linkedTaskId, setLinkedTaskId] = useState(null);
   const [showTaskPicker, setShowTaskPicker] = useState(false);
+
+  // ─── Active Recall state ───────────────────────────────────────────────────
+  const [showActiveRecall, setShowActiveRecall] = useState(false);
+  const [recallContext, setRecallContext] = useState({ notes: '', subject: '' });
+
+  const handleTriggerRecall = useCallback((notes, subj) => {
+    setRecallContext({ notes: notes || '', subject: subj || subject || '' });
+    setShowActiveRecall(true);
+  }, [subject]);
 
   const handleTaskComplete = useCallback(async (taskId) => {
     if (!currentUser || !taskId) return;
@@ -62,6 +74,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     play,
     pause,
     reset,
+    saveAndReset,
     skip,
     switchMode,
   } = useTimer(settings, toast, { linkedTaskId, onTaskComplete: handleTaskComplete });
@@ -146,7 +159,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const handleResetClick = () => {
-    if (isRunning || timeLeft < totalDuration) {
+    const elapsed = mode === 'stopwatch' ? timeLeft : (totalDuration - timeLeft);
+    if (isRunning || (mode === 'stopwatch' ? (stopwatchMs > 0 || timeLeft > 0) : elapsed > 5)) {
       setShowResetConfirm(true);
     } else {
       handleReset();
@@ -155,6 +169,12 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const handleConfirmReset = () => {
     setShowResetConfirm(false);
     handleReset();
+  };
+  const handleSaveAndReset = async () => {
+    setShowResetConfirm(false);
+    await saveAndReset();
+    setLaps([]);
+    lastLapTimeRef.current = 0;
   };
   const handleSwitchMode = (newMode) => {
     switchMode(newMode);
@@ -273,6 +293,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         isRunning={isRunning}
         hasWallpaper={hasWallpaper}
         clockStyle={settings?.clockStyle || 'digital'}
+        timerStyle={settings?.timerStyle || 'default'}
+        showProgressBar={settings?.showTimerProgressBar ?? true}
         showSeconds={settings?.showSeconds ?? true}
       />
 
@@ -296,6 +318,12 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           />
         </div>
       </div>
+
+      {/* Ghost Pacer: Race Against Yesterday's You */}
+      <GhostPacer />
+
+      {/* Session Scratchpad for active notes & flashcard generation */}
+      <SessionScratchpad onTriggerRecall={handleTriggerRecall} subject={subject} />
 
       {/* Linked Task Row */}
       {currentUser && mode === 'pomodoro' && (
@@ -350,10 +378,10 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           aria-label={isRunning ? 'Pause' : 'Play'}
           title={isRunning ? 'Pause (Space)' : 'Play (Space)'}
         >
-          {isRunning ? '⏸' : '▶'}
+          {isRunning ? <IconPause size={20} /> : <IconPlay size={20} />}
         </button>
         <button className="flocus-ctrl-btn" onClick={handleResetClick} aria-label="Reset" title="Reset (R)">
-          ↺
+          <IconRotateCcw size={18} />
         </button>
         {mode === 'stopwatch' && isRunning && (
           <button
@@ -373,7 +401,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
             aria-label="Skip session"
             title="Skip (S)"
           >
-            ⏭
+            <IconSkipForward size={18} />
           </button>
         )}
         <button
@@ -467,68 +495,171 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       {/* Bottom clearance spacer to prevent any overlap with bottom bar */}
       <div className="timer-tab-bottom-spacer" aria-hidden="true" />
 
-      {/* Skip Confirmation Dialog */}
+      {/* Premium Skip Confirmation Dialog */}
       {showSkipConfirm && (
         <div
-          className="drawer-overlay"
-          style={{ zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          className="reset-modal-overlay"
           onClick={() => setShowSkipConfirm(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="skip-confirm-title"
         >
           <div
-            className="skip-confirm-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="skip-confirm-title"
+            className="reset-modal-card skip-card"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="skip-confirm-header">
-              <span className="skip-confirm-icon">⏭</span>
-              <h3 id="skip-confirm-title" className="skip-confirm-title">
-                Skip {mode === 'pomodoro' ? 'Focus Session' : 'Break'}?
-              </h3>
+            <button
+              type="button"
+              className="reset-modal-close-btn"
+              onClick={() => setShowSkipConfirm(false)}
+              aria-label="Close dialog"
+            >
+              <IconX size={16} />
+            </button>
+
+            <div className="reset-modal-icon-ring skip-ring">
+              <IconSkipForward size={24} color="var(--accent, #06b6d4)" />
             </div>
-            <div className="skip-confirm-desc">
+
+            <h3 id="skip-confirm-title" className="reset-modal-title">
+              Skip {mode === 'pomodoro' ? 'Focus Session' : 'Break'}?
+            </h3>
+
+            <p className="reset-modal-desc">
               {mode === 'pomodoro' ? (
-                <>Skipping will <strong>end this focus block</strong> early, log it to your daily stats, and advance to your <strong>{(sessionCount + 1) % (settings?.longBreakInterval || 4) === 0 ? 'Long Break' : 'Short Break'}</strong>.</>
+                <>Ending early will log your progress and advance to your <strong>{(sessionCount + 1) % (settings?.longBreakInterval || 4) === 0 ? 'Long Break' : 'Short Break'}</strong>.</>
               ) : (
-                <>Skipping will <strong>conclude your break immediately</strong> and advance directly to your next focus block.</>
+                <>This will conclude your break immediately and start your next <strong>Focus Session</strong>.</>
               )}
-            </div>
-            <div className="skip-confirm-actions">
-              <button type="button" className="skip-btn-cancel" onClick={() => setShowSkipConfirm(false)}>Keep Going</button>
-              <button type="button" className="skip-btn-confirm" onClick={handleConfirmSkip}>Yes, Skip</button>
+            </p>
+
+            <div className="reset-modal-actions">
+              <button
+                type="button"
+                className="reset-modal-btn-cancel"
+                onClick={() => setShowSkipConfirm(false)}
+              >
+                Keep Going
+              </button>
+              <button
+                type="button"
+                className="reset-modal-btn-confirm skip-confirm"
+                onClick={handleConfirmSkip}
+                autoFocus
+              >
+                Skip Now
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Premium Reset Confirmation Dialog */}
       {showResetConfirm && (
         <div
-          className="drawer-overlay"
-          style={{ zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          className="reset-modal-overlay"
           onClick={() => setShowResetConfirm(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-confirm-title"
         >
           <div
-            className="skip-confirm-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reset-confirm-title"
+            className="reset-modal-card"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="skip-confirm-header">
-              <span className="skip-confirm-icon" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ef4444' }}>
-                ↺
-              </span>
-              <h3 id="reset-confirm-title" className="skip-confirm-title">
-                Reset {mode === 'pomodoro' ? 'Focus Session' : mode === 'stopwatch' ? 'Stopwatch' : 'Timer'}?
-              </h3>
+            <button
+              type="button"
+              className="reset-modal-close-btn"
+              onClick={() => setShowResetConfirm(false)}
+              aria-label="Close dialog"
+            >
+              <IconX size={16} />
+            </button>
+
+            <div className="reset-modal-icon-ring">
+              <IconRotateCcw size={26} color="#ef4444" />
             </div>
-            <div className="skip-confirm-desc">
-              Are you sure you want to <strong>reset the timer</strong> back to the beginning? Any unrecorded progress in this session will be reset.
-            </div>
-            <div className="skip-confirm-actions">
-              <button type="button" className="skip-btn-cancel" onClick={() => setShowResetConfirm(false)}>Keep Going</button>
-              <button type="button" className="skip-btn-confirm" style={{ background: '#ef4444', color: '#fff', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)' }} onClick={handleConfirmReset}>Yes, Reset</button>
+
+            <h3 id="reset-confirm-title" className="reset-modal-title">
+              Reset {mode === 'pomodoro' ? 'Focus Session' : mode === 'stopwatch' ? 'Stopwatch' : 'Timer'}?
+            </h3>
+
+            {/* Session Stats & Progress Card */}
+            {(() => {
+              const elapsed = mode === 'stopwatch' ? timeLeft : Math.max(0, totalDuration - timeLeft);
+              const m = Math.floor(elapsed / 60);
+              const s = elapsed % 60;
+              const timeLabel = m > 0 ? `${m}m ${s}s` : `${s}s`;
+              const pct = mode === 'stopwatch' ? 100 : Math.min(100, Math.round((elapsed / totalDuration) * 100));
+
+              return (
+                <div className="reset-modal-progress-card">
+                  <div className="reset-modal-progress-header">
+                    <div className="reset-modal-time-badge">
+                      <IconClock size={14} />
+                      <span><strong>{timeLabel}</strong> elapsed</span>
+                    </div>
+                    {subject && (
+                      <span className="reset-modal-subject-pill">
+                        {subject}
+                      </span>
+                    )}
+                  </div>
+                  {mode !== 'stopwatch' && (
+                    <div className="reset-modal-progress-bar-track">
+                      <div
+                        className="reset-modal-progress-bar-fill"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  )}
+                  <p className="reset-modal-desc">
+                    {elapsed >= 15 && (mode === 'pomodoro' || mode === 'stopwatch') ? (
+                      <>You've made good progress! You can <strong>save these minutes</strong> to your stats or start fresh.</>
+                    ) : (
+                      <>This will clear current progress and return the timer to <strong>{Math.round(totalDuration / 60)}:00</strong>.</>
+                    )}
+                  </p>
+                </div>
+              );
+            })()}
+
+            <div className="reset-modal-actions-stacked">
+              {(() => {
+                const elapsed = mode === 'stopwatch' ? timeLeft : Math.max(0, totalDuration - timeLeft);
+                const canSave = elapsed >= 15 && (mode === 'pomodoro' || mode === 'stopwatch');
+
+                return (
+                  <>
+                    {canSave && (
+                      <button
+                        type="button"
+                        className="reset-modal-btn-save"
+                        onClick={handleSaveAndReset}
+                      >
+                        <IconSave size={16} />
+                        <span>Save & Reset ({Math.floor(elapsed / 60)}m logged)</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="reset-modal-btn-discard"
+                      onClick={handleConfirmReset}
+                      autoFocus={!canSave}
+                    >
+                      <IconTrash size={16} />
+                      <span>{canSave ? 'Discard & Reset' : 'Reset Timer'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="reset-modal-btn-cancel"
+                      onClick={() => setShowResetConfirm(false)}
+                    >
+                      Keep Going
+                    </button>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -556,7 +687,16 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         isOpen={showNoteModal}
         onClose={() => setShowNoteModal(false)}
         onSave={handleNoteSave}
+        onTriggerRecall={handleTriggerRecall}
         sessionInfo={noteSessionInfo}
+      />
+
+      {/* Active Recall AI Flashcards */}
+      <ActiveRecallModal
+        isOpen={showActiveRecall}
+        onClose={() => setShowActiveRecall(false)}
+        notes={recallContext.notes}
+        subject={recallContext.subject}
       />
 
       {/* Share Card */}

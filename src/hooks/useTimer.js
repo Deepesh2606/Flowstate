@@ -152,18 +152,29 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
         studiedDuration = Math.max(0, durations.pomodoro - timeLeftRef.current);
       }
 
-      // Save to Firestore if user studied for at least 1 second
+      const sessionPayload = {
+        subject,
+        duration: studiedDuration,
+        mode: studyMode,
+        date: new Date().toISOString().split('T')[0],
+        timestamp: Date.now(),
+      };
+
+      // Save to Firestore if signed in, or to localStorage for guests
       if (currentUser && studiedDuration > 0) {
         try {
-          await addSession(currentUser.uid, {
-            subject,
-            duration: studiedDuration,
-            mode: studyMode,
-            date: new Date().toISOString().split('T')[0],
-            timestamp: Date.now(),
-          });
+          await addSession(currentUser.uid, sessionPayload);
         } catch (e) {
           console.error('Failed to save session:', e);
+        }
+      } else if (!currentUser && studiedDuration > 0) {
+        try {
+          const guestSessions = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+          guestSessions.unshift({ id: 'guest_' + Date.now(), ...sessionPayload });
+          localStorage.setItem('flowstate_guest_sessions', JSON.stringify(guestSessions.slice(0, 200)));
+          window.dispatchEvent(new Event('flowstate_guest_sessions_updated'));
+        } catch (e) {
+          console.warn('Failed to save guest session:', e);
         }
       }
 
@@ -289,6 +300,52 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
     }
   }, [durations]);
 
+  const saveAndReset = useCallback(async () => {
+    setIsRunning(false);
+    const currentMode = modeRef.current;
+    let studiedDuration = 0;
+    if (currentMode === MODES.stopwatch) {
+      studiedDuration = timeLeftRef.current;
+      setTimeLeft(0);
+      setStopwatchMs(0);
+    } else {
+      studiedDuration = Math.max(0, (durations[currentMode] || 0) - timeLeftRef.current);
+      setTimeLeft(durations[currentMode]);
+    }
+
+    if (studiedDuration >= 15 && (currentMode === MODES.pomodoro || currentMode === MODES.stopwatch)) {
+      const sessionPayload = {
+        subject,
+        duration: studiedDuration,
+        mode: studyMode,
+        date: new Date().toISOString().split('T')[0],
+        timestamp: Date.now(),
+      };
+
+      if (currentUser) {
+        try {
+          await addSession(currentUser.uid, sessionPayload);
+        } catch (e) {
+          console.error('Failed to save session:', e);
+        }
+      } else {
+        try {
+          const guestSessions = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+          guestSessions.unshift({ id: 'guest_' + Date.now(), ...sessionPayload });
+          localStorage.setItem('flowstate_guest_sessions', JSON.stringify(guestSessions.slice(0, 200)));
+          window.dispatchEvent(new Event('flowstate_guest_sessions_updated'));
+        } catch (e) {
+          console.warn('Failed to save guest session:', e);
+        }
+      }
+
+      const mins = Math.floor(studiedDuration / 60);
+      const secs = studiedDuration % 60;
+      const timeLabel = mins > 0 ? `${mins}m${secs > 0 ? ` ${secs}s` : ''}` : `${secs}s`;
+      toast?.(`Saved ${timeLabel} to stats & reset timer.`, 'success', 3500);
+    }
+  }, [currentUser, subject, studyMode, durations, toast]);
+
   const skip = useCallback(() => {
     setIsRunning(false);
     handleSessionComplete(true);
@@ -305,7 +362,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
   return {
     mode, timeLeft, stopwatchMs, isRunning, sessionCount,
     subject, setSubject, studyMode, setStudyMode,
-    progress, play, pause, reset, skip, switchMode, MODES,
+    progress, play, pause, reset, saveAndReset, skip, switchMode, MODES,
     totalDuration,
   };
 };

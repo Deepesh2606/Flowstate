@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { streamGeminiResponse } from '../../utils/aiChat';
+import { IconTrash, IconX } from '../Icons';
 
 const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const STORAGE_KEY = 'flowstate_chat_history';
@@ -539,36 +540,49 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
       {/* Reset Confirmation Modal */}
       {showResetConfirm && (
         <div
-          className="drawer-overlay"
-          style={{ zIndex: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          className="reset-modal-overlay"
+          style={{ zIndex: 1200 }}
           onClick={() => {
             setShowResetConfirm(false);
             inputRef.current?.focus();
           }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-chat-title"
         >
           <div
-            className="skip-confirm-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reset-chat-title"
+            className="reset-modal-card"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '340px' }}
+            style={{ maxWidth: '360px' }}
           >
-            <div className="skip-confirm-header">
-              <span className="skip-confirm-icon" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ef4444' }}>
-                🗑️
-              </span>
-              <h3 id="reset-chat-title" className="skip-confirm-title" style={{ fontSize: '1.1rem' }}>
-                Reset Conversation?
-              </h3>
+            <button
+              type="button"
+              className="reset-modal-close-btn"
+              onClick={() => {
+                setShowResetConfirm(false);
+                inputRef.current?.focus();
+              }}
+              aria-label="Close dialog"
+            >
+              <IconX size={16} />
+            </button>
+
+            <div className="reset-modal-icon-ring">
+              <IconTrash size={24} color="#ef4444" />
             </div>
-            <div className="skip-confirm-desc">
+
+            <h3 id="reset-chat-title" className="reset-modal-title">
+              Reset Conversation?
+            </h3>
+
+            <p className="reset-modal-desc">
               Are you sure you want to <strong>clear all messages</strong> in this study session? This cannot be undone.
-            </div>
-            <div className="skip-confirm-actions">
+            </p>
+
+            <div className="reset-modal-actions">
               <button
                 type="button"
-                className="skip-btn-cancel"
+                className="reset-modal-btn-cancel"
                 onClick={() => {
                   setShowResetConfirm(false);
                   inputRef.current?.focus();
@@ -578,15 +592,15 @@ const AIChatSidebar = ({ onClose, isLoading: externalLoading }) => {
               </button>
               <button
                 type="button"
-                className="skip-btn-confirm"
-                style={{ background: '#ef4444', color: '#fff', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)' }}
+                className="reset-modal-btn-confirm"
                 onClick={() => {
                   setShowResetConfirm(false);
                   clearChat();
                   inputRef.current?.focus();
                 }}
+                autoFocus
               >
-                Yes, Reset
+                Reset
               </button>
             </div>
           </div>
