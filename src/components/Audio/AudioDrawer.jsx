@@ -284,61 +284,38 @@ const AudioDrawer = ({ onClose, isOpen = true }) => {
   };
 
   const renderMusicServiceSelector = () => (
-    <div className="music-service-selector-bar">
-      <div className="music-service-selector-header">
-        <div className="music-service-selector-label-group">
-          <span className="music-service-selector-label">STREAMING SERVICE</span>
-          <span className="music-service-selector-sub">Select platform</span>
-        </div>
-        <div className="music-service-dropdown-wrapper">
-          <select
-            id="music-service-dropdown"
-            className="music-service-dropdown"
-            value={selectedMusicService}
-            onChange={(e) => handleServiceChange(e.target.value)}
-            aria-label="Select streaming service"
-          >
-            <option value="spotify">Spotify</option>
-            <option value="applemusic">Apple Music</option>
-            <option value="ytmusic">YouTube Music</option>
-            <option value="lofi">Lofi Hip Hop Radio</option>
-          </select>
-        </div>
-      </div>
-      <div className="music-service-chips-grid">
-        {MUSIC_SERVICES.map((srv) => {
-          const isCurrent = selectedMusicService === srv.id;
-          const Icon = srv.icon;
-          let isPlaying = false;
-          if (srv.id === 'spotify') isPlaying = spotifyActive;
-          else if (srv.id === 'applemusic') isPlaying = appleMusicActive;
-          else if (srv.id === 'ytmusic') isPlaying = ytMusicActive;
-          else if (srv.id === 'lofi') isPlaying = lofiPlaying;
+    <div className="music-service-nav" role="tablist" aria-label="Streaming platform">
+      {MUSIC_SERVICES.map((srv) => {
+        const isCurrent = selectedMusicService === srv.id;
+        const Icon = srv.icon;
+        let isPlaying = false;
+        if (srv.id === 'spotify') isPlaying = spotifyActive;
+        else if (srv.id === 'applemusic') isPlaying = appleMusicActive;
+        else if (srv.id === 'ytmusic') isPlaying = ytMusicActive;
+        else if (srv.id === 'lofi') isPlaying = lofiPlaying;
 
-          return (
-            <button
-              key={srv.id}
-              type="button"
-              className={`music-service-card-btn ${isCurrent ? 'active' : ''}`}
-              onClick={() => handleServiceChange(srv.id)}
-              style={{
-                '--srv-color': srv.color,
-                '--srv-bg': srv.bg,
-                '--srv-border': srv.border,
-              }}
-              id={`select-service-${srv.id}`}
-              title={`Switch to ${srv.name}`}
-            >
-              <div className="music-service-card-top">
-                <Icon size={15} color={srv.color} />
-                <span className="music-service-card-tag">{srv.tag}</span>
-              </div>
-              <span className="music-service-card-name">{srv.name}</span>
-              {isPlaying && <span className="music-service-live-dot" />}
-            </button>
-          );
-        })}
-      </div>
+        return (
+          <button
+            key={srv.id}
+            type="button"
+            className={`music-service-pill ${isCurrent ? 'active' : ''}`}
+            onClick={() => handleServiceChange(srv.id)}
+            style={{
+              '--srv-color': srv.color,
+              '--srv-bg': srv.bg,
+              '--srv-border': srv.border,
+            }}
+            id={`select-service-${srv.id}`}
+            title={`Switch to ${srv.name}`}
+            role="tab"
+            aria-selected={isCurrent}
+          >
+            <Icon size={14} color={isCurrent ? srv.color : 'currentColor'} />
+            <span className="music-service-pill-label">{srv.name}</span>
+            {isPlaying && <span className="music-service-live-dot" />}
+          </button>
+        );
+      })}
     </div>
   );
 

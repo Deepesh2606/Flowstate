@@ -10,7 +10,19 @@ const SubjectSelector = ({
   isEditing,
   setIsEditing,
 }) => {
-  const currentTarget = targets.find(t => t.name === studyMode) || (targets.length > 0 ? targets[0] : null);
+  // Find current target: by studyMode or matching subject or first available target
+  const currentTarget =
+    targets.find((t) => t.name === studyMode) ||
+    targets.find((t) => t.subjects && t.subjects.includes(subject)) ||
+    (targets.length > 0 ? targets[0] : null);
+
+  // Active target name to display above the subject
+  const targetName =
+    (studyMode && targets.some((t) => t.name === studyMode))
+      ? studyMode
+      : targets.find((t) => t.subjects && t.subjects.includes(subject))?.name ||
+        (currentTarget?.subjects?.includes(subject) ? currentTarget.name : '');
+
   const [internalEditing, setInternalEditing] = useState(false);
   const [tempSubject, setTempSubject] = useState(subject || '');
   const inputRef = useRef(null);
@@ -35,6 +47,10 @@ const SubjectSelector = ({
     if (e) e.preventDefault();
     const trimmed = tempSubject.trim();
     setSubject(trimmed);
+    // If currentTarget has this subject, ensure studyMode matches it
+    if (currentTarget && currentTarget.subjects?.includes(trimmed) && setStudyMode) {
+      setStudyMode(currentTarget.name);
+    }
     setEditingState(false);
   };
 
@@ -46,23 +62,26 @@ const SubjectSelector = ({
     }
   };
 
-  const handleChipClick = (s) => {
+  const handleChipClick = (s, targetObj) => {
     setSubject(s);
     setTempSubject(s);
+    if (targetObj?.name && setStudyMode) {
+      setStudyMode(targetObj.name);
+    }
     setEditingState(false);
   };
 
   if (editing) {
     return (
       <form onSubmit={handleSubmit} className="focus-center-input-form">
-        {/* Study Mode Selector if targets exist */}
-        {targets.length > 1 && (
-          <div className="mode-toggle" role="group" aria-label="Study mode">
-            {targets.map(t => (
+        {/* Target / Goal Selector if targets exist */}
+        {targets.length > 0 && (
+          <div className="mode-toggle" role="group" aria-label="Study target">
+            {targets.map((t) => (
               <button
                 key={t.id}
                 type="button"
-                className={`mode-toggle-btn ${studyMode === t.name ? 'active' : ''}`}
+                className={`mode-toggle-btn ${studyMode === t.name || (!studyMode && currentTarget?.id === t.id) ? 'active' : ''}`}
                 onClick={() => {
                   setStudyMode(t.name);
                   if (t.subjects && t.subjects.length > 0) {
@@ -71,7 +90,7 @@ const SubjectSelector = ({
                 }}
                 aria-pressed={studyMode === t.name}
               >
-                {t.name}
+                🎯 {t.name}
               </button>
             ))}
           </div>
@@ -110,7 +129,7 @@ const SubjectSelector = ({
           </button>
         </div>
 
-        {/* Quick subject chips if configured */}
+        {/* Quick subject chips if configured for current target */}
         {currentTarget && currentTarget.subjects && currentTarget.subjects.length > 0 && (
           <div className="focus-center-chips" role="group" aria-label="Preset subjects">
             {currentTarget.subjects.map((s) => (
@@ -118,7 +137,7 @@ const SubjectSelector = ({
                 key={s}
                 type="button"
                 className={`focus-center-chip ${tempSubject === s ? 'active' : ''}`}
-                onClick={() => handleChipClick(s)}
+                onClick={() => handleChipClick(s, currentTarget)}
               >
                 {s}
               </button>
@@ -131,33 +150,40 @@ const SubjectSelector = ({
 
   if (subject) {
     return (
-      <div
-        className="current-focus-badge"
-        onClick={() => setEditingState(true)}
-        title="Click to edit focus topic"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && setEditingState(true)}
-        id="current-focus-badge"
-      >
-        <span className="focus-badge-pulse" />
-        <span className="focus-badge-tag">FOCUSING ON</span>
-        <span className="focus-badge-text" title={subject}>{subject}</span>
-        <span className="focus-badge-edit-icon" aria-hidden="true" title="Edit">✎</span>
-        <button
-          type="button"
-          className="focus-badge-clear-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setSubject('');
-            setTempSubject('');
-            setEditingState(false);
-          }}
-          title="Clear topic"
-          aria-label="Clear topic"
+      <div className="current-focus-wrapper">
+        {targetName && (
+          <div className="current-focus-target-label">
+            <span className="current-focus-target-name">🎯 {targetName}</span>
+          </div>
+        )}
+        <div
+          className="current-focus-badge"
+          onClick={() => setEditingState(true)}
+          title="Click to edit focus topic"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && setEditingState(true)}
+          id="current-focus-badge"
         >
-          ✕
-        </button>
+          <span className="focus-badge-pulse" />
+          <span className="focus-badge-tag">FOCUSING ON</span>
+          <span className="focus-badge-text" title={subject}>{subject}</span>
+          <span className="focus-badge-edit-icon" aria-hidden="true" title="Edit">✎</span>
+          <button
+            type="button"
+            className="focus-badge-clear-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSubject('');
+              setTempSubject('');
+              setEditingState(false);
+            }}
+            title="Clear topic"
+            aria-label="Clear topic"
+          >
+            ✕
+          </button>
+        </div>
       </div>
     );
   }

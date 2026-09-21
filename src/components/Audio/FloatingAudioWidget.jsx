@@ -1,61 +1,134 @@
 import React from 'react';
 import { useAudio } from '../../contexts/AudioContext';
-import { IconPause, IconPlay, IconVolume, IconVolumeX } from '../Icons';
+import { IconPause, IconPlay, IconVolume, IconVolumeX, IconSkipBack, IconSkipForward } from '../Icons';
 
 const FloatingAudioWidget = () => {
   const {
     isAnyPlaying,
     activeAmbientLabels,
     lofiPlaying,
+    selectedStreamId,
+    setSelectedStreamId,
+    setCustomVideoId,
+    LOFI_STREAMS,
     spotifyActive,
     selectedSpotifyId,
+    setSelectedSpotifyId,
+    setSpotifyType,
     SPOTIFY_PLAYLISTS,
     ytMusicActive,
     selectedYtMusicId,
+    setSelectedYtMusicId,
+    setYtMusicType,
+    setYtMusicVideoId,
     YT_MUSIC_PLAYLISTS,
     appleMusicActive,
     selectedAppleMusicUrl,
+    setSelectedAppleMusicUrl,
     selectedAppleMusicTitle,
+    setSelectedAppleMusicTitle,
     APPLE_MUSIC_PLAYLISTS,
+    SOUND_PRESETS,
+    applyPreset,
     stopAll,
     setShowAudioDrawer,
     showAudioDrawer,
     isMuted,
     setIsMuted,
-    openMusicPlayer,
   } = useAudio();
 
   if (!isAnyPlaying || showAudioDrawer) {
     return null;
   }
 
-  // Construct label text
+  // Construct minimal, elegant label text
   let label = '';
-  const currentSpotify = SPOTIFY_PLAYLISTS?.find((p) => p.id === selectedSpotifyId)?.title || 'Spotify Player';
+  const currentSpotify = SPOTIFY_PLAYLISTS?.find((p) => p.id === selectedSpotifyId)?.title || 'Spotify';
   const currentYtMusic = YT_MUSIC_PLAYLISTS?.find((p) => p.id === selectedYtMusicId)?.title || 'YouTube Music';
   const currentAppleMusic = APPLE_MUSIC_PLAYLISTS?.find((p) => p.embedUrl === selectedAppleMusicUrl)?.title || selectedAppleMusicTitle || 'Apple Music';
+  const currentLofi = LOFI_STREAMS?.find((s) => s.id === selectedStreamId)?.title || 'Lofi Radio';
 
   if (ytMusicActive && activeAmbientLabels.length > 0) {
-    label = `🔴 ${currentYtMusic} + ${activeAmbientLabels[0]}`;
+    label = `YT Music: ${currentYtMusic} + ${activeAmbientLabels[0]}`;
   } else if (ytMusicActive) {
-    label = `🔴 YT Music: ${currentYtMusic}`;
+    label = `YT Music: ${currentYtMusic}`;
   } else if (appleMusicActive && activeAmbientLabels.length > 0) {
-    label = `🍎 ${currentAppleMusic} + ${activeAmbientLabels[0]}`;
+    label = `Apple Music: ${currentAppleMusic} + ${activeAmbientLabels[0]}`;
   } else if (appleMusicActive) {
-    label = `🍎 Apple Music: ${currentAppleMusic}`;
+    label = `Apple Music: ${currentAppleMusic}`;
   } else if (spotifyActive && activeAmbientLabels.length > 0) {
-    label = `🟢 ${currentSpotify} + ${activeAmbientLabels[0]}`;
+    label = `Spotify: ${currentSpotify} + ${activeAmbientLabels[0]}`;
   } else if (spotifyActive) {
-    label = `🟢 Spotify: ${currentSpotify}`;
+    label = `Spotify: ${currentSpotify}`;
   } else if (lofiPlaying && activeAmbientLabels.length > 0) {
-    label = `Lofi Radio + ${activeAmbientLabels[0]}${
-      activeAmbientLabels.length > 1 ? ` (+${activeAmbientLabels.length - 1})` : ''
-    }`;
+    label = `${currentLofi} + ${activeAmbientLabels[0]}`;
   } else if (lofiPlaying) {
-    label = '📻 Lofi Hip Hop Radio';
+    label = currentLofi;
   } else if (activeAmbientLabels.length > 0) {
     label = activeAmbientLabels.join(' • ');
   }
+
+  const handlePrevious = (e) => {
+    e.stopPropagation();
+    if (ytMusicActive && YT_MUSIC_PLAYLISTS?.length) {
+      const idx = YT_MUSIC_PLAYLISTS.findIndex((p) => p.id === selectedYtMusicId);
+      const nextIdx = (idx - 1 + YT_MUSIC_PLAYLISTS.length) % YT_MUSIC_PLAYLISTS.length;
+      setSelectedYtMusicId(YT_MUSIC_PLAYLISTS[nextIdx].id);
+      setYtMusicType(YT_MUSIC_PLAYLISTS[nextIdx].type || 'playlist');
+      setYtMusicVideoId('');
+    } else if (spotifyActive && SPOTIFY_PLAYLISTS?.length) {
+      const idx = SPOTIFY_PLAYLISTS.findIndex((p) => p.id === selectedSpotifyId);
+      const nextIdx = (idx - 1 + SPOTIFY_PLAYLISTS.length) % SPOTIFY_PLAYLISTS.length;
+      setSelectedSpotifyId(SPOTIFY_PLAYLISTS[nextIdx].id);
+      setSpotifyType(SPOTIFY_PLAYLISTS[nextIdx].type || 'playlist');
+    } else if (appleMusicActive && APPLE_MUSIC_PLAYLISTS?.length) {
+      const idx = APPLE_MUSIC_PLAYLISTS.findIndex((p) => p.embedUrl === selectedAppleMusicUrl);
+      const nextIdx = (idx - 1 + APPLE_MUSIC_PLAYLISTS.length) % APPLE_MUSIC_PLAYLISTS.length;
+      setSelectedAppleMusicUrl(APPLE_MUSIC_PLAYLISTS[nextIdx].embedUrl);
+      setSelectedAppleMusicTitle(APPLE_MUSIC_PLAYLISTS[nextIdx].title);
+    } else if (lofiPlaying && LOFI_STREAMS?.length) {
+      const validStreams = LOFI_STREAMS.filter((s) => s.id !== 'custom');
+      const idx = validStreams.findIndex((s) => s.id === selectedStreamId);
+      const nextIdx = (idx - 1 + validStreams.length) % validStreams.length;
+      setSelectedStreamId(validStreams[nextIdx].id);
+      setCustomVideoId('');
+    } else if (SOUND_PRESETS?.length) {
+      const idx = SOUND_PRESETS.findIndex((p) => p.name === activeAmbientLabels[0]);
+      const nextIdx = (idx - 1 + SOUND_PRESETS.length) % SOUND_PRESETS.length;
+      applyPreset(SOUND_PRESETS[nextIdx]);
+    }
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    if (ytMusicActive && YT_MUSIC_PLAYLISTS?.length) {
+      const idx = YT_MUSIC_PLAYLISTS.findIndex((p) => p.id === selectedYtMusicId);
+      const nextIdx = (idx + 1) % YT_MUSIC_PLAYLISTS.length;
+      setSelectedYtMusicId(YT_MUSIC_PLAYLISTS[nextIdx].id);
+      setYtMusicType(YT_MUSIC_PLAYLISTS[nextIdx].type || 'playlist');
+      setYtMusicVideoId('');
+    } else if (spotifyActive && SPOTIFY_PLAYLISTS?.length) {
+      const idx = SPOTIFY_PLAYLISTS.findIndex((p) => p.id === selectedSpotifyId);
+      const nextIdx = (idx + 1) % SPOTIFY_PLAYLISTS.length;
+      setSelectedSpotifyId(SPOTIFY_PLAYLISTS[nextIdx].id);
+      setSpotifyType(SPOTIFY_PLAYLISTS[nextIdx].type || 'playlist');
+    } else if (appleMusicActive && APPLE_MUSIC_PLAYLISTS?.length) {
+      const idx = APPLE_MUSIC_PLAYLISTS.findIndex((p) => p.embedUrl === selectedAppleMusicUrl);
+      const nextIdx = (idx + 1) % APPLE_MUSIC_PLAYLISTS.length;
+      setSelectedAppleMusicUrl(APPLE_MUSIC_PLAYLISTS[nextIdx].embedUrl);
+      setSelectedAppleMusicTitle(APPLE_MUSIC_PLAYLISTS[nextIdx].title);
+    } else if (lofiPlaying && LOFI_STREAMS?.length) {
+      const validStreams = LOFI_STREAMS.filter((s) => s.id !== 'custom');
+      const idx = validStreams.findIndex((s) => s.id === selectedStreamId);
+      const nextIdx = (idx + 1) % validStreams.length;
+      setSelectedStreamId(validStreams[nextIdx].id);
+      setCustomVideoId('');
+    } else if (SOUND_PRESETS?.length) {
+      const idx = SOUND_PRESETS.findIndex((p) => p.name === activeAmbientLabels[0]);
+      const nextIdx = (idx + 1) % SOUND_PRESETS.length;
+      applyPreset(SOUND_PRESETS[nextIdx]);
+    }
+  };
 
   return (
     <div
@@ -73,34 +146,27 @@ const FloatingAudioWidget = () => {
 
       <span className="mini-pill-text">{label}</span>
 
-      {/* Quick Service Switchers */}
-      <div className="mini-pill-services" onClick={(e) => e.stopPropagation()}>
+      {/* Track Skip Controls (Previous / Next) */}
+      <div className="mini-pill-controls" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
-          className={`mini-pill-srv-btn ${spotifyActive ? 'active' : ''}`}
-          onClick={() => openMusicPlayer('spotify')}
-          title="Switch to Spotify"
-          aria-label="Switch to Spotify"
+          className="mini-pill-btn"
+          onClick={handlePrevious}
+          title="Previous Track / Playlist"
+          aria-label="Previous Track / Playlist"
+          id="mini-pill-prev-btn"
         >
-          <span style={{ fontSize: '11px' }}>🟢</span>
+          <IconSkipBack size={12} />
         </button>
         <button
           type="button"
-          className={`mini-pill-srv-btn ${appleMusicActive ? 'active' : ''}`}
-          onClick={() => openMusicPlayer('applemusic')}
-          title="Switch to Apple Music"
-          aria-label="Switch to Apple Music"
+          className="mini-pill-btn"
+          onClick={handleNext}
+          title="Next Track / Playlist"
+          aria-label="Next Track / Playlist"
+          id="mini-pill-next-btn"
         >
-          <span style={{ fontSize: '11px' }}>🍎</span>
-        </button>
-        <button
-          type="button"
-          className={`mini-pill-srv-btn ${ytMusicActive ? 'active' : ''}`}
-          onClick={() => openMusicPlayer('ytmusic')}
-          title="Switch to YouTube Music"
-          aria-label="Switch to YouTube Music"
-        >
-          <span style={{ fontSize: '11px' }}>🔴</span>
+          <IconSkipForward size={12} />
         </button>
       </div>
 
@@ -112,18 +178,20 @@ const FloatingAudioWidget = () => {
         }}
         title={isMuted ? 'Unmute' : 'Mute'}
         id="mini-pill-mute-btn"
+        aria-label={isMuted ? 'Unmute' : 'Mute'}
       >
         {isMuted ? <IconVolumeX size={13} /> : <IconVolume size={13} />}
       </button>
 
       <button
-        className="mini-pill-btn"
+        className="mini-pill-btn mini-pill-stop-btn"
         onClick={(e) => {
           e.stopPropagation();
           stopAll();
         }}
         title="Stop All"
         id="mini-pill-stop-btn"
+        aria-label="Stop audio"
       >
         <IconPause size={12} />
       </button>

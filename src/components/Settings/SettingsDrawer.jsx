@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
-import { IconSettings, IconFocus, IconInfo, IconBook, IconMac, IconSun, IconMoon } from '../Icons';
+import { IconSettings, IconFocus, IconInfo, IconBook, IconMac, IconSun, IconMoon, IconTrash } from '../Icons';
 import { playChimeStyle } from '../../hooks/useTimer';
 
 // ─── App Themes ───────────────────────────────────────────────────────────────
@@ -127,12 +127,16 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
     }
   }, [settings]);
 
+  // Settings Category Tab
+  const [activeSettingsTab, setActiveSettingsTab] = useState('timer');
+
   // Study Targets
   const initialTargets = (settings?.targets || []).filter(t => t.name !== 'SSC CGL');
   const [targetsRaw, setTargetsRaw] = useState(initialTargets.map(t => ({
     ...t,
     subjectsStr: (t.subjects || []).join(', ')
   })));
+  const [newSubjectInputs, setNewSubjectInputs] = useState({});
 
   const handleUpdateTarget = (index, field, value) => {
     const newTargets = [...targetsRaw];
@@ -141,12 +145,38 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
   };
 
   const handleAddTarget = () => {
-    setTargetsRaw([...targetsRaw, { id: Date.now().toString(), name: 'New Target', subjectsStr: '' }]);
+    const newTargets = [...targetsRaw, { id: Date.now().toString(), name: 'New Target', subjectsStr: '' }];
+    setTargetsRaw(newTargets);
   };
 
   const handleRemoveTarget = (index) => {
     const newTargets = [...targetsRaw];
     newTargets.splice(index, 1);
+    setTargetsRaw(newTargets);
+  };
+
+  const handleAddSubjectToTarget = (index, subject) => {
+    const trimmed = (subject || '').trim();
+    if (!trimmed) return;
+    const newTargets = [...targetsRaw];
+    const subs = newTargets[index].subjectsStr
+      ? newTargets[index].subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+    if (!subs.includes(trimmed)) {
+      subs.push(trimmed);
+      newTargets[index].subjectsStr = subs.join(', ');
+      setTargetsRaw(newTargets);
+    }
+    setNewSubjectInputs(prev => ({ ...prev, [index]: '' }));
+  };
+
+  const handleRemoveSubjectFromTarget = (index, subjectToRemove) => {
+    const newTargets = [...targetsRaw];
+    const subs = newTargets[index].subjectsStr
+      ? newTargets[index].subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+    const filtered = subs.filter(s => s !== subjectToRemove);
+    newTargets[index].subjectsStr = filtered.join(', ');
     setTargetsRaw(newTargets);
   };
 
@@ -339,522 +369,656 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
           </div>
         </div>
 
-        {/* ── Timer Durations ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconSettings size={14} /> Timer Durations</div>
-
-          <div className="setting-item">
-            <label className="setting-label" htmlFor="setting-pomodoro">Focus (minutes)</label>
-            <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro - 1)}>−</button>
-              <input
-                id="setting-pomodoro"
-                className="setting-input setting-input-center"
-                type="number" min="1" max="90"
-                value={pomodoro}
-                onChange={(e) => handleDurationsChange('pomodoro', e.target.value)}
-              />
-              <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro + 1)}>+</button>
-            </div>
-            {/* Quick preset pills */}
-            <div className="setting-preset-pills">
-              {[25, 45, 50, 60].map(mins => (
-                <button
-                  key={mins}
-                  type="button"
-                  className={`setting-preset-pill ${pomodoro === mins ? 'active' : ''}`}
-                  onClick={() => handleDurationsChange('pomodoro', mins)}
-                >
-                  {mins}m
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="setting-item">
-            <label className="setting-label" htmlFor="setting-short-break">Short Break (minutes)</label>
-            <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak - 1)}>−</button>
-              <input
-                id="setting-short-break"
-                className="setting-input setting-input-center"
-                type="number" min="1" max="30"
-                value={shortBreak}
-                onChange={(e) => handleDurationsChange('shortBreak', e.target.value)}
-              />
-              <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak + 1)}>+</button>
-            </div>
-            {/* Quick preset pills */}
-            <div className="setting-preset-pills">
-              {[5, 10, 15].map(mins => (
-                <button
-                  key={mins}
-                  type="button"
-                  className={`setting-preset-pill ${shortBreak === mins ? 'active' : ''}`}
-                  onClick={() => handleDurationsChange('shortBreak', mins)}
-                >
-                  {mins}m
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="setting-item">
-            <label className="setting-label" htmlFor="setting-long-break">Long Break (minutes)</label>
-            <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak - 1)}>−</button>
-              <input
-                id="setting-long-break"
-                className="setting-input setting-input-center"
-                type="number" min="1" max="60"
-                value={longBreak}
-                onChange={(e) => handleDurationsChange('longBreak', e.target.value)}
-              />
-              <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak + 1)}>+</button>
-            </div>
-            {/* Quick preset pills */}
-            <div className="setting-preset-pills">
-              {[15, 20, 30].map(mins => (
-                <button
-                  key={mins}
-                  type="button"
-                  className={`setting-preset-pill ${longBreak === mins ? 'active' : ''}`}
-                  onClick={() => handleDurationsChange('longBreak', mins)}
-                >
-                  {mins}m
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="setting-item">
-            <label className="setting-label" htmlFor="setting-interval">Long Break Every (sessions)</label>
-            <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => setLongBreakInterval(Math.max(1, longBreakInterval - 1))}>−</button>
-              <input
-                id="setting-interval"
-                className="setting-input setting-input-center"
-                type="number" min="1" max="10"
-                value={longBreakInterval}
-                onChange={(e) => setLongBreakInterval(Number(e.target.value))}
-              />
-              <button className="setting-stepper" onClick={() => setLongBreakInterval(Math.min(10, longBreakInterval + 1))}>+</button>
-            </div>
-            <div className="setting-preset-pills">
-              {[2, 4, 6].map(num => (
-                <button
-                  key={num}
-                  type="button"
-                  className={`setting-preset-pill ${longBreakInterval === num ? 'active' : ''}`}
-                  onClick={() => setLongBreakInterval(num)}
-                >
-                  {num} sess
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="setting-item">
-            <label className="setting-label" htmlFor="setting-goal">Daily Session Goal</label>
-            <div className="setting-input-row">
-              <button className="setting-stepper" onClick={() => setDailyGoal(Math.max(1, dailyGoal - 1))}>−</button>
-              <input
-                id="setting-goal"
-                className="setting-input setting-input-center"
-                type="number" min="1" max="20"
-                value={dailyGoal}
-                onChange={(e) => setDailyGoal(Number(e.target.value))}
-              />
-              <button className="setting-stepper" onClick={() => setDailyGoal(Math.min(20, dailyGoal + 1))}>+</button>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Study Targets ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconBook size={14} /> Study Targets</div>
-          {targetsRaw.map((t, i) => (
-            <div key={t.id} className="setting-item" style={{ background: 'var(--glass-bg-strong)', padding: '12px', borderRadius: '8px', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <input
-                  className="setting-input"
-                  style={{ flex: 1, marginRight: '8px', fontWeight: 'bold' }}
-                  value={t.name}
-                  onChange={e => handleUpdateTarget(i, 'name', e.target.value)}
-                  placeholder="Target Name (e.g. UPSC)"
-                />
-                <button className="drawer-close" style={{ position: 'static' }} onClick={() => handleRemoveTarget(i)} aria-label="Remove Target">✕</button>
-              </div>
-              <input
-                className="setting-input"
-                style={{ width: '100%' }}
-                value={t.subjectsStr}
-                onChange={e => handleUpdateTarget(i, 'subjectsStr', e.target.value)}
-                placeholder="Subjects (comma separated)"
-              />
-            </div>
+        {/* ── Category Navigation Tabs ── */}
+        <div className="settings-nav-tabs" role="tablist" aria-label="Settings categories">
+          {[
+            { id: 'timer', label: 'Timer', icon: '⏱️' },
+            { id: 'targets', label: 'Targets', icon: '🎯' },
+            { id: 'display', label: 'Display', icon: '🎨' },
+            { id: 'system', label: 'System', icon: '⚙️' },
+            { id: 'all', label: 'All', icon: '📋' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`settings-nav-tab ${activeSettingsTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveSettingsTab(tab.id)}
+              role="tab"
+              aria-selected={activeSettingsTab === tab.id}
+              id={`tab-settings-${tab.id}`}
+            >
+              <span className="settings-nav-tab-icon">{tab.icon}</span>
+              <span className="settings-nav-tab-label">{tab.label}</span>
+            </button>
           ))}
-          <button className="pill" style={{ width: '100%', marginTop: '4px' }} onClick={handleAddTarget}>
-            + Add Target
-          </button>
         </div>
 
-        {/* ── Behaviour ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconFocus size={14} /> Behaviour</div>
+        {/* ══════════════════ 1. TIMER CATEGORY ══════════════════ */}
+        {(activeSettingsTab === 'timer' || activeSettingsTab === 'all') && (
+          <>
+            {/* Timer Durations */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconSettings size={14} /> Timer Durations</div>
 
-          <Toggle
-            id="toggle-auto-breaks"
-            checked={autoStartBreaks}
-            onChange={(val) => handleToggleChange('autoStartBreaks', setAutoStartBreaks, val)}
-            label="Auto-start Breaks"
-            sub="Breaks begin automatically after focus ends"
-          />
-          <Toggle
-            id="toggle-auto-pomodoros"
-            checked={autoStartPomodoros}
-            onChange={(val) => handleToggleChange('autoStartPomodoros', setAutoStartPomodoros, val)}
-            label="Auto-start Focus"
-            sub="Focus timer starts after break ends"
-          />
-        </div>
-
-        {/* ── Sound & Notifications ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconInfo size={14} /> Sound & Notifications</div>
-
-          <Toggle
-            id="toggle-sound"
-            checked={soundEnabled}
-            onChange={(val) => handleToggleChange('soundEnabled', setSoundEnabled, val)}
-            label="Sound Effects"
-            sub="Chime when session completes"
-          />
-          <Toggle
-            id="toggle-notify"
-            checked={notifyOnComplete}
-            onChange={(val) => handleToggleChange('notifyOnComplete', setNotifyOnComplete, val)}
-            label="Toast Notifications"
-            sub="Show alerts for session events"
-          />
-        </div>
-
-        {/* ── Theme Engine ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconSettings size={14} /> App Theme</div>
-          <div className="theme-swatch-row">
-            {APP_THEMES.map(t => (
-              <button
-                key={t.id}
-                type="button"
-                className={`theme-swatch ${appTheme === t.id ? 'active' : ''}`}
-                style={{ '--swatch-color': t.accent }}
-                onClick={() => handleAppThemeChange(t.id)}
-                title={t.label}
-              >
-                <span className="theme-swatch-dot" style={{ background: t.accent }} />
-                <span className="theme-swatch-label">{t.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Timer Presets ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconFocus size={14} /> Timer Presets</div>
-          <div className="presets-grid">
-            {presets.map((preset, i) => (
-              <div key={i} className="preset-card">
-                <div className="preset-name">{preset.name}</div>
-                <div className="preset-times">{preset.pomodoro}m / {preset.shortBreak}m / {preset.longBreak}m</div>
-                <button
-                  type="button"
-                  className="preset-apply-btn"
-                  onClick={() => handlePresetApply(preset)}
-                >
-                  Apply
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Chime Style ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconInfo size={14} /> Timer Chime</div>
-          <div className="chime-options-row">
-            {CHIME_OPTIONS.map(c => (
-              <button
-                key={c.id}
-                type="button"
-                className={`chime-option-btn ${chimeStyle === c.id ? 'active' : ''}`}
-                onClick={() => handleChimeChange(c.id)}
-                title={`Preview ${c.label} chime`}
-              >
-                <span>{c.icon}</span>
-                <span>{c.label}</span>
-              </button>
-            ))}
-          </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-            Click to preview. Plays when your session completes.
-          </div>
-        </div>
-
-        {/* ── Motivational Quotes ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconInfo size={14} /> Motivation</div>
-          <Toggle
-            id="toggle-show-quotes"
-            checked={showQuotes}
-            onChange={(val) => { setShowQuotes(val); applyRealtime({ showQuotes: val }); }}
-            label="Motivational Quotes"
-            sub="Show an inspiring quote before each focus session"
-          />
-        </div>
-
-        {/* ── Customization ── */}
-        <div className="settings-section">
-          <div className="settings-section-title"><IconSettings size={14} /> Customization</div>
-
-          {/* Clock Style (Digital vs Flip Clock) */}
-          <div className="setting-item" style={{ marginBottom: '14px' }}>
-            <label className="setting-label" style={{ marginBottom: '6px' }}>Clock Style</label>
-            <div className="setting-segmented-group">
-              <button
-                type="button"
-                className={`setting-segmented-btn ${clockStyle === 'digital' ? 'active' : ''}`}
-                onClick={() => handleClockStyleChange('digital')}
-              >
-                Digital
-              </button>
-              <button
-                type="button"
-                className={`setting-segmented-btn ${clockStyle === 'flip' ? 'active' : ''}`}
-                onClick={() => handleClockStyleChange('flip')}
-              >
-                Flip Clock
-              </button>
-            </div>
-          </div>
-
-          {/* Time Format (12h vs 24h) */}
-          <div className="setting-item" style={{ marginBottom: '14px' }}>
-            <label className="setting-label" style={{ marginBottom: '6px' }}>Time Format</label>
-            <div className="setting-segmented-group">
-              <button
-                type="button"
-                className={`setting-segmented-btn ${clockFormat === '12h' ? 'active' : ''}`}
-                onClick={() => handleClockFormatChange('12h')}
-              >
-                12-Hour
-              </button>
-              <button
-                type="button"
-                className={`setting-segmented-btn ${clockFormat === '24h' ? 'active' : ''}`}
-                onClick={() => handleClockFormatChange('24h')}
-              >
-                24-Hour
-              </button>
-            </div>
-          </div>
-
-          {/* Seconds Toggle */}
-          <Toggle
-            id="toggle-show-seconds"
-            checked={showSeconds}
-            onChange={handleShowSecondsChange}
-            label="Show Seconds"
-            sub="Display seconds countdown on the main clock"
-          />
-
-          {/* Clock Color Mode (Auto Wallpaper Contrast vs Custom Color) */}
-          <div className="setting-item" style={{ marginTop: '12px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <label className="setting-label" style={{ marginBottom: 0 }}>Clock Color</label>
-              <div className="setting-segmented-group" style={{ width: '150px' }}>
-                <button
-                  type="button"
-                  className={`setting-segmented-btn ${autoClockColor ? 'active' : ''}`}
-                  onClick={() => handleAutoClockColorChange(true)}
-                >
-                  Auto
-                </button>
-                <button
-                  type="button"
-                  className={`setting-segmented-btn ${!autoClockColor ? 'active' : ''}`}
-                  onClick={() => handleAutoClockColorChange(false)}
-                >
-                  Custom
-                </button>
-              </div>
-            </div>
-
-            {autoClockColor ? (
-              <div className="auto-color-badge">
-                <span className="auto-color-indicator" />
-                <span>Auto-adjusts contrast and color to match wallpaper</span>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Pick Custom Color</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="setting-item">
+                <label className="setting-label" htmlFor="setting-pomodoro">Focus (minutes)</label>
+                <div className="setting-input-row">
+                  <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro - 1)}>−</button>
                   <input
-                    id="setting-clock-color"
-                    type="color"
-                    value={clockColor}
-                    onChange={(e) => handleClockColorChange(e.target.value)}
-                    style={{ 
-                      width: '32px', height: '32px', padding: '0', 
-                      border: 'none', borderRadius: '4px', cursor: 'pointer',
-                      background: 'none'
-                    }}
+                    id="setting-pomodoro"
+                    className="setting-input setting-input-center"
+                    type="number" min="1" max="90"
+                    value={pomodoro}
+                    onChange={(e) => handleDurationsChange('pomodoro', e.target.value)}
                   />
-                  <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                    {clockColor.toUpperCase()}
-                  </span>
+                  <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro + 1)}>+</button>
+                </div>
+                {/* Quick preset pills */}
+                <div className="setting-preset-pills">
+                  {[25, 45, 50, 60].map(mins => (
+                    <button
+                      key={mins}
+                      type="button"
+                      className={`setting-preset-pill ${pomodoro === mins ? 'active' : ''}`}
+                      onClick={() => handleDurationsChange('pomodoro', mins)}
+                    >
+                      {mins}m
+                    </button>
+                  ))}
                 </div>
               </div>
+
+              <div className="setting-item">
+                <label className="setting-label" htmlFor="setting-short-break">Short Break (minutes)</label>
+                <div className="setting-input-row">
+                  <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak - 1)}>−</button>
+                  <input
+                    id="setting-short-break"
+                    className="setting-input setting-input-center"
+                    type="number" min="1" max="30"
+                    value={shortBreak}
+                    onChange={(e) => handleDurationsChange('shortBreak', e.target.value)}
+                  />
+                  <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak + 1)}>+</button>
+                </div>
+                {/* Quick preset pills */}
+                <div className="setting-preset-pills">
+                  {[5, 10, 15].map(mins => (
+                    <button
+                      key={mins}
+                      type="button"
+                      className={`setting-preset-pill ${shortBreak === mins ? 'active' : ''}`}
+                      onClick={() => handleDurationsChange('shortBreak', mins)}
+                    >
+                      {mins}m
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label className="setting-label" htmlFor="setting-long-break">Long Break (minutes)</label>
+                <div className="setting-input-row">
+                  <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak - 1)}>−</button>
+                  <input
+                    id="setting-long-break"
+                    className="setting-input setting-input-center"
+                    type="number" min="1" max="60"
+                    value={longBreak}
+                    onChange={(e) => handleDurationsChange('longBreak', e.target.value)}
+                  />
+                  <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak + 1)}>+</button>
+                </div>
+                {/* Quick preset pills */}
+                <div className="setting-preset-pills">
+                  {[15, 20, 30].map(mins => (
+                    <button
+                      key={mins}
+                      type="button"
+                      className={`setting-preset-pill ${longBreak === mins ? 'active' : ''}`}
+                      onClick={() => handleDurationsChange('longBreak', mins)}
+                    >
+                      {mins}m
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label className="setting-label" htmlFor="setting-interval">Long Break Every (sessions)</label>
+                <div className="setting-input-row">
+                  <button className="setting-stepper" onClick={() => setLongBreakInterval(Math.max(1, longBreakInterval - 1))}>−</button>
+                  <input
+                    id="setting-interval"
+                    className="setting-input setting-input-center"
+                    type="number" min="1" max="10"
+                    value={longBreakInterval}
+                    onChange={(e) => setLongBreakInterval(Number(e.target.value))}
+                  />
+                  <button className="setting-stepper" onClick={() => setLongBreakInterval(Math.min(10, longBreakInterval + 1))}>+</button>
+                </div>
+                <div className="setting-preset-pills">
+                  {[2, 4, 6].map(num => (
+                    <button
+                      key={num}
+                      type="button"
+                      className={`setting-preset-pill ${longBreakInterval === num ? 'active' : ''}`}
+                      onClick={() => setLongBreakInterval(num)}
+                    >
+                      {num} sess
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="setting-item">
+                <label className="setting-label" htmlFor="setting-goal">Daily Session Goal</label>
+                <div className="setting-input-row">
+                  <button className="setting-stepper" onClick={() => setDailyGoal(Math.max(1, dailyGoal - 1))}>−</button>
+                  <input
+                    id="setting-goal"
+                    className="setting-input setting-input-center"
+                    type="number" min="1" max="20"
+                    value={dailyGoal}
+                    onChange={(e) => setDailyGoal(Number(e.target.value))}
+                  />
+                  <button className="setting-stepper" onClick={() => setDailyGoal(Math.min(20, dailyGoal + 1))}>+</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Timer Presets */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconFocus size={14} /> Timer Presets</div>
+              <div className="presets-grid">
+                {presets.map((preset, i) => (
+                  <div key={i} className="preset-card">
+                    <div className="preset-name">{preset.name}</div>
+                    <div className="preset-times">{preset.pomodoro}m / {preset.shortBreak}m / {preset.longBreak}m</div>
+                    <button
+                      type="button"
+                      className="preset-apply-btn"
+                      onClick={() => handlePresetApply(preset)}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Behaviour */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconFocus size={14} /> Behaviour</div>
+
+              <Toggle
+                id="toggle-auto-breaks"
+                checked={autoStartBreaks}
+                onChange={(val) => handleToggleChange('autoStartBreaks', setAutoStartBreaks, val)}
+                label="Auto-start Breaks"
+                sub="Breaks begin automatically after focus ends"
+              />
+              <Toggle
+                id="toggle-auto-pomodoros"
+                checked={autoStartPomodoros}
+                onChange={(val) => handleToggleChange('autoStartPomodoros', setAutoStartPomodoros, val)}
+                label="Auto-start Focus"
+                sub="Focus timer starts after break ends"
+              />
+            </div>
+          </>
+        )}
+
+        {/* ══════════════════ 2. TARGETS CATEGORY ══════════════════ */}
+        {(activeSettingsTab === 'targets' || activeSettingsTab === 'all') && (
+          <div className="settings-section">
+            <div className="settings-section-title"><IconBook size={14} /> Study Targets & Subjects</div>
+            <p className="settings-section-sub">
+              Create targets (exams, courses, goals) and add subjects to focus on during your study sessions.
+            </p>
+
+            {targetsRaw.length === 0 ? (
+              <div className="settings-empty-targets">
+                <div className="settings-empty-icon">🎯</div>
+                <div className="settings-empty-title">No Study Targets Yet</div>
+                <div className="settings-empty-desc">
+                  Add your targets (e.g. UPSC, GATE, Finals) and list the subjects you want to study.
+                </div>
+              </div>
+            ) : (
+              <div className="settings-targets-list">
+                {targetsRaw.map((t, i) => {
+                  const subjectList = t.subjectsStr
+                    ? t.subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+                    : [];
+                  const currentInput = newSubjectInputs[i] || '';
+
+                  return (
+                    <div key={t.id || i} className="settings-target-card">
+                      <div className="settings-target-card-header">
+                        <div className="settings-target-name-wrap">
+                          <span className="settings-target-badge-icon">🎯</span>
+                          <input
+                            className="settings-target-name-input"
+                            value={t.name}
+                            onChange={(e) => handleUpdateTarget(i, 'name', e.target.value)}
+                            placeholder="Target Name (e.g. UPSC)"
+                            aria-label="Target Name"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="settings-target-remove-btn"
+                          onClick={() => handleRemoveTarget(i)}
+                          aria-label={`Delete ${t.name || 'target'}`}
+                          title="Delete target"
+                        >
+                          <IconTrash size={14} />
+                        </button>
+                      </div>
+
+                      {/* Subjects List & Chips */}
+                      <div className="settings-target-subjects-block">
+                        <div className="settings-target-subjects-header">
+                          <span className="settings-target-sub-label">SUBJECTS</span>
+                          <span className="settings-target-count-badge">
+                            {subjectList.length} {subjectList.length === 1 ? 'subject' : 'subjects'}
+                          </span>
+                        </div>
+
+                        <div className="settings-subject-chips">
+                          {subjectList.map((subj) => (
+                            <span key={subj} className="settings-subject-chip">
+                              <span className="settings-subject-chip-text">{subj}</span>
+                              <button
+                                type="button"
+                                className="settings-subject-chip-del"
+                                onClick={() => handleRemoveSubjectFromTarget(i, subj)}
+                                title={`Remove ${subj}`}
+                                aria-label={`Remove ${subj}`}
+                              >
+                                ✕
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Add Subject Row */}
+                        <div className="settings-add-subject-row">
+                          <input
+                            className="settings-add-subject-input"
+                            placeholder="Add subject (press Enter)..."
+                            value={currentInput}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val.includes(',')) {
+                                const parts = val.split(',');
+                                parts.slice(0, -1).forEach(p => handleAddSubjectToTarget(i, p));
+                                setNewSubjectInputs(prev => ({ ...prev, [i]: parts[parts.length - 1] }));
+                              } else {
+                                setNewSubjectInputs(prev => ({ ...prev, [i]: val }));
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddSubjectToTarget(i, currentInput);
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="settings-add-subject-btn"
+                            onClick={() => handleAddSubjectToTarget(i, currentInput)}
+                            disabled={!currentInput.trim()}
+                          >
+                            + Add
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
-          </div>
 
-          {/* Clock Font */}
-          <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <label className="setting-label" htmlFor="setting-clock-font" style={{ marginBottom: 0 }}>
-              Clock Font
-            </label>
-            <select
-              id="setting-clock-font"
-              className="setting-input"
-              style={{ width: '150px', padding: '6px' }}
-              value={clockFont}
-              onChange={(e) => handleClockFontChange(e.target.value)}
-            >
-              <option value="'Inter', system-ui, sans-serif">Inter (Default)</option>
-              <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
-              <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
-              <option value="'Playfair Display', serif">Playfair Display</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Desktop & Mac Dock Section */}
-        <div className="settings-section">
-          <div className="settings-section-title">
-            <IconMac size={16} /> Desktop & Mac Dock
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
               type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                if (onOpenInstall) onOpenInstall();
-                onClose();
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '10px 14px',
-                fontSize: '13px',
-                fontWeight: 600,
-                width: '100%',
-                borderRadius: '8px',
-                border: '1px solid rgba(6, 182, 212, 0.3)',
-                background: 'rgba(6, 182, 212, 0.08)'
-              }}
-              id="settings-install-dock-btn"
+              className="settings-add-target-btn"
+              onClick={handleAddTarget}
+              id="settings-add-target-btn"
             >
-              <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
+              <span>+ Add Target</span>
             </button>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center' }}>
-              Pin to your Mac Dock & launch as a native standalone app
-            </span>
           </div>
-        </div>
+        )}
 
-        {/* Gemini AI Key */}
-        <div className="settings-section">
-          <div className="settings-section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
-            Gemini AI Key
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-              Add your own key so the AI chat works for everyone using your deployment.{' '}
-              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                Get a free key →
-              </a>
-            </p>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <input
-                  id="settings-gemini-key"
-                  type={showGeminiKey ? 'text' : 'password'}
-                  className="settings-input"
-                  value={geminiKey}
-                  onChange={(e) => setGeminiKey(e.target.value)}
-                  placeholder="AIzaSy..."
-                  style={{ width: '100%', paddingRight: '36px', fontFamily: geminiKey ? 'monospace' : 'inherit', fontSize: '12px' }}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
+        {/* ══════════════════ 3. DISPLAY CATEGORY ══════════════════ */}
+        {(activeSettingsTab === 'display' || activeSettingsTab === 'all') && (
+          <>
+            {/* App Theme */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconSettings size={14} /> App Theme</div>
+              <div className="theme-swatch-row">
+                {APP_THEMES.map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={`theme-swatch ${appTheme === t.id ? 'active' : ''}`}
+                    style={{ '--swatch-color': t.accent }}
+                    onClick={() => handleAppThemeChange(t.id)}
+                    title={t.label}
+                  >
+                    <span className="theme-swatch-dot" style={{ background: t.accent }} />
+                    <span className="theme-swatch-label">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Customization */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconSettings size={14} /> Clock Customization</div>
+
+              {/* Clock Style (Digital vs Flip Clock) */}
+              <div className="setting-item" style={{ marginBottom: '14px' }}>
+                <label className="setting-label" style={{ marginBottom: '6px' }}>Clock Style</label>
+                <div className="setting-segmented-group">
+                  <button
+                    type="button"
+                    className={`setting-segmented-btn ${clockStyle === 'digital' ? 'active' : ''}`}
+                    onClick={() => handleClockStyleChange('digital')}
+                  >
+                    Digital
+                  </button>
+                  <button
+                    type="button"
+                    className={`setting-segmented-btn ${clockStyle === 'flip' ? 'active' : ''}`}
+                    onClick={() => handleClockStyleChange('flip')}
+                  >
+                    Flip Clock
+                  </button>
+                </div>
+              </div>
+
+              {/* Time Format (12h vs 24h) */}
+              <div className="setting-item" style={{ marginBottom: '14px' }}>
+                <label className="setting-label" style={{ marginBottom: '6px' }}>Time Format</label>
+                <div className="setting-segmented-group">
+                  <button
+                    type="button"
+                    className={`setting-segmented-btn ${clockFormat === '12h' ? 'active' : ''}`}
+                    onClick={() => handleClockFormatChange('12h')}
+                  >
+                    12-Hour
+                  </button>
+                  <button
+                    type="button"
+                    className={`setting-segmented-btn ${clockFormat === '24h' ? 'active' : ''}`}
+                    onClick={() => handleClockFormatChange('24h')}
+                  >
+                    24-Hour
+                  </button>
+                </div>
+              </div>
+
+              {/* Seconds Toggle */}
+              <Toggle
+                id="toggle-show-seconds"
+                checked={showSeconds}
+                onChange={handleShowSecondsChange}
+                label="Show Seconds"
+                sub="Display seconds countdown on the main clock"
+              />
+
+              {/* Clock Color Mode (Auto Wallpaper Contrast vs Custom Color) */}
+              <div className="setting-item" style={{ marginTop: '12px', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <label className="setting-label" style={{ marginBottom: 0 }}>Clock Color</label>
+                  <div className="setting-segmented-group" style={{ width: '150px' }}>
+                    <button
+                      type="button"
+                      className={`setting-segmented-btn ${autoClockColor ? 'active' : ''}`}
+                      onClick={() => handleAutoClockColorChange(true)}
+                    >
+                      Auto
+                    </button>
+                    <button
+                      type="button"
+                      className={`setting-segmented-btn ${!autoClockColor ? 'active' : ''}`}
+                      onClick={() => handleAutoClockColorChange(false)}
+                    >
+                      Custom
+                    </button>
+                  </div>
+                </div>
+
+                {autoClockColor ? (
+                  <div className="auto-color-badge">
+                    <span className="auto-color-indicator" />
+                    <span>Auto-adjusts contrast and color to match wallpaper</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Pick Custom Color</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        id="setting-clock-color"
+                        type="color"
+                        value={clockColor}
+                        onChange={(e) => handleClockColorChange(e.target.value)}
+                        style={{ 
+                          width: '32px', height: '32px', padding: '0', 
+                          border: 'none', borderRadius: '4px', cursor: 'pointer',
+                          background: 'none'
+                        }}
+                      />
+                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                        {clockColor.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Clock Font */}
+              <div className="setting-item" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label className="setting-label" htmlFor="setting-clock-font" style={{ marginBottom: 0 }}>
+                  Clock Font
+                </label>
+                <select
+                  id="setting-clock-font"
+                  className="setting-input"
+                  style={{ width: '150px', padding: '6px' }}
+                  value={clockFont}
+                  onChange={(e) => handleClockFontChange(e.target.value)}
+                >
+                  <option value="'Inter', system-ui, sans-serif">Inter (Default)</option>
+                  <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+                  <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                  <option value="'Playfair Display', serif">Playfair Display</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Motivational Quotes */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconInfo size={14} /> Motivation</div>
+              <Toggle
+                id="toggle-show-quotes"
+                checked={showQuotes}
+                onChange={(val) => { setShowQuotes(val); applyRealtime({ showQuotes: val }); }}
+                label="Motivational Quotes"
+                sub="Show an inspiring quote before each focus session"
+              />
+            </div>
+          </>
+        )}
+
+        {/* ══════════════════ 4. SYSTEM CATEGORY ══════════════════ */}
+        {(activeSettingsTab === 'system' || activeSettingsTab === 'all') && (
+          <>
+            {/* Sound & Notifications */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconInfo size={14} /> Sound & Notifications</div>
+
+              <Toggle
+                id="toggle-sound"
+                checked={soundEnabled}
+                onChange={(val) => handleToggleChange('soundEnabled', setSoundEnabled, val)}
+                label="Sound Effects"
+                sub="Chime when session completes"
+              />
+              <Toggle
+                id="toggle-notify"
+                checked={notifyOnComplete}
+                onChange={(val) => handleToggleChange('notifyOnComplete', setNotifyOnComplete, val)}
+                label="Toast Notifications"
+                sub="Show alerts for session events"
+              />
+            </div>
+
+            {/* Timer Chime */}
+            <div className="settings-section">
+              <div className="settings-section-title"><IconInfo size={14} /> Timer Chime</div>
+              <div className="chime-options-row">
+                {CHIME_OPTIONS.map(c => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`chime-option-btn ${chimeStyle === c.id ? 'active' : ''}`}
+                    onClick={() => handleChimeChange(c.id)}
+                    title={`Preview ${c.label} chime`}
+                  >
+                    <span>{c.icon}</span>
+                    <span>{c.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
+                Click to preview. Plays when your session completes.
+              </div>
+            </div>
+
+            {/* Desktop & Mac Dock */}
+            <div className="settings-section">
+              <div className="settings-section-title">
+                <IconMac size={16} /> Desktop & Mac Dock
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => setShowGeminiKey(v => !v)}
-                  style={{
-                    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0,
-                    display: 'flex', alignItems: 'center'
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    if (onOpenInstall) onOpenInstall();
+                    onClose();
                   }}
-                  aria-label={showGeminiKey ? 'Hide key' : 'Show key'}
-                  title={showGeminiKey ? 'Hide' : 'Show'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '10px 14px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    width: '100%',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(6, 182, 212, 0.3)',
+                    background: 'rgba(6, 182, 212, 0.08)'
+                  }}
+                  id="settings-install-dock-btn"
                 >
-                  {showGeminiKey ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  )}
+                  <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
                 </button>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                  Pin to your Mac Dock & launch as a native standalone app
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={handleSaveGeminiKey}
-                style={{
-                  padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-                  background: geminiSaved ? 'rgba(16,185,129,0.15)' : 'rgba(6,182,212,0.12)',
-                  border: geminiSaved ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(6,182,212,0.3)',
-                  color: geminiSaved ? '#10b981' : 'var(--accent)',
-                  cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0
-                }}
-                id="settings-save-gemini-key"
-              >
-                {geminiSaved ? '✓ Saved' : 'Save Key'}
-              </button>
             </div>
-            {geminiKey && (
-              <button
-                type="button"
-                onClick={handleClearGeminiKey}
-                style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
-                id="settings-clear-gemini-key"
-              >
-                × Clear saved key
-              </button>
-            )}
-          </div>
-        </div>
+
+            {/* Gemini AI Key */}
+            <div className="settings-section">
+              <div className="settings-section-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Gemini AI Key
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                  Add your own key so the AI chat works for everyone using your deployment.{' '}
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                    Get a free key →
+                  </a>
+                </p>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                      id="settings-gemini-key"
+                      type={showGeminiKey ? 'text' : 'password'}
+                      className="settings-input"
+                      value={geminiKey}
+                      onChange={(e) => setGeminiKey(e.target.value)}
+                      placeholder="AIzaSy..."
+                      style={{ width: '100%', paddingRight: '36px', fontFamily: geminiKey ? 'monospace' : 'inherit', fontSize: '12px' }}
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowGeminiKey(v => !v)}
+                      style={{
+                        position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                        background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0,
+                        display: 'flex', alignItems: 'center'
+                      }}
+                      aria-label={showGeminiKey ? 'Hide key' : 'Show key'}
+                      title={showGeminiKey ? 'Hide' : 'Show'}
+                    >
+                      {showGeminiKey ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSaveGeminiKey}
+                    style={{
+                      padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
+                      background: geminiSaved ? 'rgba(16,185,129,0.15)' : 'rgba(6,182,212,0.12)',
+                      border: geminiSaved ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(6,182,212,0.3)',
+                      color: geminiSaved ? '#10b981' : 'var(--accent)',
+                      cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0
+                    }}
+                    id="settings-save-gemini-key"
+                  >
+                    {geminiSaved ? '✓ Saved' : 'Save Key'}
+                  </button>
+                </div>
+                {geminiKey && (
+                  <button
+                    type="button"
+                    onClick={handleClearGeminiKey}
+                    style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+                    id="settings-clear-gemini-key"
+                  >
+                    × Clear saved key
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
 
