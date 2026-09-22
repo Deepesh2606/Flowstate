@@ -18,6 +18,7 @@ import {
   IconZap,
   IconX,
   IconCoffee,
+  IconMac,
 } from '../Icons';
 import { IconShield, IconFileText, IconRefreshCcw } from '../Legal/LegalModal';
 import { playChimeStyle } from '../../hooks/useTimer';
@@ -113,9 +114,92 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
     setTimeout(() => setGeminiSaved(false), 2000);
   };
 
-  const handleClearGeminiKey = () => {
-    setGeminiKey('');
-    localStorage.removeItem('flowstate_gemini_key');
+  const [testingKey, setTestingKey] = useState(false);
+  const [keyTestStatus, setKeyTestStatus] = useState(null);
+
+  const handleTestGeminiKey = async () => {
+    const keyToTest = geminiKey.trim() || localStorage.getItem('flowstate_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!keyToTest) {
+      toast('Please enter or save a Gemini API key first', 'warning', 2500);
+      return;
+    }
+    setTestingKey(true);
+    setKeyTestStatus(null);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keyToTest}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'ping' }] }],
+          generationConfig: { maxOutputTokens: 1 }
+        })
+      });
+      if (res.ok) {
+        setKeyTestStatus('valid');
+        toast('✅ Gemini API key is valid & working!', 'success', 3000);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setKeyTestStatus('invalid');
+        toast(`❌ ${errData?.error?.message || 'Invalid API key'}`, 'error', 4000);
+      }
+    } catch (e) {
+      setKeyTestStatus('invalid');
+      toast('Network error testing API key', 'error', 3000);
+    } finally {
+      setTestingKey(false);
+    }
+  };
+
+  const [notifPermission, setNotifPermission] = useState(() => {
+    return typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+  });
+
+  const handleTestNotification = async () => {
+    if (typeof Notification === 'undefined') {
+      toast('Notifications are not supported in this browser', 'error', 2500);
+      return;
+    }
+    if (Notification.permission === 'default') {
+      const res = await Notification.requestPermission();
+      setNotifPermission(res);
+      if (res === 'granted') {
+        new Notification('FLOWSTATE', {
+          body: '🎉 Browser notifications are enabled and ready!',
+          icon: '/favicon.svg'
+        });
+        toast('Permission granted & notification sent!', 'success', 2500);
+      }
+    } else if (Notification.permission === 'granted') {
+      new Notification('FLOWSTATE', {
+        body: '🎉 Focus timer notifications are working!',
+        icon: '/favicon.svg'
+      });
+      toast('Test notification sent!', 'success', 2000);
+    } else {
+      toast('Notifications are blocked in browser settings', 'warning', 3500);
+    }
+  };
+
+  const handleExportData = () => {
+    try {
+      const exportObj = {
+        exportedAt: new Date().toISOString(),
+        settings: settings || {},
+        tasks: JSON.parse(localStorage.getItem('flowstate_tasks') || '[]'),
+        sessions: JSON.parse(localStorage.getItem('flowstate_sessions') || '[]'),
+        notes: localStorage.getItem('flowstate_scratchpad_notes') || '',
+      };
+      const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flowstate-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('✅ Study data exported to JSON file', 'success', 2500);
+    } catch (e) {
+      toast('Failed to export data', 'error', 2000);
+    }
   };
 
   const [dailyGoal, setDailyGoal] = useState(settings?.dailyGoal || 8);
@@ -322,7 +406,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   const handleChimeChange = (id) => {
     setChimeStyle(id);
-    playChimeStyle(id, !soundEnabled);
+    playChimeStyle(id, false);
     onSave({ chimeStyle: id });
   };
 
@@ -1127,12 +1211,15 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 <Toggle
                   id="toggle-sound-enabled"
                   checked={soundEnabled}
-                  onChange={(val) => handleToggleChange('soundEnabled', setSoundEnabled, val)}
+                  onChange={(val) => {
+                    handleToggleChange('soundEnabled', setSoundEnabled, val);
+                    if (val) playChimeStyle(chimeStyle, false);
+                  }}
                   label="Timer Chime Sound"
                   sub="Play sound chime when your session or break completes."
                 />
                 <div className="settings-section-header-title" style={{ marginTop: '16px' }}>Timer Chime Style</div>
-                <p className="settings-section-subtitle">Chime plays gently when your session completes.</p>
+                <p className="settings-section-subtitle">Click to preview and select your completion chime.</p>
                 <div className="chime-options-row">
                   {CHIME_OPTIONS.map(c => (
                     <button
@@ -1149,6 +1236,36 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </div>
               </div>
 
+              {/* Browser Notifications Test */}
+              <div className="settings-section-block">
+                <div className="settings-section-header-title">Browser Notifications</div>
+                <p className="settings-section-subtitle">
+                  Status: {notifPermission === 'granted' ? (
+                    <span style={{ color: '#34d399', fontWeight: 600 }}>● Allowed</span>
+                  ) : notifPermission === 'denied' ? (
+                    <span style={{ color: '#ef4444', fontWeight: 600 }}>● Blocked in Browser</span>
+                  ) : (
+                    <span style={{ color: '#fbbf24', fontWeight: 600 }}>● Not Prompted Yet</span>
+                  )}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleTestNotification}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: 600
+                  }}
+                >
+                  🔔 {notifPermission === 'granted' ? 'Send Test Notification' : 'Enable & Test Notifications'}
+                </button>
+              </div>
+
               {/* Gemini AI Key */}
               <div className="settings-section-block">
                 <div className="settings-section-header-title">Gemini AI Studio Key</div>
@@ -1158,8 +1275,8 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     Get a free API key →
                   </a>
                 </p>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <div style={{ position: 'relative', flex: 1 }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
                     <input
                       id="settings-gemini-key"
                       type={showGeminiKey ? 'text' : 'password'}
@@ -1191,16 +1308,49 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   >
                     {geminiSaved ? '✓ Saved' : 'Save Key'}
                   </button>
+                  <button
+                    type="button"
+                    onClick={handleTestGeminiKey}
+                    className="btn btn-secondary"
+                    disabled={testingKey}
+                    style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
+                  >
+                    {testingKey ? 'Testing...' : keyTestStatus === 'valid' ? '✓ Valid' : 'Test Key'}
+                  </button>
                 </div>
                 {geminiKey && (
                   <button
                     type="button"
                     onClick={handleClearGeminiKey}
-                    style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, marginTop: '4px' }}
+                    style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, marginTop: '6px' }}
                   >
                     × Clear saved key
                   </button>
                 )}
+              </div>
+
+              {/* Data Backup & Export */}
+              <div className="settings-section-block">
+                <div className="settings-section-header-title">Data Backup & Export</div>
+                <p className="settings-section-subtitle">
+                  Download a complete backup of your study logs, settings, and tasks as a JSON file.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleExportData}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: 600
+                  }}
+                >
+                  📥 Export Study Data (.json)
+                </button>
               </div>
 
               {/* Mac Dock Install */}
