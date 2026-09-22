@@ -1438,7 +1438,10 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     { key: 'R',     desc: 'Reset Timer (with Save option)' },
                     { key: 'S',     desc: 'Skip to Next Break / Focus' },
                     { key: 'F',     desc: 'Toggle Fullscreen Mode' },
-                    { key: 'M',     desc: 'Open Audio & Music Studio' },
+                    { key: 'N',     desc: 'Toggle Scratchpad Notes' },
+                    { key: 'T',     desc: 'Toggle Tasks & Todos' },
+                    { key: 'M',     desc: 'Toggle Music & Ambience' },
+                    { key: 'C',     desc: 'Toggle Ask AI Chat' },
                   ].map(s => (
                     <div key={s.key} className="settings-shortcut-row">
                       <kbd className="settings-kbd">{s.key}</kbd>

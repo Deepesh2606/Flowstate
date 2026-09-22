@@ -172,6 +172,13 @@ const Notepad = ({ onClose, onTriggerRecall, subject }) => {
           className="notepad-textarea"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              e.target.blur();
+              onClose?.();
+            }
+          }}
           placeholder=""
         />
 

@@ -57,8 +57,13 @@ const TasksDrawer = ({ onClose }) => {
             placeholder="Add a new task..."
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            onKeyDown={(e) => e.stopPropagation()}
-            autoFocus
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                onClose?.();
+              }
+            }}
           />
           <button
             type="submit"

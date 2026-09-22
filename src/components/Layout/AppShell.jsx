@@ -110,6 +110,19 @@ const AppShell = () => {
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
+      if (e.key === 'Escape') {
+        setShowSettings(false);
+        setShowTasks(false);
+        setShowAudioDrawer(false);
+        setShowUserMenu(false);
+        setShowNotepad(false);
+        setShowAIChat(false);
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
+        return;
+      }
+
       // Don't trigger if user is interacting with an input, textarea, select, or contenteditable
       const target = e.target;
       const targetTag = target?.tagName?.toLowerCase();
@@ -127,16 +140,6 @@ const AppShell = () => {
         Boolean(document.activeElement?.closest?.('input, textarea, select, [contenteditable="true"]'));
 
       if (isInput) return;
-
-      if (e.key === 'Escape') {
-        setShowSettings(false);
-        setShowTasks(false);
-        setShowAudioDrawer(false);
-        setShowUserMenu(false);
-        setShowNotepad(false);
-        setShowAIChat(false);
-        return;
-      }
 
       // Block all shortcuts if ANY modifier key is held (Shift, Ctrl, Meta/Cmd, Alt)
       // e.g. Shift + S (typing capital S) should never trigger skip
@@ -156,9 +159,13 @@ const AppShell = () => {
         timerActionsRef.current?.skip?.();
       } else if (key === 't') {
         e.preventDefault();
-        setActiveTab('timer');
-        setPendingSwitchMode('pomodoro');
-        setCurrentTimerMode('pomodoro');
+        setShowTasks((v) => !v);
+      } else if (key === 'n') {
+        e.preventDefault();
+        setShowNotepad((v) => !v);
+      } else if (key === 'm') {
+        e.preventDefault();
+        setShowAudioDrawer((v) => !v);
       } else if (key === 'f') {
         e.preventDefault();
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -181,7 +188,7 @@ const AppShell = () => {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [setShowAudioDrawer]);
+  }, []);
 
   useEffect(() => {
     const currentTheme = settings?.theme || 'dark';
@@ -361,10 +368,10 @@ const AppShell = () => {
           )}
           <button
             className="floating-icon-btn"
-            onClick={() => setShowTasks(true)}
-            aria-label="Open tasks"
+            onClick={() => setShowTasks((v) => !v)}
+            aria-label="Tasks & Notes (T)"
             id="tasks-btn"
-            title="Tasks & Notes"
+            title="Tasks & Notes (T)"
           >
             <IconTasks size={18} />
           </button>
@@ -377,10 +384,10 @@ const AppShell = () => {
             {/* Audio & Ambience button */}
             <button
               className="floating-icon-btn"
-              onClick={() => setShowAudioDrawer(true)}
-              aria-label="Music Player & Ambience (Spotify, Apple Music, YT Music, Lofi)"
+              onClick={() => setShowAudioDrawer((v) => !v)}
+              aria-label="Music Player & Ambience (M)"
               id="audio-drawer-btn"
-              title="Music Player & Ambience (Spotify, Apple Music, YT Music, Lofi)"
+              title="Music Player & Ambience (M)"
               style={{ position: 'relative' }}
             >
               <IconHeadphones size={18} />
@@ -617,8 +624,8 @@ const AppShell = () => {
             type="button"
             className={`bottom-dock-btn${showTasks ? ' active' : ''}`}
             onClick={() => setShowTasks((v) => !v)}
-            title="Tasks & Todos"
-            aria-label="Tasks & Todos"
+            title="Tasks & Todos (T)"
+            aria-label="Tasks & Todos (T)"
             id="dock-tasks-btn"
           >
             <IconDockTasks size={18} />
@@ -628,8 +635,8 @@ const AppShell = () => {
             type="button"
             className={`bottom-dock-btn${showAudioDrawer ? ' active' : ''}`}
             onClick={() => setShowAudioDrawer((v) => !v)}
-            title="Music Player & Ambience"
-            aria-label="Music Player & Ambience"
+            title="Music Player & Ambience (M)"
+            aria-label="Music Player & Ambience (M)"
             id="dock-music-btn"
           >
             <IconMusicNote size={18} />
@@ -639,8 +646,8 @@ const AppShell = () => {
             type="button"
             className={`bottom-dock-btn${showNotepad ? ' active' : ''}`}
             onClick={() => setShowNotepad((v) => !v)}
-            title="Notepad"
-            aria-label="Notepad"
+            title="Notepad (N)"
+            aria-label="Notepad (N)"
             id="dock-notepad-btn"
           >
             <IconEdit size={18} />
