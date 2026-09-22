@@ -2340,86 +2340,392 @@ input {
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .gap-8 { gap: 8px; }
 
-/* ─── Responsive ─────────────────────────────────────────────────────────────── */
+/* ─── Comprehensive Mobile Responsiveness ───────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Layout & Content Area */
+  .content-area {
+    padding: 16px 12px calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 72px);
+  }
+
+  .tab-content {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Full Screen Drawers on Mobile */
+  .drawer,
+  .tasks-drawer {
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 0;
+    border-left: none;
+  }
+
+  .drawer-header {
+    padding-top: max(20px, env(safe-area-inset-top, 20px));
+  }
+
+  /* Stats Grid */
   .stats-grid {
-    grid-template-columns: 1fr 1fr; /* 2 columns on tablet */
+    grid-template-columns: 1fr 1fr;
   }
-  .drawer {
-    width: 80vw;
-  }
+
+  /* Timer Digits */
   .flocus-timer-digits {
-    font-size: clamp(5rem, 16vw, 12rem);
+    font-size: clamp(4rem, 16vw, 10rem);
   }
-  /* Floating audio positioning on tablet */
+
+  /* Bottom Left Dock on Mobile */
+  .bottom-left-dock {
+    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 12px);
+    left: 12px;
+    gap: 6px;
+    z-index: 60;
+  }
+
+  .bottom-dock-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .ai-chat-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 12px;
+  }
+
+  .ai-chat-btn-text {
+    display: none;
+  }
+
+  /* Floating Controls on Mobile */
   .floating-controls {
-    bottom: calc(var(--tab-height) + 24px);
+    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 12px);
+    right: 12px;
+    gap: 6px;
+    z-index: 60;
+  }
+
+  .floating-icon-btn,
+  .user-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Floating Audio Mini-Pill on Mobile */
+  .audio-mini-pill {
+    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 58px);
+    max-width: calc(100vw - 24px);
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .mini-pill-text {
+    max-width: 130px;
+    font-size: 11px;
+  }
+
+  /* Hide Keyboard Hints on Mobile/Tablet */
+  .keyboard-hints {
+    display: none !important;
+  }
+
+  /* Floating Notepad on Mobile */
+  .bottom-left-notepad-floating {
+    position: fixed;
+    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 14px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: calc(100vw - 24px);
+    z-index: 100;
+  }
+
+  .notepad-card-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 14px 16px;
+    border-radius: 16px;
+  }
+
+  .notepad-editor-wrap {
+    min-height: 140px;
+    max-height: min(220px, 35vh);
+  }
+
+  .notepad-toolbar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 6px;
+    gap: 2px;
+  }
+
+  .notepad-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .notepad-tool-btn {
+    padding: 4px 5px;
+    font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
   /* Timer / Clock adjustments */
   .timer-ring-container {
-    width: 220px;
-    height: 220px;
-  }
-  .timer-time {
-    font-size: 2.6rem;
-  }
-  .flocus-timer-digits {
-    font-size: clamp(4rem, 15vw, 8rem);
-  }
-  .flocus-ctrl-btn {
-    width: 48px;
-    height: 48px;
+    width: 200px;
+    height: 200px;
   }
 
-  /* Stats grid single column on small phones */
+  .timer-time {
+    font-size: 2.2rem;
+  }
+
+  .flocus-timer-wrapper {
+    margin-bottom: 16px;
+  }
+
+  .flocus-timer-digits {
+    font-size: clamp(3.2rem, 15vw, 6.5rem);
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+
+  .stopwatch-ms {
+    font-size: 0.45em;
+  }
+
+  /* Flocus Controls */
+  .flocus-controls {
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .flocus-ctrl-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Hide redundant audio button from floating controls on small screens (accessible via dock) */
+  .floating-controls #audio-drawer-btn {
+    display: none;
+  }
+
+  /* Mode Pills on Mobile */
+  .liquid-pills-wrapper {
+    margin-bottom: 14px;
+    width: 100%;
+    padding: 0 4px;
+  }
+
+  .liquid-pill-track {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .liquid-pill-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .liquid-pill-btn {
+    padding: 5px 8px;
+    flex-shrink: 0;
+  }
+
+  .liquid-pill-label {
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  /* 3D Flip Clock on Mobile */
+  .flip-clock-container {
+    gap: clamp(6px, 1.8vw, 14px);
+    margin-bottom: 18px;
+  }
+
+  .flip-card-wrapper {
+    width: clamp(56px, 16.5vw, 80px);
+    height: clamp(74px, 21.5vw, 106px);
+    border-radius: 12px;
+  }
+
+  .flip-flap {
+    font-size: clamp(1.7rem, 8vw, 2.7rem);
+  }
+
+  .flip-clock-colon {
+    font-size: clamp(1.4rem, 6vw, 2.2rem);
+    margin-top: -10px;
+  }
+
+  .flip-card-label {
+    font-size: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Radial Gauge on Mobile */
+  .timer-gauge-container {
+    width: min(200px, 60vw);
+    height: min(200px, 60vw);
+  }
+
+  .timer-gauge-center-digits {
+    font-size: clamp(1.8rem, 8vw, 2.6rem);
+  }
+
+  /* Ghost Pacer & Scratchpad */
+  .ghost-pacer-container {
+    max-width: calc(100vw - 24px);
+    margin: 8px auto 4px;
+  }
+
+  .ghost-pacer-card {
+    padding: 10px 12px;
+  }
+
+  .scratchpad-wrapper {
+    max-width: calc(100vw - 24px);
+    margin: 4px auto 8px;
+  }
+
+  /* Stats grid single column on phones */
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
-  /* Full screen drawers on mobile */
-  .drawer {
-    width: 100vw;
-    max-width: 100vw;
-    border-radius: 0;
+  .stats-top-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
-  .drawer-header {
-    padding-top: max(24px, env(safe-area-inset-top, 24px));
+
+  .goal-ring-wrapper {
+    margin: 0 auto;
   }
-  
+
+  .streak-badge-large,
+  .best-time-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .heatmap-wrapper {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+  }
+
+  .heatmap-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* History Filters on Mobile */
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .filter-select {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .filter-date-group {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-date {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .filter-clear-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .session-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .session-right {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   /* Wallpaper Grid */
   .picker-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px;
   }
 
   /* Tab Bar adjustments */
   .tab-bar {
-    padding: 0 8px;
-    gap: 4px;
+    padding: 0 6px;
+    gap: 2px;
+    height: 56px;
   }
+
   .tab-btn {
     padding: 0;
     max-width: none;
-  }
-  .tab-label {
-    font-size: 10px;
+    height: 48px;
   }
 
-  /* Shift Floating Controls above Tab Bar on mobile */
-  .floating-controls {
-    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 16px);
-    right: 16px;
+  .tab-label {
+    font-size: 9.5px;
   }
+
+  /* Top Right Controls */
   .top-right-controls {
-    top: max(16px, env(safe-area-inset-top, 16px));
-    right: 16px;
+    top: max(12px, env(safe-area-inset-top, 12px));
+    right: 12px;
+    gap: 6px;
   }
-  .floating-icon-btn, .user-avatar {
-    width: 40px;
-    height: 40px;
+
+  .topbar-signin-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .topbar-logo {
+    font-size: 13px;
+  }
+
+  /* Generic Modals */
+  .modal-card,
+  .active-recall-card,
+  .session-note-card,
+  .share-card-container,
+  .auth-modal {
+    max-width: calc(100vw - 24px);
+    padding: 16px;
+  }
+}
+
+@media (pointer: coarse) {
+  .keyboard-hints {
+    display: none !important;
   }
 }
 

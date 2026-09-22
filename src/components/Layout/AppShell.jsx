@@ -598,7 +598,7 @@ const AppShell = () => {
             aria-expanded={showAIChat}
           >
             <IconChat size={18} />
-            Ask AI
+            <span className="ai-chat-btn-text">Ask AI</span>
           </button>
         </div>
 
