@@ -347,20 +347,30 @@ const AIChatSidebar = ({ onClose }) => {
   const hasMsgs = messages.length > 1;
 
   return (
-    <aside
-      className="ai-chat-panel"
-      ref={panelRef}
-      style={{ width: panelWidth }}
-      role="complementary"
-      aria-label="AI Chat Assistant"
-    >
-      {/* Drag handle for resizing */}
+    <>
+      {/* Mobile backdrop overlay to tap outside and dismiss */}
       <div
-        className="ai-chat-resize-handle"
-        onMouseDown={onDragStart}
-        title="Drag to resize"
+        className="ai-chat-mobile-overlay"
+        onClick={onClose}
         aria-hidden="true"
       />
+      <aside
+        className="ai-chat-panel"
+        ref={panelRef}
+        style={typeof window !== 'undefined' && window.innerWidth > 768 ? { width: panelWidth } : undefined}
+        role="complementary"
+        aria-label="AI Chat Assistant"
+      >
+        {/* Mobile drag handle bar */}
+        <div className="ai-chat-sheet-handle" aria-hidden="true" />
+
+        {/* Drag handle for resizing (desktop only) */}
+        <div
+          className="ai-chat-resize-handle"
+          onMouseDown={onDragStart}
+          title="Drag to resize"
+          aria-hidden="true"
+        />
 
       {/* Sleek Minimal Header */}
       <div className="ai-chat-panel-header">
@@ -584,6 +594,7 @@ const AIChatSidebar = ({ onClose }) => {
         </div>
       )}
     </aside>
+  </>
   );
 };
 

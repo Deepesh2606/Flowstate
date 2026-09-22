@@ -38,7 +38,7 @@ const ShareCard = ({ isOpen, onClose, duration, subject, sessionCount }) => {
     // App logo text
     ctx.fillStyle = '#06b6d4';
     ctx.font = 'bold 16px system-ui, sans-serif';
-    ctx.fillText('FLOWSTATE', 32, 44);
+    ctx.fillText('DEEPLY', 32, 44);
 
     // Tagline
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
@@ -73,7 +73,7 @@ const ShareCard = ({ isOpen, onClose, duration, subject, sessionCount }) => {
     ctx.fillText(dateStr, 32, H - 20);
 
     const link = document.createElement('a');
-    link.download = 'flowstate-session.png';
+    link.download = 'deeply-session.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -101,7 +101,7 @@ const ShareCard = ({ isOpen, onClose, duration, subject, sessionCount }) => {
 
         <div className="share-card-preview">
           <div className="share-preview-inner">
-            <div className="share-preview-app">FLOWSTATE</div>
+            <div className="share-preview-app">DEEPLY</div>
             <div className="share-preview-dur">{fmt(duration)}</div>
             {subject && <div className="share-preview-subj">on {subject}</div>}
             <div className="share-preview-session">🎯 Session #{sessionCount}</div>

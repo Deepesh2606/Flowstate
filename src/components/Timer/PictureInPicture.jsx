@@ -208,7 +208,7 @@ export const usePictureInPicture = ({
         });
 
         // Set title and body styles
-        pipWindow.document.title = 'FLOWSTATE Timer';
+        pipWindow.document.title = 'DEEPLY Timer';
         pipWindow.document.body.style.margin = '0';
         pipWindow.document.body.style.background = '#090e1a';
         pipWindow.document.body.style.overflow = 'hidden';
@@ -330,7 +330,7 @@ export const PiPWindowPortal = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <img src="/favicon.svg" alt="Logo" style={{ width: 15, height: 15, borderRadius: 3 }} />
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)' }}>
-            FLOWSTATE
+            DEEPLY
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

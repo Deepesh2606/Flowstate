@@ -13,6 +13,7 @@ import PipHelpModal from './PipHelpModal';
 import GhostPacer from './GhostPacer';
 import SessionScratchpad from './SessionScratchpad';
 import ActiveRecallModal from './ActiveRecallModal';
+import MicroBreakModal from './MicroBreakModal';
 import { useTimer } from '../../hooks/useTimer';
 import { useToast } from '../Toast/ToastProvider';
 import { useAuth } from '../../contexts/AuthContext';
@@ -30,6 +31,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const [noteSessionInfo, setNoteSessionInfo] = useState(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareInfo, setShareInfo] = useState(null);
+  const [showMicroBreak, setShowMicroBreak] = useState(false);
   const lastSessionDurationRef = useRef(0);
 
   // ─── Linked task state ─────────────────────────────────────────────────────
@@ -279,6 +281,22 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Smart Guided Micro-Break Trigger when in Break Modes */}
+      {(mode === 'shortBreak' || mode === 'longBreak') && (
+        <div className="break-micro-banner" role="region" aria-label="Micro-break activities">
+          <button
+            type="button"
+            className="micro-break-trigger-btn"
+            onClick={() => setShowMicroBreak(true)}
+            title="Open Smart Guided Micro-Break (Box Breathing, Eye Rest, Desk Stretches)"
+          >
+            <span className="micro-sparkle">🌿</span>
+            <span className="micro-text">Smart Guided Micro-Break</span>
+            <span className="micro-sub-pill">Box Breathing · Eye Rest · Stretches →</span>
+          </button>
         </div>
       )}
 
@@ -675,6 +693,11 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         subject={shareInfo?.subject}
         sessionCount={sessionCount}
       />
+
+      {/* Smart Guided Micro-Break Modal */}
+      {showMicroBreak && (
+        <MicroBreakModal onClose={() => setShowMicroBreak(false)} />
+      )}
     </div>
   );
 };

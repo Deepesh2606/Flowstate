@@ -15,6 +15,7 @@ import InstallModal from '../InstallModal';
 import AIChatSidebar from '../Chat/AIChatSidebar';
 import AudioDrawer from '../Audio/AudioDrawer';
 import Notepad from '../Notepad/Notepad';
+import LiveRoomsModal from '../Rooms/LiveRoomsModal';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
@@ -40,6 +41,7 @@ const AppShell = () => {
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showLiveRooms, setShowLiveRooms] = useState(false);
   const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip
   const [activeTab, setActiveTab] = useState('timer');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -349,9 +351,20 @@ const AppShell = () => {
         {/* Top Bar */}
         <header className="topbar">
           <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <img src="/favicon.svg" alt="Flowstate" style={{ width: 18, height: 18, borderRadius: 4 }} />
-            FLOWSTATE
+            <img src="/favicon.svg" alt="Deeply" style={{ width: 18, height: 18, borderRadius: 4 }} />
+            DEEPLY
           </span>
+
+          <button
+            type="button"
+            className="topbar-rooms-btn"
+            onClick={() => setShowLiveRooms(true)}
+            title="Join Live Study Rooms with students worldwide"
+          >
+            <span className="rooms-live-indicator" />
+            <span className="topbar-rooms-label">Live Rooms</span>
+            <span className="topbar-rooms-badge">689 online</span>
+          </button>
         </header>
 
         {/* Top Right Controls (Notes/Tasks + Sign In) */}
@@ -655,7 +668,7 @@ const AppShell = () => {
 
           <button
             type="button"
-            className={`ai-chat-btn${showAIChat ? ' ai-chat-btn--active' : ''}`}
+            className={`bottom-dock-btn ai-chat-btn${showAIChat ? ' active ai-chat-btn--active' : ''}`}
             onClick={() => setShowAIChat((v) => !v)}
             id="chatgpt-btn-bottom"
             title="Ask AI (C)"
@@ -730,6 +743,14 @@ const AppShell = () => {
         onClose={() => setShowLegalModal(false)}
         initialTab={legalModalTab}
       />
+
+      {/* Live Study Rooms Modal */}
+      {showLiveRooms && (
+        <LiveRoomsModal
+          onClose={() => setShowLiveRooms(false)}
+          currentUser={currentUser}
+        />
+      )}
 
       <style>{`
         @keyframes tabFadeIn {
