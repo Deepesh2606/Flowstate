@@ -45,7 +45,17 @@ const TimerDisplay = ({
   const activeDots = Math.round(progress * totalDots);
 
   return (
-    <div className={`flocus-timer-wrapper timer-style-${resolvedStyle}`} style={{ position: 'relative' }}>
+    <div
+      className={`flocus-timer-wrapper timer-style-${resolvedStyle}`}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+      }}
+    >
       {!hasWallpaper && <div className="liquid-orb" />}
 
       {/* 1. FLIP CLOCK STYLE */}
