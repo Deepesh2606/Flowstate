@@ -119,6 +119,9 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
 
   // Date formatting
   const dayName = time.toLocaleDateString(undefined, { weekday: 'long' });
+  const dayOfMonth = time.getDate();
+  const monthName = time.toLocaleDateString(undefined, { month: 'short' });
+  const year = time.getFullYear();
 
   // Floating PiP support via Canvas & Video element
   const togglePip = async () => {

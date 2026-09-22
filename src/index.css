@@ -2495,6 +2495,47 @@ input {
     word-break: keep-all;
   }
 
+  /* 3D Flip Clock for Compact Mobile Screens */
+  .flip-clock-container {
+    gap: clamp(4px, 1.4vw, 8px);
+    margin-bottom: 14px;
+  }
+
+  .flip-card-wrapper {
+    width: clamp(50px, 15.5vw, 68px);
+    height: clamp(66px, 20.5vw, 90px);
+    border-radius: 10px;
+  }
+
+  .flip-flap span {
+    font-size: clamp(2.2rem, 9vw, 3.2rem);
+  }
+
+  .flip-clock-colon {
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    margin-top: -4px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper {
+    width: clamp(34px, 9.5vw, 44px);
+    height: clamp(44px, 12.5vw, 58px);
+    border-radius: 8px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+    font-size: clamp(0.95rem, 3vw, 1.3rem);
+  }
+
+  .flip-card-label {
+    font-size: 7px;
+    letter-spacing: 0.04em;
+    padding: 1px 4px;
+  }
+
+  .digital-clock-container .flocus-timer-digits {
+    font-size: clamp(2.8rem, 13vw, 4.8rem);
+  }
+
   .stopwatch-ms {
     font-size: 0.45em;
   }
@@ -2547,30 +2588,45 @@ input {
     letter-spacing: 0.03em;
   }
 
-  /* 3D Flip Clock on Mobile */
+  /* 3D Flip Clock on Mobile & Tablet */
   .flip-clock-container {
-    gap: clamp(6px, 1.8vw, 14px);
+    gap: clamp(6px, 1.6vw, 14px);
     margin-bottom: 18px;
   }
 
   .flip-card-wrapper {
-    width: clamp(56px, 16.5vw, 80px);
-    height: clamp(74px, 21.5vw, 106px);
+    width: clamp(56px, 15vw, 92px);
+    height: clamp(74px, 19.5vw, 120px);
     border-radius: 12px;
   }
 
-  .flip-flap {
-    font-size: clamp(1.7rem, 8vw, 2.7rem);
+  .flip-flap span {
+    font-size: clamp(2.6rem, 8vw, 4.4rem);
   }
 
   .flip-clock-colon {
-    font-size: clamp(1.4rem, 6vw, 2.2rem);
-    margin-top: -10px;
+    font-size: clamp(1.8rem, 5.5vw, 3rem);
+    margin-top: -6px;
+  }
+
+  .flip-card-unit.flip-card-ampm-unit {
+    margin-top: clamp(2px, 0.8vw, 6px);
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper {
+    width: clamp(38px, 9.5vw, 60px);
+    height: clamp(50px, 12.5vw, 78px);
+    border-radius: 10px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+    font-size: clamp(1.1rem, 2.8vw, 1.7rem);
   }
 
   .flip-card-label {
     font-size: 8px;
     letter-spacing: 0.06em;
+    padding: 2px 6px;
   }
 
   /* Radial Gauge on Mobile */
@@ -2720,6 +2776,167 @@ input {
   .auth-modal {
     max-width: calc(100vw - 24px);
     padding: 16px;
+  }
+}
+
+/* ─── Extra Small Mobile (iPhone SE, Galaxy Fold, 320px - 380px) ────────── */
+@media (max-width: 380px) {
+  .flip-clock-container {
+    gap: 3px;
+    margin-bottom: 10px;
+  }
+
+  .flip-card-wrapper {
+    width: clamp(46px, 14vw, 54px);
+    height: clamp(60px, 18vw, 72px);
+    border-radius: 8px;
+  }
+
+  .flip-flap span {
+    font-size: clamp(1.8rem, 7.5vw, 2.4rem);
+  }
+
+  .flip-clock-colon {
+    font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+    margin-top: -3px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper {
+    width: clamp(30px, 9vw, 36px);
+    height: clamp(40px, 12vw, 48px);
+    border-radius: 6px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+    font-size: clamp(0.8rem, 2.6vw, 1rem);
+  }
+
+  .flip-card-label {
+    font-size: 6.5px;
+    letter-spacing: 0.02em;
+    padding: 1px 3px;
+  }
+
+  .digital-clock-container .flocus-timer-digits {
+    font-size: clamp(2.2rem, 11vw, 3.4rem);
+  }
+
+  .live-date-capsule--minimal {
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+}
+
+/* ─── Tablet & iPad Responsive Scaling (769px - 1024px) ─────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content-area {
+    padding: 20px 24px calc(var(--tab-height) + 50px);
+  }
+
+  .tab-content {
+    max-width: 100%;
+  }
+
+  .flip-clock-container {
+    gap: clamp(12px, 1.8vw, 22px);
+    margin-bottom: clamp(20px, 3vw, 32px);
+  }
+
+  .flip-card-wrapper {
+    width: clamp(100px, 13.5vw, 145px);
+    height: clamp(128px, 17vw, 185px);
+    border-radius: 18px;
+  }
+
+  .flip-flap span {
+    font-size: clamp(4.8rem, 8vw, 7.2rem);
+  }
+
+  .flip-clock-colon {
+    font-size: clamp(3.4rem, 5.5vw, 5.2rem);
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper {
+    width: clamp(70px, 8.5vw, 98px);
+    height: clamp(90px, 11vw, 126px);
+    border-radius: 14px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+    font-size: clamp(1.9rem, 2.8vw, 2.7rem);
+  }
+
+  .flip-card-label {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .digital-clock-container .flocus-timer-digits {
+    font-size: clamp(5.2rem, 12.5vw, 8.5rem);
+  }
+}
+
+/* ─── Landscape & Bedside / StandBy Mode (Short Viewports) ──────────────── */
+@media (max-height: 540px) {
+  .content-area {
+    padding: 8px 12px calc(var(--tab-height) + 16px);
+  }
+
+  .live-clock-tab-wrapper {
+    gap: 8px;
+  }
+
+  .flip-clock-container {
+    gap: clamp(6px, 1.5vw, 14px);
+    margin-bottom: 8px;
+  }
+
+  .flip-card-wrapper {
+    width: clamp(52px, 24vh, 105px);
+    height: clamp(66px, 30vh, 132px);
+    border-radius: 10px;
+  }
+
+  .flip-flap span {
+    font-size: clamp(2.4rem, 15vh, 4.8rem);
+  }
+
+  .flip-clock-colon {
+    font-size: clamp(1.6rem, 10vh, 3.4rem);
+    margin-top: -4px;
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper {
+    width: clamp(38px, 16vh, 70px);
+    height: clamp(48px, 20vh, 90px);
+  }
+
+  .flip-card-wrapper.flip-ampm-wrapper .flip-flap span {
+    font-size: clamp(1rem, 6vh, 1.8rem);
+  }
+
+  .flip-card-label {
+    font-size: 7.5px;
+    padding: 1px 5px;
+  }
+
+  .live-date-capsule-container {
+    margin-top: -2px;
+    margin-bottom: 6px;
+  }
+
+  .live-date-capsule--minimal {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+  }
+
+  .live-clock-controls {
+    margin-top: 2px;
+  }
+
+  .keyboard-hints {
+    display: none !important;
   }
 }
 
@@ -3853,12 +4070,15 @@ input {
 }
 
 /* Override tab content for safe centering without topbar clipping */
-#panel-timer .tab-content {
+#panel-timer .tab-content,
+#panel-clock .tab-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   min-height: 100%;
   width: 100%;
+  max-width: 100%;
   margin: auto 0;
 }
 
@@ -5022,13 +5242,36 @@ body.is-fullscreen .timer-tab-bottom-spacer {
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   position: relative;
 }
 
 .live-flip-clock-container {
   margin-bottom: 24px;
+  max-width: 100%;
   /* Soft ambient glow behind the flip clock */
   filter: drop-shadow(0 0 40px rgba(6, 182, 212, 0.08)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
+}
+
+.digital-clock-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: clamp(16px, 3vw, 36px);
+  user-select: none;
+}
+
+.digital-clock-container .flocus-timer-digits {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  max-width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 /* 12-Hour AM / PM Flip Card Unit */
