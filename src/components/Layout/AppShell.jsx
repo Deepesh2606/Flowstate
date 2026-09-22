@@ -124,6 +124,7 @@ const AppShell = () => {
         setShowAudioDrawer(false);
         setShowUserMenu(false);
         setShowNotepad(false);
+        setShowAIChat(false);
         return;
       }
 
@@ -136,6 +137,9 @@ const AppShell = () => {
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         timerActionsRef.current?.togglePlay?.();
+      } else if (key === 'c') {
+        e.preventDefault();
+        setShowAIChat((v) => !v);
       } else if (key === 'r') {
         timerActionsRef.current?.reset?.();
       } else if (key === 's') {
@@ -593,8 +597,8 @@ const AppShell = () => {
             className={`ai-chat-btn${showAIChat ? ' ai-chat-btn--active' : ''}`}
             onClick={() => setShowAIChat((v) => !v)}
             id="chatgpt-btn-bottom"
-            title="Ask AI"
-            aria-label="Open AI Chat"
+            title="Ask AI (C)"
+            aria-label="Ask AI (C)"
             aria-expanded={showAIChat}
           >
             <IconChat size={18} />
