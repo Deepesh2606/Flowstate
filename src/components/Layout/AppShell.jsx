@@ -22,6 +22,9 @@ const SettingsDrawer = lazy(() => import('../Settings/SettingsDrawer'));
 const TasksDrawer = lazy(() => import('../Tasks/TasksDrawer'));
 
 import GoogleSignInButton from '../Auth/GoogleSignInButton';
+import LegalModal, { IconShield } from '../Legal/LegalModal';
+
+const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/deepesh2606';
 
 const FallbackLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'rgba(255,255,255,0.5)' }}>
@@ -43,9 +46,16 @@ const AppShell = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
   const [showNotepad, setShowNotepad] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState('privacy');
   const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
   const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
   const menuRef = useRef(null);
+
+  const handleOpenLegal = (tab = 'privacy') => {
+    setLegalModalTab(tab);
+    setShowLegalModal(true);
+  };
 
   useEffect(() => {
     const handleBeforeInstall = (e) => {
@@ -474,6 +484,28 @@ const AppShell = () => {
                     <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
                   </button>
                   <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      handleOpenLegal('privacy');
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-legal-auth"
+                  >
+                    <IconShield size={14} style={{ marginRight: 8 }} /> Legal &amp; Policies
+                  </button>
+                  <a
+                    href={BUY_ME_A_COFFEE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="user-menu-item coffee-item"
+                    onClick={() => setShowUserMenu(false)}
+                    role="menuitem"
+                    id="menu-coffee-auth"
+                  >
+                    <span style={{ marginRight: 8, fontSize: '15px' }}>☕</span> Buy Me a Coffee
+                  </a>
+                  <button
                     className="user-menu-item danger"
                     onClick={() => {
                       signOut();
@@ -544,6 +576,28 @@ const AppShell = () => {
                   >
                     <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
                   </button>
+                  <button
+                    className="user-menu-item"
+                    onClick={() => {
+                      handleOpenLegal('privacy');
+                      setShowUserMenu(false);
+                    }}
+                    role="menuitem"
+                    id="menu-legal-guest"
+                  >
+                    <IconShield size={14} style={{ marginRight: 8 }} /> Legal &amp; Policies
+                  </button>
+                  <a
+                    href={BUY_ME_A_COFFEE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="user-menu-item coffee-item"
+                    onClick={() => setShowUserMenu(false)}
+                    role="menuitem"
+                    id="menu-coffee-guest"
+                  >
+                    <span style={{ marginRight: 8, fontSize: '15px' }}>☕</span> Buy Me a Coffee
+                  </a>
                 </>
               )}
             </div>
@@ -651,6 +705,7 @@ const AppShell = () => {
             onSave={updateSettings}
             onClose={() => setShowSettings(false)}
             onOpenInstall={() => setShowInstallModal(true)}
+            onOpenLegal={handleOpenLegal}
           />
         )}
         {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
@@ -661,6 +716,12 @@ const AppShell = () => {
         onClose={() => setShowInstallModal(false)}
         deferredPrompt={deferredPrompt}
         onInstalled={() => setDeferredPrompt(null)}
+      />
+
+      <LegalModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        initialTab={legalModalTab}
       />
 
       <style>{`

@@ -17,8 +17,12 @@ import {
   IconRocket,
   IconZap,
   IconX,
+  IconCoffee,
 } from '../Icons';
+import { IconShield, IconFileText, IconRefreshCcw } from '../Legal/LegalModal';
 import { playChimeStyle } from '../../hooks/useTimer';
+
+const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/deepesh2606';
 
 // ─── App Themes ───────────────────────────────────────────────────────────────
 const APP_THEMES = [
@@ -77,7 +81,7 @@ const Toggle = ({ id, checked, onChange, label, sub, badge }) => (
   </div>
 );
 
-const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
+const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal }) => {
   const { toast } = useToast();
   const { wallpaper } = useWallpaper();
   const { currentUser, signOut, openAuthModal } = useAuth();
@@ -388,6 +392,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
     { id: 'account',   label: 'Account',     icon: IconUser, badgeDot: !currentUser },
     { id: 'support',   label: 'Support',     icon: IconHelpCircle },
     { id: 'whatsnew',  label: "What's New",  icon: IconRocket },
+    { id: 'legal',     label: 'Legal & Policies', icon: IconShield },
   ];
 
   return (
@@ -447,6 +452,19 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
             <IconZap size={14} />
             <span>Upgrade to Plus</span>
           </button>
+
+          {/* Buy Me a Coffee Button */}
+          <a
+            href={BUY_ME_A_COFFEE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="settings-coffee-btn"
+            id="settings-coffee-btn"
+            title="Buy Me a Coffee"
+          >
+            <span style={{ fontSize: '15px' }}>☕</span>
+            <span>Buy Me a Coffee</span>
+          </a>
 
           <div style={{ flex: 1 }} />
 
@@ -1303,7 +1321,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
                 <p className="settings-section-subtitle">
                   Built with ❤️ for focused students and builders worldwide.
                 </p>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <a
                     href="https://github.com/Deepesh2606/Flowstate"
                     target="_blank"
@@ -1312,6 +1330,47 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px', textDecoration: 'none' }}
                   >
                     ⭐ Star on GitHub
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px' }}
+                    onClick={() => onOpenLegal && onOpenLegal('privacy')}
+                  >
+                    <IconShield size={15} />
+                    <span>Legal & Privacy</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Support the Creator */}
+              <div className="settings-section-block">
+                <div className="settings-section-header-title">☕ Support Flowstate</div>
+                <p className="settings-section-subtitle">
+                  Flowstate is 100% free to use. If it helps you stay focused, beat procrastination, or ace your exams, consider buying me a coffee to support development and server costs!
+                </p>
+                <div>
+                  <a
+                    href={BUY_ME_A_COFFEE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-coffee"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 20px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: '#ffffff',
+                      fontWeight: '600',
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 16px rgba(245, 158, 11, 0.28)',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <IconCoffee size={18} />
+                    <span>Buy Me a Coffee</span>
                   </a>
                 </div>
               </div>
@@ -1377,6 +1436,87 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall }) => {
                       Accidental resets are a thing of the past. Choose "Save & Reset" to log partial study minutes directly to your stats and streak before starting over.
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════ 9. LEGAL & POLICIES ════════ */}
+          {activeTab === 'legal' && (
+            <div className="settings-tab-section">
+              <div className="settings-section-block">
+                <div className="settings-section-header-title">Legal & Policies</div>
+                <p className="settings-section-subtitle">
+                  Review our legal commitments, privacy protections, and user agreements.
+                </p>
+
+                <div className="settings-legal-cards-grid">
+                  {/* Privacy Policy Card */}
+                  <div className="settings-legal-card">
+                    <div className="settings-legal-card-header">
+                      <IconShield size={20} style={{ color: '#38bdf8' }} />
+                      <h4>Privacy Policy</h4>
+                    </div>
+                    <p>How we handle and protect your Google account, study logs, cloud sync, and AI interactions.</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
+                      onClick={() => onOpenLegal && onOpenLegal('privacy')}
+                    >
+                      View Privacy Policy
+                    </button>
+                  </div>
+
+                  {/* Terms of Service Card */}
+                  <div className="settings-legal-card">
+                    <div className="settings-legal-card-header">
+                      <IconFileText size={20} style={{ color: '#818cf8' }} />
+                      <h4>Terms of Service</h4>
+                    </div>
+                    <p>The terms and conditions governing the use of FLOWSTATE and acceptable conduct.</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
+                      onClick={() => onOpenLegal && onOpenLegal('terms')}
+                    >
+                      View Terms of Service
+                    </button>
+                  </div>
+
+                  {/* Refund Policy Card */}
+                  <div className="settings-legal-card">
+                    <div className="settings-legal-card-header">
+                      <IconRefreshCcw size={20} style={{ color: '#34d399' }} />
+                      <h4>Refund & Cancellation Policy</h4>
+                    </div>
+                    <p>Our 14-day money-back guarantee, refund process, and subscription cancellation terms.</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
+                      onClick={() => onOpenLegal && onOpenLegal('refund')}
+                    >
+                      View Refund Policy
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-section-block">
+                <div className="settings-section-header-title">Contact & Support</div>
+                <p className="settings-section-subtitle">
+                  Questions about our policies or need data assistance? We are here to help.
+                </p>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <a
+                    href="mailto:support@flowstate.study"
+                    className="btn btn-secondary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px', textDecoration: 'none' }}
+                  >
+                    ✉️ Contact Support
+                  </a>
                 </div>
               </div>
             </div>
