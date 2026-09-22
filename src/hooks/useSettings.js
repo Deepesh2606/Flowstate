@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { saveSettings, subscribeSettings } from '../firebase/firestore';
 
@@ -33,6 +33,7 @@ const SETTINGS_STORAGE_KEY = 'flowstate_settings_cache';
 
 export const useSettings = () => {
   const { currentUser } = useAuth();
+  const saveTimeoutRef = useRef(null);
   const [settings, setSettings] = useState(() => {
     try {
       const cached = localStorage.getItem(SETTINGS_STORAGE_KEY);
@@ -50,6 +51,12 @@ export const useSettings = () => {
     return DEFAULT_SETTINGS;
   });
   const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -92,7 +99,8 @@ export const useSettings = () => {
   }, [currentUser]);
 
   const updateSettings = useCallback(
-    async (updates) => {
+    (updates) => {
+      let nextState;
       setSettings((prev) => {
         const color = updates.clockColor || updates.textColor || prev.clockColor || prev.textColor;
         const merged = {
@@ -105,18 +113,26 @@ export const useSettings = () => {
             ...(updates.durations || {}),
           },
         };
+        nextState = merged;
         try {
           localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
         } catch {
           // ignore
         }
-        if (currentUser) {
-          saveSettings(currentUser.uid, merged).catch((err) =>
-            console.warn('Background settings save error:', err)
-          );
-        }
         return merged;
       });
+
+      // Debounce remote Firestore sync by 350ms for instant 0ms local response
+      if (currentUser) {
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = setTimeout(() => {
+          if (nextState) {
+            saveSettings(currentUser.uid, nextState).catch((err) =>
+              console.warn('Background settings save error:', err)
+            );
+          }
+        }, 350);
+      }
     },
     [currentUser]
   );

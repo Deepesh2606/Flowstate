@@ -12,69 +12,75 @@ export const useWallpaper = () => {
 };
 
 const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
+const CUSTOM_WALLPAPERS_STORAGE_KEY = 'flowstate_custom_wallpapers';
 
-const DEFAULT_PRESET_WALLPAPERS = [
-  // Ambient Video Loops
-  { id: 'video-rain', label: 'Rain on Window', url: 'https://assets.mixkit.co/videos/preview/mixkit-rain-falling-on-the-water-of-a-lake-1981-large.mp4', isVideo: true },
-  { id: 'video-fire', label: 'Cozy Fireplace', url: 'https://assets.mixkit.co/videos/preview/mixkit-bonfire-burning-in-the-dark-43391-large.mp4', isVideo: true },
-  { id: 'video-waves', label: 'Sunset Waves', url: 'https://assets.mixkit.co/videos/preview/mixkit-sea-waves-crashing-on-the-beach-at-sunset-40763-large.mp4', isVideo: true },
-  { id: 'video-stars', label: 'Starry Cosmos', url: 'https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-flowing-slowly-43033-large.mp4', isVideo: true },
-  // Image Presets
-  { id: 'forest', label: 'Forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80&auto=format,compress' },
-  { id: 'aurora', label: 'Aurora', url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80&auto=format,compress' },
-  { id: 'mountains', label: 'Mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=80&auto=format,compress' },
-  { id: 'galaxy', label: 'Galaxy', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600&q=80&auto=format,compress' },
-  { id: 'ocean', label: 'Ocean', url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1600&q=80&auto=format,compress' },
-  { id: 'desert', label: 'Desert Dunes', url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80&auto=format,compress' },
-  { id: 'neon-city', label: 'Neon City', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1600&q=80&auto=format,compress' },
-  { id: 'abstract', label: 'Abstract', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1600&q=80&auto=format,compress' },
-];
+// Filter out legacy un-added Mixkit and Unsplash presets
+const isUserAddedWallpaper = (wp) => {
+  if (!wp || !wp.url) return false;
+  const u = wp.url;
+  if (u.includes('assets.mixkit.co') || u.includes('images.unsplash.com')) {
+    return false;
+  }
+  return true;
+};
 
 export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
+  const [customWallpapers, setCustomWallpapers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CUSTOM_WALLPAPERS_STORAGE_KEY);
+      return saved ? JSON.parse(saved).filter(url => !url.includes('assets.mixkit.co') && !url.includes('images.unsplash.com')) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [wallpaper, setWallpaperState] = useState(() => {
     try {
-      return localStorage.getItem(WALLPAPER_STORAGE_KEY) || null;
+      const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
+      if (cached && !cached.includes('assets.mixkit.co') && !cached.includes('images.unsplash.com')) {
+        return cached;
+      }
+      return null;
     } catch {
       return null;
     }
   });
-  const [customWallpapers, setCustomWallpapers] = useState([]);
+
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
-  // Start empty — populated by Firebase to avoid flashing wrong presets
   const [globalCurated, setGlobalCurated] = useState([]);
   const [globalDefault, setGlobalDefaultState] = useState(null);
 
-  // Preload the cached wallpaper immediately on mount so it renders without delay
+  // Preload the active wallpaper immediately on mount so it renders with 0 delay
   useEffect(() => {
     try {
-      const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
-      if (cached) {
+      const currentWp = wallpaper || localStorage.getItem(WALLPAPER_STORAGE_KEY);
+      if (currentWp && !isVideoUrl(currentWp)) {
         const img = new window.Image();
-        img.src = cached;
+        img.src = currentWp;
       }
     } catch {
       // ignore
     }
-  }, []);
+  }, [wallpaper]);
 
-  // Subscribe to global curated wallpapers immediately
+  // Subscribe to global curated wallpapers and fetch Cloudinary wallpaper immediately on entry
   useEffect(() => {
     const unsubGlobal = subscribeGlobalCurated((curatedList, defaultWallpaperUrl) => {
-      if (curatedList && curatedList.length > 0) {
-        setGlobalCurated(curatedList);
-      } else {
-        // Seed defaults into Firebase if collection is empty
-        seedGlobalCurated(DEFAULT_PRESET_WALLPAPERS);
-        // Also show defaults locally so picker isn't empty
-        setGlobalCurated(DEFAULT_PRESET_WALLPAPERS);
-      }
-      if (defaultWallpaperUrl) {
-        setGlobalDefaultState(defaultWallpaperUrl);
-        if (!localStorage.getItem(WALLPAPER_STORAGE_KEY)) {
-          setWallpaperState(defaultWallpaperUrl);
-          try { localStorage.setItem(WALLPAPER_STORAGE_KEY, defaultWallpaperUrl); } catch {}
+      const validCurated = (curatedList || []).filter(isUserAddedWallpaper);
+      setGlobalCurated(validCurated);
+
+      const validDefault = defaultWallpaperUrl && isUserAddedWallpaper({ url: defaultWallpaperUrl })
+        ? defaultWallpaperUrl
+        : (validCurated[0]?.url || null);
+
+      if (validDefault) {
+        setGlobalDefaultState(validDefault);
+        const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
+        if (!cached || cached.includes('assets.mixkit.co') || cached.includes('images.unsplash.com')) {
+          setWallpaperState(validDefault);
+          try { localStorage.setItem(WALLPAPER_STORAGE_KEY, validDefault); } catch {}
         }
       }
     });
@@ -88,10 +94,15 @@ export const WallpaperProvider = ({ children }) => {
     // Optimistically load from localStorage to prevent delayed UI changes on login
     try {
       const cachedWallpaper = localStorage.getItem(`wallpaper_${currentUser.uid}`);
-      if (cachedWallpaper) setWallpaperState(cachedWallpaper);
+      if (cachedWallpaper && !cachedWallpaper.includes('assets.mixkit.co') && !cachedWallpaper.includes('images.unsplash.com')) {
+        setWallpaperState(cachedWallpaper);
+      }
 
       const cachedCustom = localStorage.getItem(`custom_wallpapers_${currentUser.uid}`);
-      if (cachedCustom) setCustomWallpapers(JSON.parse(cachedCustom));
+      if (cachedCustom) {
+        const parsed = JSON.parse(cachedCustom).filter(url => !url.includes('assets.mixkit.co') && !url.includes('images.unsplash.com'));
+        setCustomWallpapers(parsed);
+      }
 
       const cachedHidden = localStorage.getItem(`hidden_curated_${currentUser.uid}`);
       if (cachedHidden) setHiddenCurated(JSON.parse(cachedHidden));
@@ -100,7 +111,7 @@ export const WallpaperProvider = ({ children }) => {
     }
 
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
-      if (settings?.wallpaper) {
+      if (settings?.wallpaper && !settings.wallpaper.includes('assets.mixkit.co') && !settings.wallpaper.includes('images.unsplash.com')) {
         setWallpaperState(settings.wallpaper);
         try {
           localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);
@@ -108,13 +119,13 @@ export const WallpaperProvider = ({ children }) => {
         } catch {
           // ignore
         }
-      } else if (!localStorage.getItem(WALLPAPER_STORAGE_KEY)) {
-        setShowPicker(true);
       }
       if (settings?.customWallpapers) {
-        setCustomWallpapers(settings.customWallpapers);
+        const valid = settings.customWallpapers.filter(url => !url.includes('assets.mixkit.co') && !url.includes('images.unsplash.com'));
+        setCustomWallpapers(valid);
         try {
-          localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(settings.customWallpapers));
+          localStorage.setItem(CUSTOM_WALLPAPERS_STORAGE_KEY, JSON.stringify(valid));
+          localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(valid));
         } catch {}
       }
       if (settings?.hiddenCurated) {
@@ -152,12 +163,15 @@ export const WallpaperProvider = ({ children }) => {
 
   const addCustomWallpaper = useCallback(
     async (url) => {
-      const updated = [url, ...customWallpapers];
+      const updated = [url, ...customWallpapers.filter(w => w !== url)];
       setCustomWallpapers(updated);
-      if (currentUser) {
-        try {
+      try {
+        localStorage.setItem(CUSTOM_WALLPAPERS_STORAGE_KEY, JSON.stringify(updated));
+        if (currentUser) {
           localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(updated));
-        } catch {}
+        }
+      } catch {}
+      if (currentUser) {
         await saveSettings(currentUser.uid, { customWallpapers: updated });
       }
     },
@@ -168,10 +182,13 @@ export const WallpaperProvider = ({ children }) => {
     async (url) => {
       const updated = customWallpapers.filter((w) => w !== url);
       setCustomWallpapers(updated);
-      if (currentUser) {
-        try {
+      try {
+        localStorage.setItem(CUSTOM_WALLPAPERS_STORAGE_KEY, JSON.stringify(updated));
+        if (currentUser) {
           localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(updated));
-        } catch {}
+        }
+      } catch {}
+      if (currentUser) {
         await saveSettings(currentUser.uid, { customWallpapers: updated });
       }
       // If the removed wallpaper is the active one, revert to default

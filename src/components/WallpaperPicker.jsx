@@ -347,6 +347,27 @@ const WallpaperPicker = () => {
                 </div>
               </div>
               )}
+
+              {(!customWallpapers || customWallpapers.length === 0) && (!globalCurated || globalCurated.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>🖼️</div>
+                  <h3 style={{ fontSize: '15px', color: '#fff', marginBottom: '6px' }}>No Wallpapers Added Yet</h3>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, marginBottom: '20px' }}>
+                    Upload your favorite image or video loops via Cloudinary to personalize your workspace.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setActiveTab('upload');
+                      setTimeout(() => fileRef.current?.click(), 80);
+                    }}
+                    style={{ padding: '8px 20px', borderRadius: '12px', fontSize: '13px' }}
+                  >
+                    Upload Wallpaper
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

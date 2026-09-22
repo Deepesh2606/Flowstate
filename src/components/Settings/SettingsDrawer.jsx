@@ -59,12 +59,11 @@ const FONT_OPTIONS = [
   { id: "'DM Mono', monospace", label: 'DM Mono' },
 ];
 
-const Toggle = ({ id, checked, onChange, label, sub, badge }) => (
+const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
     <div style={{ flex: 1, paddingRight: '12px' }}>
       <div className="setting-toggle-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span>{label}</span>
-        {badge && <span className="settings-badge-plus">{badge}</span>}
       </div>
       {sub && <div className="setting-toggle-sub">{sub}</div>}
     </div>
@@ -90,7 +89,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   // Active side menu category
   const [activeTab, setActiveTab] = useState('timer'); // 'clock' | 'timer' | 'stats' | 'quotes' | 'extras' | 'account' | 'support' | 'whatsnew'
-  const [showPlusModal, setShowPlusModal] = useState(false);
 
   // Timer durations
   const [pomodoro, setPomodoro]       = useState(Math.round((d.pomodoro   || 2700) / 60));
@@ -526,16 +524,10 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
             })}
           </nav>
 
-          {/* Upgrade to Plus Gradient Button */}
-          <button
-            type="button"
-            className="settings-upgrade-plus-btn"
-            onClick={() => setShowPlusModal(true)}
-            id="settings-upgrade-plus-btn"
-          >
-            <IconZap size={14} />
-            <span>Upgrade to Plus</span>
-          </button>
+          {/* Version badge */}
+          <div className="settings-version-badge">
+            <span className="version-dot" /> Flowstate v2.4
+          </div>
 
           {/* Buy Me a Coffee Button */}
           <a
@@ -644,7 +636,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
               <div className="settings-card-banner">
                 <div className="settings-card-banner-header">
                   <span className="settings-card-banner-title">Custom Timer Font</span>
-                  <span className="settings-badge-plus">⚡ PLUS</span>
                 </div>
                 <p className="settings-card-banner-sub">
                   Go to{' '}
@@ -664,7 +655,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 <div className="settings-section-header-row">
                   <div className="settings-section-header-title">Timer Style</div>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <span className="settings-badge-plus">⚡ PLUS</span>
                     <span className="settings-badge-new">NEW</span>
                   </div>
                 </div>
@@ -789,7 +779,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   onChange={(val) => handleToggleChange('showTimerProgressBar', setShowTimerProgressBar, val)}
                   label="Show timer progress bar"
                   sub="Display a visual progress bar beneath the timer."
-                  badge="⚡ PLUS"
                 />
 
                 <Toggle
@@ -798,7 +787,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   onChange={(val) => handleToggleChange('notifyOnComplete', setNotifyOnComplete, val)}
                   label="Show notification"
                   sub="Beta feature: Show a browser notification when the timer ends."
-                  badge="⚡ PLUS"
                 />
 
                 <Toggle
@@ -827,7 +815,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   onChange={(val) => handleToggleChange('showTaskInPip', setShowTaskInPip, val)}
                   label="Show task in picture-in-picture"
                   sub="Display your current focus topic or linked task in the floating mini window."
-                  badge="⚡ PLUS"
                 />
 
                 <Toggle
@@ -1676,62 +1663,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
           )}
         </div>
       </aside>
-
-      {/* ═══ PLUS PERKS MODAL ═══ */}
-      {showPlusModal && (
-        <div
-          className="reset-modal-overlay"
-          style={{ zIndex: 1300 }}
-          onClick={() => setShowPlusModal(false)}
-        >
-          <div
-            className="reset-modal-card"
-            style={{ maxWidth: '440px', padding: '32px 28px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="reset-modal-close-btn"
-              onClick={() => setShowPlusModal(false)}
-            >
-              <IconX size={16} />
-            </button>
-
-            <div className="reset-modal-icon-ring" style={{ background: 'rgba(99, 102, 241, 0.15)', borderColor: '#6366f1', color: '#818cf8' }}>
-              <IconZap size={26} />
-            </div>
-
-            <h3 className="reset-modal-title" style={{ fontSize: '1.4rem' }}>
-              Flowstate Plus ⚡
-            </h3>
-
-            <p className="reset-modal-desc" style={{ maxWidth: '360px' }}>
-              Unlock all premium features to supercharge your daily focus and productivity:
-            </p>
-
-            <div className="plus-perks-list">
-              <div className="plus-perk-item">✓ All 6 Timer Styles (Gauge, Dot Matrix, Flip, Pie, Bar)</div>
-              <div className="plus-perk-item">✓ 12+ Pro Typography & Clock Fonts</div>
-              <div className="plus-perk-item">✓ Unlimited 4K Video Wallpapers & MP4 Uploads</div>
-              <div className="plus-perk-item">✓ Unlimited Gemini Active Recall AI Flashcards</div>
-              <div className="plus-perk-item">✓ Verified Leaderboard Pro Badge & Rank</div>
-              <div className="plus-perk-item">✓ Unlimited Multi-Device Cloud Sync</div>
-            </div>
-
-            <button
-              type="button"
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '12px', borderRadius: '14px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', marginTop: '8px' }}
-              onClick={() => {
-                toast('⚡ Lifetime Plus Access Active (Beta)! Enjoy all features.', 'success', 3500);
-                setShowPlusModal(false);
-              }}
-            >
-              Active Lifetime Beta Access
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 };

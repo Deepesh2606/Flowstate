@@ -12,25 +12,31 @@ export const isVideoUrl = (url) => {
   );
 };
 
+const contrastCache = new Map();
+
 /**
  * Analyzes wallpaper luminance and color distribution, specifically weighting the center region
  * where the clock sits, to calculate optimal contrast color and shadows.
+ * Results are cached in-memory for instant 0ms retrieval on subsequent setting changes.
  *
  * @param {string} imageUrl - The URL of the wallpaper image.
  * @returns {Promise<{ color: string, shadow: string, isLight: boolean, brightness: number }>}
  */
 export const getWallpaperContrast = (imageUrl) => {
-  return new Promise((resolve) => {
-    if (!imageUrl || isVideoUrl(imageUrl)) {
-      resolve({
-        color: '#ffffff',
-        shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',
-        isLight: false,
-        brightness: 40,
-      });
-      return;
-    }
+  if (!imageUrl || isVideoUrl(imageUrl)) {
+    return Promise.resolve({
+      color: '#ffffff',
+      shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',
+      isLight: false,
+      brightness: 40,
+    });
+  }
 
+  if (contrastCache.has(imageUrl)) {
+    return Promise.resolve(contrastCache.get(imageUrl));
+  }
+
+  return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
@@ -38,6 +44,7 @@ export const getWallpaperContrast = (imageUrl) => {
     const safeResolve = (res) => {
       if (!resolved) {
         resolved = true;
+        contrastCache.set(imageUrl, res);
         resolve(res);
       }
     };
