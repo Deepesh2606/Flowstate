@@ -2375,6 +2375,21 @@ input {
     font-size: clamp(4rem, 16vw, 10rem);
   }
 
+  /* Reduce Clutter on Mobile */
+  .topbar-rooms-btn {
+    display: none;
+  }
+  
+  .top-right-controls {
+    top: max(16px, env(safe-area-inset-top, 16px));
+    right: 16px;
+  }
+  
+  .topbar-signin-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
   /* Bottom Left Dock on Mobile */
   .bottom-left-dock {
     bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 12px);
@@ -2387,6 +2402,11 @@ input {
     width: 38px;
     height: 38px;
     border-radius: 12px;
+  }
+
+  /* Hide dock buttons except AI to save space */
+  .bottom-dock-btn:not(.ai-chat-btn) {
+    display: none;
   }
 
   .ai-chat-btn {

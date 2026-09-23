@@ -41,9 +41,9 @@ export const WallpaperProvider = ({ children }) => {
       if (cached && !cached.includes('assets.mixkit.co') && !cached.includes('images.unsplash.com')) {
         return cached;
       }
-      return null;
+      return '/defaultpreset.png';
     } catch {
-      return null;
+      return '/defaultpreset.png';
     }
   });
 
