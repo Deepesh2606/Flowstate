@@ -336,60 +336,13 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
             count={sessionCount}
             dailyGoal={settings?.dailyGoal || 8}
             longBreakInterval={settings?.longBreakInterval || 4}
+            pomodoroDuration={settings?.durations?.pomodoro || 2700}
           />
         </div>
       </div>
 
       {/* Ghost Pacer: Race Against Yesterday's You */}
       {settings?.showGhostPacer && <GhostPacer />}
-
-      {/* Session Scratchpad for active notes & flashcard generation */}
-      <SessionScratchpad onTriggerRecall={handleTriggerRecall} subject={subject} />
-
-      {/* Linked Task Row */}
-      {currentUser && mode === 'pomodoro' && (
-        <div className="linked-task-row">
-          {linkedTask ? (
-            <div className="linked-task-badge">
-              <span className="linked-task-icon">🔗</span>
-              <span className="linked-task-text">{linkedTask.text}</span>
-              <button
-                type="button"
-                className="linked-task-unlink"
-                onClick={() => setLinkedTaskId(null)}
-                title="Unlink task"
-              >✕</button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="linked-task-prompt"
-              onClick={() => setShowTaskPicker(v => !v)}
-              id="btn-link-task"
-            >
-              <span>🔗</span> Link a task
-            </button>
-          )}
-          {showTaskPicker && !linkedTask && (
-            <div className="linked-task-picker">
-              {pendingTasks.length === 0 ? (
-                <div className="linked-task-picker-empty">No pending tasks</div>
-              ) : (
-                pendingTasks.slice(0, 6).map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    className="linked-task-option"
-                    onClick={() => { setLinkedTaskId(t.id); setShowTaskPicker(false); }}
-                  >
-                    {t.text}
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Controls */}
       <div className="flocus-controls">

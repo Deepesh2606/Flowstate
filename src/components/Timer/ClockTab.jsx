@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import FlipCard from './FlipCard';
 import { IconMaximize, IconMinimize, IconPip, IconSettings } from '../Icons';
 
@@ -122,6 +122,23 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
   const dayOfMonth = time.getDate();
   const monthName = time.toLocaleDateString(undefined, { month: 'short' });
   const year = time.getFullYear();
+
+  // Calculate nearest exam
+  const nearestExam = useMemo(() => {
+    if (!settings?.showExamDeadline || !settings?.exams || settings.exams.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = settings.exams
+      .map(exam => {
+        const [yearStr, monthStr, dayStr] = exam.date.split('-');
+        const target = new Date(Number(yearStr), Number(monthStr) - 1, Number(dayStr));
+        const daysLeft = Math.round((target - today) / 86400000);
+        return { ...exam, daysLeft, target };
+      })
+      .filter(exam => exam.daysLeft >= 0)
+      .sort((a, b) => a.daysLeft - b.daysLeft);
+    return upcoming.length > 0 ? upcoming[0] : null;
+  }, [settings?.showExamDeadline, settings?.exams]);
 
   // Floating PiP support via Canvas & Video element
   const togglePip = async () => {
@@ -338,6 +355,31 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
           </span>
         </div>
       </div>
+
+      {settings?.showExamDeadline && nearestExam && (
+        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.4)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            padding: '8px 16px',
+            borderRadius: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: 500
+          }}>
+            <span style={{ fontSize: '16px' }}>🗓️</span>
+            <span>{nearestExam.title}</span>
+            <span style={{ opacity: 0.6 }}>·</span>
+            <span style={{ color: 'var(--accent, #06b6d4)' }}>
+              {nearestExam.daysLeft === 0 ? 'Today' : nearestExam.daysLeft === 1 ? 'Tomorrow' : `${nearestExam.daysLeft} days left`}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Controls Bar: Format, Seconds, Fullscreen & PiP */}
       <div className="flocus-controls live-clock-controls">

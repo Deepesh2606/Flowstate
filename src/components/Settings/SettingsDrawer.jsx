@@ -226,6 +226,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [appTheme, setAppTheme]                     = useState(settings?.appTheme || 'midnight');
   const [chimeStyle, setChimeStyle]                 = useState(settings?.chimeStyle || 'classic');
   const [showQuotes, setShowQuotes]                 = useState(settings?.showQuotes ?? true);
+  const [showExamDeadline, setShowExamDeadline]     = useState(settings?.showExamDeadline ?? true);
   const [presets, setPresets]                       = useState(settings?.presets || DEFAULT_PRESETS);
 
   useEffect(() => {
@@ -245,6 +246,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       if (settings.appTheme) setAppTheme(settings.appTheme);
       if (settings.chimeStyle) setChimeStyle(settings.chimeStyle);
       if (settings.showQuotes !== undefined) setShowQuotes(settings.showQuotes);
+      if (settings.showExamDeadline !== undefined) setShowExamDeadline(settings.showExamDeadline);
       if (settings.presets) setPresets(settings.presets);
     }
   }, [settings]);
@@ -457,6 +459,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       appTheme,
       chimeStyle,
       showQuotes,
+      showExamDeadline,
       presets,
       targets: finalTargets,
     });
@@ -978,6 +981,14 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   onChange={handleShowSecondsChange}
                   label="Show Seconds"
                   sub="Display seconds countdown on the timer and clock"
+                />
+
+                <Toggle
+                  id="toggle-show-exam-deadline"
+                  checked={showExamDeadline}
+                  onChange={(val) => handleToggleChange('showExamDeadline', setShowExamDeadline, val)}
+                  label="Show Exam Deadline"
+                  sub="Display the nearest upcoming exam deadline on the clock"
                 />
               </div>
 

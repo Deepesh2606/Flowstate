@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SessionCounter = ({ count = 0, dailyGoal = 8, longBreakInterval = 4 }) => {
+const SessionCounter = ({ count = 0, dailyGoal = 8, longBreakInterval = 4, pomodoroDuration = 2700 }) => {
   const goal = Math.max(1, Number(dailyGoal) || 8);
   const current = Math.max(0, Number(count) || 0);
 
@@ -11,6 +11,11 @@ const SessionCounter = ({ count = 0, dailyGoal = 8, longBreakInterval = 4 }) => 
   const longBreakStatus = sessionsUntilLongBreak === interval && current > 0
     ? 'Long break ready!'
     : `${sessionsUntilLongBreak} session${sessionsUntilLongBreak === 1 ? '' : 's'} until long break`;
+
+  const totalSeconds = current * pomodoroDuration;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const timeString = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
   const isGoalReached = current >= goal;
   const pipCount = Math.min(goal, 12);
@@ -63,9 +68,14 @@ const SessionCounter = ({ count = 0, dailyGoal = 8, longBreakInterval = 4 }) => 
         </div>
       )}
 
-      <span className="session-counter-badge" title="Completed / Daily Goal">
-        {current}/{goal}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span className="session-counter-badge" title="Completed / Daily Goal">
+          {current}/{goal}
+        </span>
+        <span className="session-counter-badge" style={{ background: 'rgba(255,255,255,0.1)' }} title="Total focus time completed">
+          {timeString}
+        </span>
+      </div>
 
       {isGoalReached && (
         <span className="session-counter-goal-tag" title="Daily Goal Accomplished!">

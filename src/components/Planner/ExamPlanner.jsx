@@ -109,7 +109,19 @@ const ExamPlanner = ({ exams = [], onChange }) => {
             const key = dateKey(cell);
             const exam = exams.find((item) => item.date === key);
             const isToday = key === dateKey(new Date());
-            return <span key={key} title={exam?.title} className={`exam-calendar-day ${isToday ? 'is-today' : ''} ${exam ? 'has-exam' : ''}`}>{cell.getDate()}</span>;
+            const isSelected = key === date;
+            return (
+              <button
+                type="button"
+                key={key}
+                title={exam?.title || 'Select date'}
+                onClick={() => setDate(key)}
+                className={`exam-calendar-day ${isToday ? 'is-today' : ''} ${exam ? 'has-exam' : ''} ${isSelected ? 'is-selected' : ''}`}
+                style={{ cursor: 'pointer', border: 'none', background: isSelected ? 'var(--accent)' : 'transparent', color: isSelected ? '#fff' : 'inherit' }}
+              >
+                {cell.getDate()}
+              </button>
+            );
           })}
         </div>
       </div>

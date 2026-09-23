@@ -197,3 +197,18 @@ export const subscribeLeaderboard = (callback) => {
     }
   );
 };
+
+export const subscribeLiveRooms = (callback) => {
+  const ref = collection(db, 'liveRooms');
+  return onSnapshot(
+    ref,
+    (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      callback(list);
+    },
+    (err) => {
+      console.warn('Firestore liveRooms subscribe error:', err);
+      callback([]);
+    }
+  );
+};

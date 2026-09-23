@@ -1,80 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { IconX } from '../Icons';
-
-const PRESET_ROOMS = [
-  {
-    id: 'forest-library',
-    name: 'Pinecrest Forest Library',
-    tag: 'Silent Deep Work',
-    icon: '🌲',
-    onlineCount: 268,
-    pomodoro: '50 / 10',
-    ambience: 'Forest Wind & Soft Rain',
-    members: [
-      { name: 'Elena Rostova', role: 'Medical Student', status: 'Focusing (22m left)', avatar: '👩‍⚕️', color: '#10b981' },
-      { name: 'Kenji Takahashi', role: 'Software Engineer', status: 'Focusing (22m left)', avatar: '👨‍💻', color: '#06b6d4' },
-      { name: 'Maya Lin', role: 'Architecture', status: 'Short Break (4m)', avatar: '👩‍🎨', color: '#f59e0b' },
-      { name: 'David Chen', role: 'Data Analysis', status: 'Focusing (22m left)', avatar: '📊', color: '#8b5cf6' },
-      { name: 'Sarah Miller', role: 'Law Review', status: 'Focusing (22m left)', avatar: '📚', color: '#ec4899' },
-    ],
-  },
-  {
-    id: 'rainy-cafe',
-    name: 'Shibuya Rainy Cafe',
-    tag: 'Ambient & Lofi Beats',
-    icon: '☕',
-    onlineCount: 184,
-    pomodoro: '25 / 5',
-    ambience: 'Cafe Chatter & Rain on Glass',
-    members: [
-      { name: 'Chloe Dubois', role: 'Graphic Design', status: 'Focusing (14m left)', avatar: '🎨', color: '#ec4899' },
-      { name: 'Arjun Mehta', role: 'Machine Learning', status: 'Focusing (14m left)', avatar: '🤖', color: '#06b6d4' },
-      { name: 'Leo Vance', role: 'Creative Writing', status: 'Short Break (2m)', avatar: '✍️', color: '#f59e0b' },
-      { name: 'Hannah Schmidt', role: 'Economics Prep', status: 'Focusing (14m left)', avatar: '📈', color: '#10b981' },
-    ],
-  },
-  {
-    id: 'coding-lab',
-    name: 'Late Night Coding Lab',
-    tag: 'High Velocity Sprints',
-    icon: '🚀',
-    onlineCount: 142,
-    pomodoro: '45 / 15',
-    ambience: 'Cyber Lofi & Synthwave',
-    members: [
-      { name: 'Alex Rivera', role: 'Full Stack Dev', status: 'Focusing (31m left)', avatar: '💻', color: '#06b6d4' },
-      { name: 'Zack Thorne', role: 'Game Engine', status: 'Focusing (31m left)', avatar: '🕹️', color: '#8b5cf6' },
-      { name: 'Nadia Popov', role: 'Backend Lead', status: 'Focusing (31m left)', avatar: '⚡', color: '#10b981' },
-      { name: 'Tariq Al-Mansoor', role: 'Security Audit', status: 'Short Break (8m)', avatar: '🛡️', color: '#f59e0b' },
-    ],
-  },
-  {
-    id: 'lofi-space',
-    name: 'Celestial Lo-Fi Station',
-    tag: 'Calm & Atmospheric Reading',
-    icon: '🌌',
-    onlineCount: 95,
-    pomodoro: '30 / 5',
-    ambience: 'Cosmic Drone & White Noise',
-    members: [
-      { name: 'Aria Thorne', role: 'Astrophysics', status: 'Focusing (19m left)', avatar: '🔭', color: '#8b5cf6' },
-      { name: 'Liam Wilson', role: 'Philosophy Essay', status: 'Focusing (19m left)', avatar: '📖', color: '#06b6d4' },
-      { name: 'Emma Watson', role: 'Exam Review', status: 'Focusing (19m left)', avatar: '📝', color: '#ec4899' },
-    ],
-  },
-];
+import { subscribeLiveRooms } from '../../firebase/firestore';
 
 const REACTIONS = ['🔥', '☕', '✨', '🧠', '👏', '🎯'];
 
 const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
-  const [selectedRoomId, setSelectedRoomId] = useState('forest-library');
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [customRoomCode, setCustomRoomCode] = useState('');
   const [groupName, setGroupName] = useState('');
   const [joinedCustom, setJoinedCustom] = useState(false);
   const [synced, setSynced] = useState(false);
   const [reactionsList, setReactionsList] = useState([]);
 
-  const activeRoom = PRESET_ROOMS.find((r) => r.id === selectedRoomId) || PRESET_ROOMS[0];
+  useEffect(() => {
+    const unsub = subscribeLiveRooms((data) => {
+      setRooms(data || []);
+      if (data?.length > 0 && !selectedRoomId) {
+        setSelectedRoomId(data[0].id);
+      }
+    });
+    return () => unsub();
+  }, [selectedRoomId]);
+
+  const activeRoom = rooms.find((r) => r.id === selectedRoomId) || rooms[0] || null;
 
   // Esc key closes modal
   useEffect(() => {
@@ -112,7 +61,7 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
 
   const handleSyncClick = () => {
     setSynced(true);
-    if (onSyncTimer) onSyncTimer(activeRoom);
+    if (onSyncTimer && activeRoom) onSyncTimer(activeRoom);
     setTimeout(() => setSynced(false), 2500);
   };
 
@@ -153,116 +102,124 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
         </div>
 
         {/* Room Grid Selector */}
-        <div className="rooms-selector-grid">
-          {PRESET_ROOMS.map((room) => {
-            const isSelected = room.id === selectedRoomId && !joinedCustom;
-            return (
-              <button
-                key={room.id}
-                type="button"
-                className={`room-card-btn ${isSelected ? 'active' : ''}`}
-                onClick={() => {
-                  setSelectedRoomId(room.id);
-                  setJoinedCustom(false);
-                }}
-              >
-                <div className="room-card-top">
-                  <span className="room-card-icon">{room.icon}</span>
-                  <span className="room-online-pill">
-                    <span className="rooms-live-indicator" /> {room.onlineCount} online
-                  </span>
-                </div>
-                <div className="room-card-name">{room.name}</div>
-                <div className="room-card-meta">
-                  <span>⏱️ {room.pomodoro}</span> · <span>{room.tag}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        {rooms.length > 0 ? (
+          <div className="rooms-selector-grid">
+            {rooms.map((room) => {
+              const isSelected = room.id === selectedRoomId && !joinedCustom;
+              return (
+                <button
+                  key={room.id}
+                  type="button"
+                  className={`room-card-btn ${isSelected ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedRoomId(room.id);
+                    setJoinedCustom(false);
+                  }}
+                >
+                  <div className="room-card-top">
+                    <span className="room-card-icon">{room.icon || '💬'}</span>
+                    <span className="room-online-pill">
+                      <span className="rooms-live-indicator" /> {room.onlineCount || 0} online
+                    </span>
+                  </div>
+                  <div className="room-card-name">{room.name}</div>
+                  <div className="room-card-meta">
+                    <span>⏱️ {room.pomodoro || '25 / 5'}</span> · <span>{room.tag || 'General'}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            No active public study rooms right now. Create a private group below!
+          </div>
+        )}
 
         {/* Active Room Detail Panel */}
-        <div className="active-room-panel">
-          <div className="active-room-header">
-            <div className="active-room-title-block">
-              <div className="active-room-icon-wrap">{activeRoom.icon}</div>
-              <div>
-                <h3 className="active-room-heading">
-                  {joinedCustom ? `Private Room: ${customRoomCode.toUpperCase()}` : activeRoom.name}
-                </h3>
-                <span className="active-room-sub">
-                  🎧 Recommended Ambience: <strong>{activeRoom.ambience}</strong>
-                </span>
-              </div>
-            </div>
-
-            {/* Sync Timer Button */}
-            <button
-              type="button"
-              className={`room-sync-timer-btn ${synced ? 'synced' : ''}`}
-              onClick={handleSyncClick}
-              title="Synchronize your Pomodoro timer with this room"
-            >
-              {synced ? '✅ Synced to Room!' : '⏱️ Sync My Timer'}
-            </button>
-          </div>
-
-          {/* Active Members List */}
-          <div className="active-room-members-section">
-            <div className="members-section-header">
-              <span>👥 STUDYING RIGHT NOW ({activeRoom.onlineCount} STUDENTS)</span>
-              <span className="members-muted-tip">Soundless presence · Keep going</span>
-            </div>
-
-            <div className="members-chips-list">
-              {/* Current user */}
-              <div className="member-chip member-chip--you">
-                <div className="member-avatar-box" style={{ borderColor: '#06b6d4' }}>
-                  {currentUser?.photoURL ? (
-                    <img src={currentUser.photoURL} alt="You" className="member-img" />
-                  ) : (
-                    <span>⭐</span>
-                  )}
-                </div>
-                <div className="member-info">
-                  <span className="member-name">{currentUser?.displayName || 'Deepesh (You)'}</span>
-                  <span className="member-status">⚡ In Flowstate</span>
+        {activeRoom || joinedCustom ? (
+          <div className="active-room-panel">
+            <div className="active-room-header">
+              <div className="active-room-title-block">
+                <div className="active-room-icon-wrap">{activeRoom?.icon || '🔒'}</div>
+                <div>
+                  <h3 className="active-room-heading">
+                    {joinedCustom ? `Private Room: ${customRoomCode.toUpperCase()}` : activeRoom?.name}
+                  </h3>
+                  <span className="active-room-sub">
+                    🎧 Recommended Ambience: <strong>{activeRoom?.ambience || 'Lofi Beats'}</strong>
+                  </span>
                 </div>
               </div>
 
-              {/* Other peers */}
-              {activeRoom.members.map((m, idx) => (
-                <div key={idx} className="member-chip">
-                  <div className="member-avatar-box" style={{ borderColor: m.color }}>
-                    <span>{m.avatar}</span>
+              {/* Sync Timer Button */}
+              <button
+                type="button"
+                className={`room-sync-timer-btn ${synced ? 'synced' : ''}`}
+                onClick={handleSyncClick}
+                title="Synchronize your Pomodoro timer with this room"
+              >
+                {synced ? '✅ Synced to Room!' : '⏱️ Sync My Timer'}
+              </button>
+            </div>
+
+            {/* Active Members List */}
+            <div className="active-room-members-section">
+              <div className="members-section-header">
+                <span>👥 STUDYING RIGHT NOW ({joinedCustom ? 1 : (activeRoom?.onlineCount || 1)} STUDENTS)</span>
+                <span className="members-muted-tip">Soundless presence · Keep going</span>
+              </div>
+
+              <div className="members-chips-list">
+                {/* Current user */}
+                <div className="member-chip member-chip--you">
+                  <div className="member-avatar-box" style={{ borderColor: '#06b6d4' }}>
+                    {currentUser?.photoURL ? (
+                      <img src={currentUser.photoURL} alt="You" className="member-img" />
+                    ) : (
+                      <span>⭐</span>
+                    )}
                   </div>
                   <div className="member-info">
-                    <span className="member-name">{m.name}</span>
-                    <span className="member-status">{m.status}</span>
+                    <span className="member-name">{currentUser?.displayName || 'Deepesh (You)'}</span>
+                    <span className="member-status">⚡ In Flowstate</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Cheer & Reaction Bar */}
-          <div className="rooms-reactions-bar">
-            <span className="reactions-label">Send study energy to the room:</span>
-            <div className="reactions-btns-group">
-              {REACTIONS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  className="reaction-burst-btn"
-                  onClick={() => handleReaction(emoji)}
-                  title={`Send ${emoji}`}
-                >
-                  {emoji}
-                </button>
-              ))}
+                {/* Other peers */}
+                {!joinedCustom && activeRoom?.members?.map((m, idx) => (
+                  <div key={idx} className="member-chip">
+                    <div className="member-avatar-box" style={{ borderColor: m.color || '#fff' }}>
+                      <span>{m.avatar || '👤'}</span>
+                    </div>
+                    <div className="member-info">
+                      <span className="member-name">{m.name}</span>
+                      <span className="member-status">{m.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cheer & Reaction Bar */}
+            <div className="rooms-reactions-bar">
+              <span className="reactions-label">Send study energy to the room:</span>
+              <div className="reactions-btns-group">
+                {REACTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className="reaction-burst-btn"
+                    onClick={() => handleReaction(emoji)}
+                    title={`Send ${emoji}`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
         {/* Private study group controls */}
         <div className="custom-room-footer">
