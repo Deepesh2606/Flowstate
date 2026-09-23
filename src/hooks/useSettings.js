@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS = {
   clockLetterSpacing: '-0.04em',
   clockTimerStyle: 'default-bold',
   targets: [],
+  exams: [],
 };
 
 const SETTINGS_STORAGE_KEY = 'flowstate_settings_cache';

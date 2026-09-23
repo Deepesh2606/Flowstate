@@ -10,6 +10,7 @@ import HeatmapCalendar from './HeatmapCalendar';
 import SubjectTrendChart from './SubjectTrendChart';
 import ReportCard from './ReportCard';
 import LeaderboardView from './LeaderboardView';
+import ExamPlanner from '../Planner/ExamPlanner';
 
 const formatTime = (seconds) => {
   if (!seconds) return '0m';
@@ -73,9 +74,9 @@ const exportSessions = (sessions, format = 'csv') => {
   }
 };
 
-const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed }) => {
+const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups }) => {
   const { currentUser } = useAuth();
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const {
     loading,
     sessions,
@@ -123,6 +124,15 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed }) => {
         >
           <span>🏆</span> Leaderboard
         </button>
+        <button
+          type="button"
+          className={`stats-subnav-pill ${subTab === 'planner' ? 'active' : ''}`}
+          onClick={() => setSubTab('planner')}
+          role="tab"
+          aria-selected={subTab === 'planner'}
+        >
+          <span>🗓️</span> Exam Plan
+        </button>
       </div>
     </div>
   );
@@ -138,6 +148,23 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed }) => {
           currentStreak={currentStreak}
           subjectBreakdown={subjectBreakdown}
         />
+      </div>
+    );
+  }
+
+  if (subTab === 'planner') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {renderSubNav()}
+        <ExamPlanner
+          exams={settings?.exams || []}
+          onChange={(exams) => updateSettings({ exams })}
+        />
+        <button type="button" className="planner-groups-btn" onClick={onOpenStudyGroups}>
+          <span>👥</span>
+          <span><strong>Study with a group</strong><small>Create a private group or join a live focus room.</small></span>
+          <span aria-hidden="true">→</span>
+        </button>
       </div>
     );
   }

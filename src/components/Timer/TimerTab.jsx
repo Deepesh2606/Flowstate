@@ -247,6 +247,11 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
 
   const linkedTask = tasks?.find(t => t.id === linkedTaskId && !t.completed);
   const pendingTasks = tasks?.filter(t => !t.completed) || [];
+  const smartBreakSuggestion = mode === 'longBreak'
+    ? { icon: '🧘', title: 'Desk stretches', detail: 'Loosen your neck and shoulders before the next sprint.' }
+    : sessionCount % 2 === 0
+      ? { icon: '👁️', title: '20-20-20 eye rest', detail: 'Look 20 feet away for 20 seconds.' }
+      : { icon: '🫁', title: 'Box breathing', detail: 'Use a 60-second reset to clear mental noise.' };
 
   return (
     <div className="timer-tab-wrapper">
@@ -293,9 +298,9 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
             onClick={() => setShowMicroBreak(true)}
             title="Open Smart Guided Micro-Break (Box Breathing, Eye Rest, Desk Stretches)"
           >
-            <span className="micro-sparkle">🌿</span>
-            <span className="micro-text">Smart Guided Micro-Break</span>
-            <span className="micro-sub-pill">Box Breathing · Eye Rest · Stretches →</span>
+              <span className="micro-sparkle">🌿</span>
+              <span className="micro-text">Try {smartBreakSuggestion.title}</span>
+              <span className="micro-sub-pill">{smartBreakSuggestion.icon} {smartBreakSuggestion.detail} →</span>
           </button>
         </div>
       )}

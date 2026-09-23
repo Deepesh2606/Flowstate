@@ -3,16 +3,19 @@ import { AuthProvider } from './contexts/AuthContext';
 import { WallpaperProvider } from './contexts/WallpaperContext';
 import { ToastProvider } from './components/Toast/ToastProvider';
 import { AudioProvider } from './contexts/AudioContext';
+import { SpotifyProvider } from './contexts/SpotifyContext';
 import AppShell from './components/Layout/AppShell';
 import AuthModal from './components/Auth/AuthModal';
 
 const AppInner = () => {
   return (
     <WallpaperProvider>
-      <AudioProvider>
-        <AppShell />
-        <AuthModal />
-      </AudioProvider>
+      <SpotifyProvider>
+        <AudioProvider>
+          <AppShell />
+          <AuthModal />
+        </AudioProvider>
+      </SpotifyProvider>
     </WallpaperProvider>
   );
 };

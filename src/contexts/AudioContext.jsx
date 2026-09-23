@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { useSpotify } from './SpotifyContext';
 
 export const AMBIENT_SOUNDS = [
   { id: 'rain', label: 'Rain', icon: 'IconRain', src: '/audio/rain.mp3', defaultVol: 0.6 },
@@ -201,6 +202,8 @@ export const useAudio = () => {
 };
 
 export const AudioProvider = ({ children }) => {
+  const spotify = useSpotify();
+
   // Load saved state or use defaults
   const [tracks, setTracks] = useState(() => {
     try {
@@ -591,10 +594,6 @@ export const AudioProvider = ({ children }) => {
     });
   }, []);
 
-  const togglePlayPause = useCallback(() => {
-    setIsPlaybackPaused((prev) => !prev);
-  }, []);
-
   const stopAll = useCallback(() => {
     setIsPlaybackPaused(false);
     stopAllAmbient();
@@ -602,7 +601,22 @@ export const AudioProvider = ({ children }) => {
     setSpotifyActive(false);
     setYtMusicActive(false);
     setAppleMusicActive(false);
-  }, [stopAllAmbient]);
+    if (spotifyActive && spotify.isReady) {
+      spotify.logout(); // or just pause, let's just pause
+    }
+  }, [stopAllAmbient, spotifyActive]);
+
+  const togglePlayPause = useCallback(() => {
+    setIsPlaybackPaused((prev) => {
+      const next = !prev;
+      // If we are unpausing (next is false) and spotify is active, play it
+      // If we are pausing (next is true) and spotify is active, pause it
+      if (spotifyActive && spotify.isReady) {
+        spotify.togglePlay(); 
+      }
+      return next;
+    });
+  }, [spotifyActive, spotify]);
 
   // Parse YouTube video ID from various formats
   const extractVideoId = useCallback((input) => {

@@ -26,6 +26,7 @@ import GoogleSignInButton from '../Auth/GoogleSignInButton';
 import LegalModal, { IconShield } from '../Legal/LegalModal';
 
 const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/deepesh2606';
+const WALLPAPER_FALLBACK = '/defaultpreset.png';
 
 const FallbackLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'rgba(255,255,255,0.5)' }}>
@@ -36,6 +37,11 @@ const FallbackLoader = () => (
 const AppShell = () => {
   const { currentUser, signOut, openAuthModal } = useAuth();
   const { wallpaper, showPicker, setShowPicker } = useWallpaper();
+  // Keep a known local image on screen until a cached/remote wallpaper has
+  // completely loaded. This avoids the blank flash that can happen on first
+  // paint while Firestore or Cloudinary assets are still arriving.
+  const [renderedWallpaper, setRenderedWallpaper] = useState(WALLPAPER_FALLBACK);
+  const [isWallpaperLoading, setIsWallpaperLoading] = useState(false);
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, isPlaybackPaused, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
@@ -53,6 +59,50 @@ const AppShell = () => {
   const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
   const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    const nextWallpaper = wallpaper || WALLPAPER_FALLBACK;
+    if (nextWallpaper === renderedWallpaper) {
+      setIsWallpaperLoading(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setIsWallpaperLoading(true);
+
+    const applyWhenReady = () => {
+      if (cancelled) return;
+      setRenderedWallpaper(nextWallpaper);
+      setIsWallpaperLoading(false);
+    };
+
+    if (isVideoUrl(nextWallpaper)) {
+      const video = document.createElement('video');
+      video.preload = 'auto';
+      video.muted = true;
+      video.playsInline = true;
+      video.addEventListener('loadeddata', applyWhenReady, { once: true });
+      video.addEventListener('error', () => !cancelled && setIsWallpaperLoading(false), { once: true });
+      video.src = nextWallpaper;
+      video.load();
+      return () => {
+        cancelled = true;
+        video.removeAttribute('src');
+        video.load();
+      };
+    }
+
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = applyWhenReady;
+    image.onerror = () => !cancelled && setIsWallpaperLoading(false);
+    image.src = nextWallpaper;
+    return () => {
+      cancelled = true;
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [wallpaper, renderedWallpaper]);
 
   const handleOpenLegal = (tab = 'privacy') => {
     setLegalModalTab(tab);
@@ -309,6 +359,7 @@ const AppShell = () => {
             <StatsTab
               initialSubTab={pendingSwitchMode === 'leaderboard' ? 'leaderboard' : 'stats'}
               onSubTabConsumed={() => setPendingSwitchMode(null)}
+              onOpenStudyGroups={() => setShowLiveRooms(true)}
             />
           </Suspense>
         );
@@ -326,11 +377,11 @@ const AppShell = () => {
   return (
     <div className={`app-layout${showAIChat ? ' app-layout--chat-open' : ''}`}>
       {/* Wallpaper Background (Video or Image) */}
-      {isVideoUrl(wallpaper) ? (
+      {isVideoUrl(renderedWallpaper) ? (
         <video
-          key={wallpaper}
+          key={renderedWallpaper}
           className="wallpaper-video-bg"
-          src={wallpaper}
+          src={renderedWallpaper}
           autoPlay
           loop
           muted
@@ -340,11 +391,11 @@ const AppShell = () => {
       ) : (
         <div
           className="wallpaper-bg"
-          style={{ backgroundImage: wallpaper ? `url(${wallpaper})` : undefined }}
+          style={{ backgroundImage: `url("${renderedWallpaper}")` }}
           aria-hidden="true"
         />
       )}
-      <div className="wallpaper-overlay" aria-hidden="true" />
+      <div className={`wallpaper-overlay${isWallpaperLoading ? ' is-wallpaper-loading' : ''}`} aria-hidden="true" />
 
       {/* App Shell */}
       <div className="app-shell">
@@ -391,7 +442,7 @@ const AppShell = () => {
         </div>
 
         {/* Bottom Right Floating Controls */}
-        <div className="floating-controls" ref={menuRef}>
+        <div className={`floating-controls ${currentUser ? 'floating-controls--signed-in' : 'floating-controls--guest'}`} ref={menuRef}>
           {/* Horizontal group for Audio, Wallpaper, Settings, and User */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {/* Audio & Ambience button */}

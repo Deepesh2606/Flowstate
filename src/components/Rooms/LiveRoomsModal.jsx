@@ -69,6 +69,7 @@ const REACTIONS = ['🔥', '☕', '✨', '🧠', '👏', '🎯'];
 const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
   const [selectedRoomId, setSelectedRoomId] = useState('forest-library');
   const [customRoomCode, setCustomRoomCode] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [joinedCustom, setJoinedCustom] = useState(false);
   const [synced, setSynced] = useState(false);
   const [reactionsList, setReactionsList] = useState([]);
@@ -99,6 +100,16 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
     setJoinedCustom(true);
   };
 
+  const handleCreateGroup = (e) => {
+    e.preventDefault();
+    const name = groupName.trim();
+    if (!name) return;
+    const code = `${name.replace(/[^a-z0-9]/gi, '').slice(0, 6).toUpperCase() || 'FOCUS'}-${Math.floor(100 + Math.random() * 900)}`;
+    setCustomRoomCode(code);
+    setJoinedCustom(true);
+    setGroupName('');
+  };
+
   const handleSyncClick = () => {
     setSynced(true);
     if (onSyncTimer) onSyncTimer(activeRoom);
@@ -126,10 +137,10 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
           <div className="rooms-header-left">
             <div className="rooms-header-badge">
               <span className="rooms-pulsing-dot" />
-              <span>LIVE STUDY ROOMS</span>
+              <span>STUDY GROUPS</span>
             </div>
-            <h2 className="rooms-title">Focus Together in Real-Time</h2>
-            <p className="rooms-subtitle">Join thousands of students and creators in distraction-free co-working spaces.</p>
+            <h2 className="rooms-title">Focus together</h2>
+            <p className="rooms-subtitle">Join a public group or create a private room for your study circle.</p>
           </div>
           <button
             type="button"
@@ -253,10 +264,22 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
           </div>
         </div>
 
-        {/* Custom Room Code Bar */}
+        {/* Private study group controls */}
         <div className="custom-room-footer">
+          <form className="create-group-form" onSubmit={handleCreateGroup}>
+            <span className="custom-room-label">✨ Create a private group</span>
+            <input
+              type="text"
+              className="custom-room-input"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="e.g. Biology finals"
+              maxLength={24}
+            />
+            <button type="submit" className="custom-room-submit-btn">Create</button>
+          </form>
           <form className="custom-room-form" onSubmit={handleJoinCustom}>
-            <span className="custom-room-label">🔑 Or Join Private Study Room:</span>
+            <span className="custom-room-label">🔑 Join with code</span>
             <input
               type="text"
               className="custom-room-input"
@@ -266,9 +289,19 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
               maxLength={12}
             />
             <button type="submit" className="custom-room-submit-btn">
-              Join Room
+              Join
             </button>
           </form>
+          {joinedCustom && customRoomCode && (
+            <button
+              type="button"
+              className="group-share-code"
+              onClick={() => navigator.clipboard?.writeText(customRoomCode)}
+              title="Copy group code"
+            >
+              Share code <strong>{customRoomCode.toUpperCase()}</strong> · tap to copy
+            </button>
+          )}
         </div>
       </div>
     </div>
