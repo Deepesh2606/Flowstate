@@ -428,7 +428,7 @@ const AppShell = () => {
         {/* Top Bar */}
         <header className="topbar">
           <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center" }}>
-            <img src="/favicon.svg" alt="FUCK YOUR MOOD" style={{ height: 44, width: 'auto' }} />
+            <img src="/favicon.svg" alt="FUCK YOUR MOOD" style={{ height: 140, width: 'auto' }} />
           </span>
         </header>
 
