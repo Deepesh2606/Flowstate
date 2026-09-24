@@ -159,6 +159,8 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
         <ExamPlanner
           exams={settings?.exams || []}
           onChange={(exams) => updateSettings({ exams })}
+          showExamDeadline={settings?.showExamDeadline ?? true}
+          onToggleShow={(val) => updateSettings({ showExamDeadline: val })}
         />
         <button type="button" className="planner-groups-btn" onClick={onOpenStudyGroups}>
           <span>👥</span>

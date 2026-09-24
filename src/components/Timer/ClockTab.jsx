@@ -124,8 +124,9 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
   const year = time.getFullYear();
 
   // Calculate nearest exam
+  const showExamDeadline = settings?.showExamDeadline ?? true;
   const nearestExam = useMemo(() => {
-    if (!settings?.showExamDeadline || !settings?.exams || settings.exams.length === 0) return null;
+    if (!showExamDeadline || !settings?.exams || settings.exams.length === 0) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const upcoming = settings.exams
@@ -138,7 +139,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
       .filter(exam => exam.daysLeft >= 0)
       .sort((a, b) => a.daysLeft - b.daysLeft);
     return upcoming.length > 0 ? upcoming[0] : null;
-  }, [settings?.showExamDeadline, settings?.exams]);
+  }, [showExamDeadline, settings?.exams]);
 
   // Floating PiP support via Canvas & Video element
   const togglePip = async () => {
@@ -356,7 +357,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         </div>
       </div>
 
-      {settings?.showExamDeadline && nearestExam && (
+      {showExamDeadline && nearestExam && (
         <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
           <div style={{
             background: 'rgba(0,0,0,0.4)',

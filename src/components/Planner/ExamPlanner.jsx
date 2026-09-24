@@ -23,7 +23,7 @@ const countdownLabel = (days) => {
 
 const dateKey = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 
-const ExamPlanner = ({ exams = [], onChange }) => {
+const ExamPlanner = ({ exams = [], onChange, showExamDeadline = true, onToggleShow = () => {} }) => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [monthOffset, setMonthOffset] = useState(0);
@@ -64,6 +64,18 @@ const ExamPlanner = ({ exams = [], onChange }) => {
           <h2>Exam countdowns</h2>
         </div>
         <span className="exam-planner-icon" aria-hidden="true">🗓️</span>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', padding: '0 8px' }}>
+        <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Show on Home Screen</span>
+        <label className="ios-toggle">
+          <input
+            type="checkbox"
+            checked={showExamDeadline}
+            onChange={(e) => onToggleShow(e.target.checked)}
+          />
+          <span className="ios-toggle-slider" />
+        </label>
       </div>
 
       <form className="exam-form" onSubmit={addExam}>
