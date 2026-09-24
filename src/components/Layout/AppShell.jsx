@@ -16,6 +16,7 @@ import AIChatSidebar from '../Chat/AIChatSidebar';
 import AudioDrawer from '../Audio/AudioDrawer';
 import Notepad from '../Notepad/Notepad';
 import LiveRoomsModal from '../Rooms/LiveRoomsModal';
+import { subscribeLiveRooms } from '../../firebase/firestore';
 import CommandPalette from './CommandPalette';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
@@ -62,6 +63,7 @@ const AppShell = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showLiveRooms, setShowLiveRooms] = useState(false);
+  const [realOnlineCount, setRealOnlineCount] = useState(0);
   const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip
   const [activeTab, setActiveTab] = useState('timer');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -130,6 +132,16 @@ const AppShell = () => {
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  // Fetch real online count for Live Rooms
+  useEffect(() => {
+    const unsub = subscribeLiveRooms((rooms) => {
+      if (!rooms) return;
+      const total = rooms.reduce((acc, room) => acc + (room.onlineCount || 0), 0);
+      setRealOnlineCount(total);
+    });
+    return () => unsub();
   }, []);
 
   // Sync fullscreen state attributes on document element & body
@@ -419,17 +431,6 @@ const AppShell = () => {
             <img src="/favicon.svg" alt="Deeply" style={{ width: 18, height: 18, borderRadius: 4 }} />
             DEEPLY
           </span>
-
-          <button
-            type="button"
-            className="topbar-rooms-btn"
-            onClick={() => setShowLiveRooms(true)}
-            title="Join Live Study Rooms with students worldwide"
-          >
-            <span className="rooms-live-indicator" />
-            <span className="topbar-rooms-label">Live Rooms</span>
-            <span className="topbar-rooms-badge">689 online</span>
-          </button>
         </header>
 
         {/* Top Right Controls (Notes/Tasks + Sign In) */}
@@ -742,6 +743,22 @@ const AppShell = () => {
           >
             <IconChat size={18} />
             <span className="ai-chat-btn-text">Ask AI</span>
+          </button>
+
+          <div className="dock-divider" style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 4px' }} />
+
+          <button
+            type="button"
+            className={`bottom-dock-btn live-rooms-dock-btn${showLiveRooms ? ' active' : ''}`}
+            onClick={() => setShowLiveRooms(true)}
+            title="Join Live Study Rooms"
+            aria-label="Live Rooms"
+          >
+            <span className="rooms-live-indicator-small" />
+            <span className="ai-chat-btn-text" style={{ fontWeight: 600 }}>Live Rooms</span>
+            {realOnlineCount > 0 && (
+              <span className="rooms-dock-badge">{realOnlineCount} online</span>
+            )}
           </button>
         </div>
 

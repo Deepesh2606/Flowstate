@@ -12,6 +12,7 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
   const [joinedCustom, setJoinedCustom] = useState(false);
   const [synced, setSynced] = useState(false);
   const [reactionsList, setReactionsList] = useState([]);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     const unsub = subscribeLiveRooms((data) => {
@@ -253,10 +254,14 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
             <button
               type="button"
               className="group-share-code"
-              onClick={() => navigator.clipboard?.writeText(customRoomCode)}
+              onClick={() => {
+                navigator.clipboard?.writeText(customRoomCode);
+                setCopiedCode(true);
+                setTimeout(() => setCopiedCode(false), 2000);
+              }}
               title="Copy group code"
             >
-              Share code <strong>{customRoomCode.toUpperCase()}</strong> · tap to copy
+              Share code <strong className={copiedCode ? 'code-vanish' : ''}>{copiedCode ? 'COPIED!' : customRoomCode.toUpperCase()}</strong> · {copiedCode ? 'text copied' : 'tap to copy'}
             </button>
           )}
         </div>
