@@ -253,6 +253,29 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       ? { icon: '👁️', title: '20-20-20 eye rest', detail: 'Look 20 feet away for 20 seconds.' }
       : { icon: '🫁', title: 'Box breathing', detail: 'Use a 60-second reset to clear mental noise.' };
 
+  const exams = settings?.exams || [];
+  const showExamDeadline = settings?.showExamDeadline ?? true;
+  
+  const upcomingExam = React.useMemo(() => {
+    if (!showExamDeadline || exams.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const valid = exams.filter(e => {
+      const [y, m, d] = e.date.split('-').map(Number);
+      const target = new Date(y, m - 1, d);
+      return (target - today) >= 0;
+    }).sort((a, b) => a.date.localeCompare(b.date));
+    return valid.length > 0 ? valid[0] : null;
+  }, [exams, showExamDeadline]);
+
+  const examDaysLeft = upcomingExam ? (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const [y, m, d] = upcomingExam.date.split('-').map(Number);
+    const target = new Date(y, m - 1, d);
+    return Math.round((target - today) / 86400000);
+  })() : null;
+
   return (
     <div className="timer-tab-wrapper">
       {/* Countdown Glow */}
@@ -414,6 +437,29 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         isRunning={isRunning}
         sessionCount={sessionCount}
       />
+
+      {/* Upcoming Exam Countdown */}
+      {upcomingExam && (
+        <div className="timer-exam-countdown" style={{
+          marginTop: '12px',
+          padding: '12px 20px',
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <span style={{ fontSize: '20px' }}>🎯</span>
+          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Upcoming Exam</span>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
+              {upcomingExam.title} • {examDaysLeft === 0 ? 'Today!' : examDaysLeft === 1 ? 'Tomorrow' : `${examDaysLeft} days left`}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Stopwatch Laps */}
       {mode === 'stopwatch' && laps.length > 0 && (

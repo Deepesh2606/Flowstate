@@ -16,6 +16,7 @@ import AIChatSidebar from '../Chat/AIChatSidebar';
 import AudioDrawer from '../Audio/AudioDrawer';
 import Notepad from '../Notepad/Notepad';
 import LiveRoomsModal from '../Rooms/LiveRoomsModal';
+import CommandPalette from './CommandPalette';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
@@ -45,6 +46,19 @@ const AppShell = () => {
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, isPlaybackPaused, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+
+  // Global hotkeys (Cmd+K)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showLiveRooms, setShowLiveRooms] = useState(false);
@@ -781,6 +795,18 @@ const AppShell = () => {
         )}
         {showTasks && <TasksDrawer onClose={() => setShowTasks(false)} />}
       </Suspense>
+
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onNavigate={(id) => {
+          if (id === 'timer') setActiveTab('timer');
+          else if (id === 'stats') setActiveTab('stats');
+          else {
+            setShowSettings(true);
+          }
+        }}
+      />
 
       <InstallModal
         isOpen={showInstallModal}
