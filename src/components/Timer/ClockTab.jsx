@@ -129,16 +129,21 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
     if (!showExamDeadline || !settings?.exams || settings.exams.length === 0) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const upcoming = settings.exams
-      .map(exam => {
-        const [yearStr, monthStr, dayStr] = exam.date.split('-');
-        const target = new Date(Number(yearStr), Number(monthStr) - 1, Number(dayStr));
-        const daysLeft = Math.round((target - today) / 86400000);
-        return { ...exam, daysLeft, target };
-      })
-      .filter(exam => exam.daysLeft >= 0)
-      .sort((a, b) => a.daysLeft - b.daysLeft);
-    return upcoming.length > 0 ? upcoming[0] : null;
+    const valid = settings.exams.filter(e => {
+      if (!e || !e.date) return false;
+      const [y, m, d] = e.date.split('-').map(Number);
+      const target = new Date(y, m - 1, d);
+      return (target - today) >= 0;
+    }).sort((a, b) => a.date.localeCompare(b.date));
+
+    if (valid.length === 0) return null;
+    
+    const upcoming = valid[0];
+    const [y, m, d] = upcoming.date.split('-').map(Number);
+    const target = new Date(y, m - 1, d);
+    const daysLeft = Math.round((target - today) / 86400000);
+    
+    return { ...upcoming, daysLeft, target };
   }, [showExamDeadline, settings?.exams]);
 
   // Floating PiP support via Canvas & Video element

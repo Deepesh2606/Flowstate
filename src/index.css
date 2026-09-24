@@ -664,10 +664,11 @@ input {
 /* ─── Centered Focus Topic Badge (Under Timer) ─────────────────────────────── */
 .timer-focus-center-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   margin: 2px 0 6px 0;
   text-align: center;
