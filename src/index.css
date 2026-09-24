@@ -2,7 +2,7 @@
 
 /* ─── Design Tokens ──────────────────────────────────────────────────────────── */
 :root {
-  --font-logo: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-logo: 'Ja Jayagiri Sans', 'Outfit', system-ui, -apple-system, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --accent: #ccff00;

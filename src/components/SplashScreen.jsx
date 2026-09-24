@@ -14,10 +14,10 @@ const SplashScreen = ({ onSignIn, loading }) => {
       <div className="splash-hero">
         <img
           src="/favicon.svg"
-          alt="F***MOOD Logo"
-          style={{ width: 68, height: 68, borderRadius: 18, marginBottom: 16, filter: "drop-shadow(0 10px 24px rgba(6, 182, 212, 0.4))" }}
+          alt="FUCK YOUR MOOD Logo"
+          style={{ width: 68, height: 68, borderRadius: 18, marginBottom: 16, filter: "drop-shadow(0 10px 24px rgba(255, 67, 40, 0.4))" }}
         />
-        <h1 className="splash-logo">F***MOOD</h1>
+        <h1 className="splash-logo"><span style={{ color: '#FF4328' }}>FUCK</span><span style={{ color: '#ffffff' }}> YOUR MOOD</span></h1>
         <p className="splash-tagline">Study smarter. Focus deeper. Live in flow.</p>
       </div>
 
