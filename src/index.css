@@ -8966,7 +8966,6 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   gap: 6px;
   position: relative;
   z-index: 2;
-}
   overflow-y: auto;
 }
 
