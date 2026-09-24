@@ -54,7 +54,7 @@ const PipHelpModal = ({ isOpen, onClose }) => {
         <div className="pip-safari-tip">
           <div className="pip-safari-tip-title">💡 Tip for Safari Users:</div>
           <div className="pip-safari-tip-text">
-            On macOS Sonoma+, click <strong>File → Add to Dock</strong> in Safari to run Flowstate as a standalone compact window, or open Flowstate in Chrome/Edge/Brave.
+            On macOS Sonoma+, click <strong>File → Add to Dock</strong> in Safari to run Fmood as a standalone compact window, or open Fmood in Chrome/Edge/Brave.
           </div>
         </div>
 

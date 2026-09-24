@@ -191,7 +191,7 @@ export const SOUND_PRESETS = [
   }
 ];
 
-const STORAGE_KEY = 'flowstate_ambient_audio';
+const STORAGE_KEY = 'fmood_ambient_audio';
 
 const AudioContext = createContext(null);
 
@@ -231,7 +231,7 @@ export const AudioProvider = ({ children }) => {
 
   const [masterVolume, setMasterVolume] = useState(() => {
     try {
-      const saved = localStorage.getItem('flowstate_master_vol');
+      const saved = localStorage.getItem('fmood_master_vol');
       return saved ? parseFloat(saved) : 0.8;
     } catch {
       return 0.8;
@@ -469,7 +469,7 @@ export const AudioProvider = ({ children }) => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('flowstate_master_vol', masterVolume.toString());
+      localStorage.setItem('fmood_master_vol', masterVolume.toString());
     } catch {
       // ignore
     }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Notepad from '../Notepad/Notepad';
 import { IconEdit } from '../Icons';
 
-const STORAGE_KEY = 'flowstate_scratchpad_notes';
+const STORAGE_KEY = 'fmood_scratchpad_notes';
 
 export const SessionScratchpad = ({ onTriggerRecall, subject }) => {
   const [hasNotes, setHasNotes] = useState(() => {
@@ -21,8 +21,8 @@ export const SessionScratchpad = ({ onTriggerRecall, subject }) => {
         setHasNotes(Boolean((localStorage.getItem(STORAGE_KEY) || '').trim()));
       } catch {}
     };
-    window.addEventListener('flowstate_notes_updated', checkNotes);
-    return () => window.removeEventListener('flowstate_notes_updated', checkNotes);
+    window.addEventListener('fmood_notes_updated', checkNotes);
+    return () => window.removeEventListener('fmood_notes_updated', checkNotes);
   }, []);
 
   return (

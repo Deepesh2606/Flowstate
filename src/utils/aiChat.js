@@ -11,7 +11,7 @@ const CANDIDATE_MODELS = [
 ];
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-const SYSTEM_PROMPT = `You are Flowstate AI — a friendly, concise study and focus assistant built into the Flowstate productivity app.
+const SYSTEM_PROMPT = `You are Fmood AI — a friendly, concise study and focus assistant built into the Fmood productivity app.
 
 Your role:
 - Help users stay focused, manage study sessions, and overcome procrastination

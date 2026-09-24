@@ -581,7 +581,7 @@ const WallpaperPicker = () => {
                       </div>
                       <p className="curated-toggle-desc">
                         {uploadAsCurated
-                          ? 'Added to curated presets for everyone using Flowstate.'
+                          ? 'Added to curated presets for everyone using Fmood.'
                           : 'Saved to your personal uploads only. Enable to share with all users.'}
                       </p>
                     </div>

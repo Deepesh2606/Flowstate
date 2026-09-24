@@ -1,6 +1,6 @@
 {
-  "name": "FLOWSTATE — Pomodoro & Study Tracker",
-  "short_name": "Flowstate",
+  "name": "FMOOD — Pomodoro & Study Tracker",
+  "short_name": "Fmood",
   "description": "Minimalist, aesthetic pomodoro study timer and ambient sound player.",
   "start_url": "/",
   "scope": "/",

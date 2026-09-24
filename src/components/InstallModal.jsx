@@ -34,7 +34,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
       await deferredPrompt.prompt();
       const choiceResult = await deferredPrompt.userChoice;
       if (choiceResult.outcome === 'accepted') {
-        toast('FLOWSTATE added to your Mac Applications & Dock!', 'success', 3500);
+        toast('FMOOD added to your Mac Applications & Dock!', 'success', 3500);
         if (onInstalled) onInstalled();
         onClose();
       }
@@ -97,7 +97,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
                     Already in your Mac Dock!
                   </h4>
                   <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    FLOWSTATE is already running as a native standalone window. You can keep it in your Dock for quick one-click focus sessions.
+                    FMOOD is already running as a native standalone window. You can keep it in your Dock for quick one-click focus sessions.
                   </p>
                 </div>
               </div>
@@ -106,7 +106,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
                 <div className="install-highlight-card">
                   <div className="install-highlight-text">
                     <strong>One-Click Mac Dock Installation</strong>
-                    <p>Click below to install FLOWSTATE into your Applications folder and automatically pin it to your Mac Dock.</p>
+                    <p>Click below to install FMOOD into your Applications folder and automatically pin it to your Mac Dock.</p>
                   </div>
                   <button
                     className="btn btn-primary install-action-btn"
@@ -152,7 +152,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
                     <div className="install-step-content">
                       <span className="install-step-title">Confirm & Launch</span>
                       <span className="install-step-desc">
-                        Click <kbd className="mac-kbd">Add</kbd>. FLOWSTATE will immediately appear in your Mac Dock as an app!
+                        Click <kbd className="mac-kbd">Add</kbd>. FMOOD will immediately appear in your Mac Dock as an app!
                       </span>
                     </div>
                   </div>
@@ -181,7 +181,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
                     <div className="install-step-content">
                       <span className="install-step-title">Or use the Browser Menu</span>
                       <span className="install-step-desc">
-                        Click <kbd className="mac-kbd">⋮</kbd> → <kbd className="mac-kbd">Cast, save, and share</kbd> → <kbd className="mac-kbd">Install FLOWSTATE...</kbd>
+                        Click <kbd className="mac-kbd">⋮</kbd> → <kbd className="mac-kbd">Cast, save, and share</kbd> → <kbd className="mac-kbd">Install FMOOD...</kbd>
                       </span>
                     </div>
                   </div>
@@ -191,7 +191,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
                     <div className="install-step-content">
                       <span className="install-step-title">Keep in Mac Dock</span>
                       <span className="install-step-desc">
-                        Right click the FLOWSTATE icon in your Mac Dock → <kbd className="mac-kbd">Options</kbd> → <kbd className="mac-kbd">Keep in Dock</kbd>.
+                        Right click the FMOOD icon in your Mac Dock → <kbd className="mac-kbd">Options</kbd> → <kbd className="mac-kbd">Keep in Dock</kbd>.
                       </span>
                     </div>
                   </div>
@@ -201,7 +201,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled }) => {
 
             <div className="install-modal-footer">
               <div className="install-footer-tip">
-                <span style={{ color: 'var(--accent)' }}>✦ Tip:</span> Launch FLOWSTATE anytime with Spotlight (<kbd className="mac-kbd">⌘</kbd> + <kbd className="mac-kbd">Space</kbd>) for distraction-free focus.
+                <span style={{ color: 'var(--accent)' }}>✦ Tip:</span> Launch FMOOD anytime with Spotlight (<kbd className="mac-kbd">⌘</kbd> + <kbd className="mac-kbd">Space</kbd>) for distraction-free focus.
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '12px' }}>
                 <button 

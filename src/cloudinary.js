@@ -23,7 +23,7 @@ export const uploadWallpaper = (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', 'flowstate/wallpapers');
+    formData.append('folder', 'fmood/wallpapers');
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`);

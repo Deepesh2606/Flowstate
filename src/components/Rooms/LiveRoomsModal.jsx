@@ -183,7 +183,7 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
                   </div>
                   <div className="member-info">
                     <span className="member-name">{currentUser?.displayName || 'Deepesh (You)'}</span>
-                    <span className="member-status">⚡ In Flowstate</span>
+                    <span className="member-status">⚡ In Fmood</span>
                   </div>
                 </div>
 

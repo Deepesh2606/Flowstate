@@ -104,7 +104,7 @@ const SpotifyPlayer = () => {
             {currentTrack ? currentTrack.name : (isReady ? 'Ready to play' : 'Loading SDK...')}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {currentTrack ? currentTrack.artists.map(a => a.name).join(', ') : (isReady ? 'Select a track in Spotify and pick Flowstate Player' : 'Please wait')}
+            {currentTrack ? currentTrack.artists.map(a => a.name).join(', ') : (isReady ? 'Select a track in Spotify and pick Fmood Player' : 'Please wait')}
           </div>
         </div>
 

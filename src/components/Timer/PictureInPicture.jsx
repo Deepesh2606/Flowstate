@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
- * PictureInPicture component for Flowstate timer.
+ * PictureInPicture component for Fmood timer.
  * Supports:
  * 1. Document Picture-in-Picture API (Chrome/Edge/Arc - rich interactive DOM window)
  * 2. Canvas-to-Video Stream PiP fallback (Safari on macOS / Firefox / other browsers)

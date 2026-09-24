@@ -97,16 +97,16 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [longBreakInterval, setLongBreakInterval] = useState(settings?.longBreakInterval || 4);
 
   // Gemini API key
-  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('flowstate_gemini_key') || '');
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('fmood_gemini_key') || '');
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [geminiSaved, setGeminiSaved] = useState(false);
 
   const handleSaveGeminiKey = () => {
     const trimmed = geminiKey.trim();
     if (trimmed) {
-      localStorage.setItem('flowstate_gemini_key', trimmed);
+      localStorage.setItem('fmood_gemini_key', trimmed);
     } else {
-      localStorage.removeItem('flowstate_gemini_key');
+      localStorage.removeItem('fmood_gemini_key');
     }
     setGeminiSaved(true);
     setTimeout(() => setGeminiSaved(false), 2000);
@@ -116,7 +116,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [keyTestStatus, setKeyTestStatus] = useState(null);
 
   const handleTestGeminiKey = async () => {
-    const keyToTest = geminiKey.trim() || localStorage.getItem('flowstate_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
+    const keyToTest = geminiKey.trim() || localStorage.getItem('fmood_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
     if (!keyToTest) {
       toast('Please enter or save a Gemini API key first', 'warning', 2500);
       return;
@@ -161,14 +161,14 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       const res = await Notification.requestPermission();
       setNotifPermission(res);
       if (res === 'granted') {
-        new Notification('FLOWSTATE', {
+        new Notification('FMOOD', {
           body: '🎉 Browser notifications are enabled and ready!',
           icon: '/favicon.svg'
         });
         toast('Permission granted & notification sent!', 'success', 2500);
       }
     } else if (Notification.permission === 'granted') {
-      new Notification('FLOWSTATE', {
+      new Notification('FMOOD', {
         body: '🎉 Focus timer notifications are working!',
         icon: '/favicon.svg'
       });
@@ -183,15 +183,15 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       const exportObj = {
         exportedAt: new Date().toISOString(),
         settings: settings || {},
-        tasks: JSON.parse(localStorage.getItem('flowstate_tasks') || '[]'),
-        sessions: JSON.parse(localStorage.getItem('flowstate_sessions') || '[]'),
-        notes: localStorage.getItem('flowstate_scratchpad_notes') || '',
+        tasks: JSON.parse(localStorage.getItem('fmood_tasks') || '[]'),
+        sessions: JSON.parse(localStorage.getItem('fmood_sessions') || '[]'),
+        notes: localStorage.getItem('fmood_scratchpad_notes') || '',
       };
       const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `flowstate-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `fmood-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast('✅ Study data exported to JSON file', 'success', 2500);
@@ -488,7 +488,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       <aside
         className="settings-modal-dialog"
         role="dialog"
-        aria-label="Flowstate Settings"
+        aria-label="Fmood Settings"
         aria-modal="true"
       >
         {/* ═══ LEFT SIDEBAR NAVIGATION ═══ */}
@@ -529,7 +529,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
           {/* Version badge */}
           <div className="settings-version-badge">
-            <span className="version-dot" /> Flowstate v2.4
+            <span className="version-dot" /> Fmood v2.4
           </div>
 
           {/* Buy Me a Coffee Button */}
@@ -1370,7 +1370,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     background: 'rgba(6, 182, 212, 0.08)'
                   }}
                 >
-                  <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
+                  <img src="/favicon.svg" alt="Fmood Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FMOOD to Mac Dock
                 </button>
               </div>
             </div>
@@ -1408,7 +1408,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     <div className="settings-account-guest-icon">👤</div>
                     <div className="settings-account-guest-title">Guest Profile</div>
                     <div className="settings-account-guest-desc">
-                      You are currently using Flowstate in local guest mode. Sign in to save your session history, streak, and community leaderboard rank across all your devices.
+                      You are currently using Fmood in local guest mode. Sign in to save your session history, streak, and community leaderboard rank across all your devices.
                     </div>
                     <button
                       type="button"
@@ -1474,7 +1474,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </p>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <a
-                    href="https://github.com/Deepesh2606/Flowstate"
+                    href="https://github.com/Deepesh2606/Fmood"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-secondary"
@@ -1496,9 +1496,9 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
               {/* Support the Creator */}
               <div className="settings-section-block">
-                <div className="settings-section-header-title">☕ Support Flowstate</div>
+                <div className="settings-section-header-title">☕ Support Fmood</div>
                 <p className="settings-section-subtitle">
-                  Flowstate is 100% free to use. If it helps you stay focused, beat procrastination, or ace your exams, consider buying me a coffee to support development and server costs!
+                  Fmood is 100% free to use. If it helps you stay focused, beat procrastination, or ace your exams, consider buying me a coffee to support development and server costs!
                 </p>
                 <div>
                   <a
@@ -1532,7 +1532,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
           {activeTab === 'whatsnew' && (
             <div className="settings-tab-section">
               <div className="settings-section-block">
-                <div className="settings-section-header-title">What's New in Flowstate</div>
+                <div className="settings-section-header-title">What's New in Fmood</div>
                 <div className="whatsnew-timeline">
                   {/* Item 1 */}
                   <div className="whatsnew-card">
@@ -1625,7 +1625,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                       <IconFileText size={20} style={{ color: '#818cf8' }} />
                       <h4>Terms of Service</h4>
                     </div>
-                    <p>The terms and conditions governing the use of FLOWSTATE and acceptable conduct.</p>
+                    <p>The terms and conditions governing the use of FMOOD and acceptable conduct.</p>
                     <button
                       type="button"
                       className="btn btn-secondary"
@@ -1662,7 +1662,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </p>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <a
-                    href="mailto:support@flowstate.study"
+                    href="mailto:support@fmood.study"
                     className="btn btn-secondary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px', textDecoration: 'none' }}
                   >

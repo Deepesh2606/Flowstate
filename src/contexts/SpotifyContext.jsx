@@ -139,7 +139,7 @@ export const SpotifyProvider = ({ children }) => {
 
     window.onSpotifyWebPlaybackSDKReady = () => {
       const spotifyPlayer = new window.Spotify.Player({
-        name: 'Flowstate Web Player',
+        name: 'Fmood Web Player',
         getOAuthToken: (cb) => {
           // Check expiry and refresh if needed here in a robust implementation
           // For now, just pass the current token

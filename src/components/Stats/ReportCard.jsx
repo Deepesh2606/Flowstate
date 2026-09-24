@@ -35,7 +35,7 @@ const ReportCard = ({ isOpen, onClose, weeklyData, subjectBreakdown, currentStre
     // Header
     ctx.fillStyle = '#06b6d4';
     ctx.font = 'bold 18px system-ui';
-    ctx.fillText('FLOWSTATE', 32, 44);
+    ctx.fillText('FMOOD', 32, 44);
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.font = '13px system-ui';
     ctx.fillText('Weekly Focus Report', 32, 64);
@@ -66,10 +66,10 @@ const ReportCard = ({ isOpen, onClose, weeklyData, subjectBreakdown, currentStre
     // Footer
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.font = '11px system-ui';
-    ctx.fillText('flowstate.app', 32, H - 20);
+    ctx.fillText('fmood.app', 32, H - 20);
 
     const link = document.createElement('a');
-    link.download = 'flowstate-report.png';
+    link.download = 'fmood-report.png';
     link.href = canvas.toDataURL();
     link.click();
   };

@@ -14,7 +14,7 @@ export const useAuth = () => {
   return ctx;
 };
 
-const CACHED_USER_KEY = 'flowstate_cached_user';
+const CACHED_USER_KEY = 'fmood_cached_user';
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {

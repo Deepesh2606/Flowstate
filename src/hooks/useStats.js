@@ -18,7 +18,7 @@ export const useStats = () => {
   useEffect(() => {
     if (!currentUser) {
       try {
-        const saved = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+        const saved = JSON.parse(localStorage.getItem('fmood_guest_sessions') || '[]');
         setSessions(saved);
       } catch (e) {
         setSessions([]);
@@ -27,12 +27,12 @@ export const useStats = () => {
 
       const handleGuestUpdate = () => {
         try {
-          const saved = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+          const saved = JSON.parse(localStorage.getItem('fmood_guest_sessions') || '[]');
           setSessions(saved);
         } catch (e) {}
       };
-      window.addEventListener('flowstate_guest_sessions_updated', handleGuestUpdate);
-      return () => window.removeEventListener('flowstate_guest_sessions_updated', handleGuestUpdate);
+      window.addEventListener('fmood_guest_sessions_updated', handleGuestUpdate);
+      return () => window.removeEventListener('fmood_guest_sessions_updated', handleGuestUpdate);
     }
     setLoading(true);
     const unsub = subscribeSessions(currentUser.uid, (data, err) => {

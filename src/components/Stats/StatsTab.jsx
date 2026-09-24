@@ -64,12 +64,12 @@ const exportSessions = (sessions, format = 'csv') => {
     ).join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'flowstate-sessions.csv'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'fmood-sessions.csv'; a.click();
     URL.revokeObjectURL(url);
   } else {
     const blob = new Blob([JSON.stringify(sessions, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'flowstate-sessions.json'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'fmood-sessions.json'; a.click();
     URL.revokeObjectURL(url);
   }
 };

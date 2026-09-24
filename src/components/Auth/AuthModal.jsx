@@ -32,10 +32,10 @@ const AuthModal = () => {
         <div className="auth-modal-header">
           <img
             src="/favicon.svg"
-            alt="Flowstate"
+            alt="Fmood"
             className="auth-modal-logo"
           />
-          <h2 className="auth-modal-title">Continue to Flowstate</h2>
+          <h2 className="auth-modal-title">Continue to Fmood</h2>
           <p className="auth-modal-desc">
             {authModalReason || 'Sign in with Google to sync your study sessions, tasks, and streaks across devices.'}
           </p>

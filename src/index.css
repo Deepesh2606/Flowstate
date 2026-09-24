@@ -135,14 +135,17 @@ input {
 
 .topbar-logo {
   font-family: var(--font-logo);
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-align: center;
   user-select: none;
   text-transform: uppercase;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 /* Bottom Right Floating Controls */
@@ -2193,14 +2196,17 @@ input {
 
 .splash-logo {
   font-family: var(--font-logo);
-  font-size: clamp(3rem, 10vw, 5.2rem);
+  font-size: clamp(3.5rem, 12vw, 6rem);
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.02em;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
-  color: #ffffff;
-  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.75);
+  background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes logoIn {
@@ -5570,7 +5576,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   FLOWSTATE — NEW FEATURES CSS (Phase 1–6)
+   FMOOD — NEW FEATURES CSS (Phase 1–6)
 ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Countdown Glow Ring ──────────────────────────────────────────────────── */

@@ -132,7 +132,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
 
   const handleNoteSave = useCallback(({ note, mood }) => {
     if (note || mood) {
-      console.log('[Flowstate] Session note:', { note, mood, duration: lastSessionDurationRef.current });
+      console.log('[Fmood] Session note:', { note, mood, duration: lastSessionDurationRef.current });
       toast(`Note saved ${mood ? mood : ''}`, 'success', 2000);
     }
     setShowNoteModal(false);

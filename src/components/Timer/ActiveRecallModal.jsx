@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { streamGeminiResponse } from '../../utils/aiChat';
 
 const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_KEY_STORAGE = 'flowstate_gemini_key';
+const GEMINI_KEY_STORAGE = 'fmood_gemini_key';
 const getApiKey = () => localStorage.getItem(GEMINI_KEY_STORAGE) || DEFAULT_API_KEY;
 
 export const ActiveRecallModal = ({ isOpen, onClose, notes = '', subject = '' }) => {

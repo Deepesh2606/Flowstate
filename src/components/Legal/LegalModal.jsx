@@ -132,7 +132,7 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
             <div className="legal-article">
               <h3>Privacy Policy</h3>
               <p>
-                Welcome to <strong>FLOWSTATE</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;).
+                Welcome to <strong>FMOOD</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;).
                 Your privacy is of paramount importance to us. This Privacy Policy outlines how we collect, use, protect, and handle your personal information when you use our web application and services.
               </p>
 
@@ -145,19 +145,19 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
                   <strong>Productivity & Usage Data:</strong> Your focus sessions, study durations, completed tasks, notes, leaderboard stats, and custom settings are stored to sync your experience across devices.
                 </li>
                 <li>
-                  <strong>Guest Mode (Local Data):</strong> If you choose to use Flowstate without signing in, your data (timers, tasks, settings, local notes) is stored entirely locally on your device via browser <code>localStorage</code> and IndexedDB.
+                  <strong>Guest Mode (Local Data):</strong> If you choose to use Fmood without signing in, your data (timers, tasks, settings, local notes) is stored entirely locally on your device via browser <code>localStorage</code> and IndexedDB.
                 </li>
                 <li>
                   <strong>Media & Uploads:</strong> If you upload custom wallpapers or video backgrounds, files are processed via Cloudinary in accordance with their privacy and storage standards.
                 </li>
                 <li>
-                  <strong>AI Chat Data:</strong> Questions and prompts sent to the Flowstate AI assistant are processed securely by Google Gemini API to generate contextual study advice. We do not sell or monetize your chat queries.
+                  <strong>AI Chat Data:</strong> Questions and prompts sent to the Fmood AI assistant are processed securely by Google Gemini API to generate contextual study advice. We do not sell or monetize your chat queries.
                 </li>
               </ul>
 
               <h4>2. How We Use Your Information</h4>
               <ul>
-                <li>To provide, operate, maintain, and improve the Flowstate study tracker.</li>
+                <li>To provide, operate, maintain, and improve the Fmood study tracker.</li>
                 <li>To synchronize your study progress, history, and streaks across devices.</li>
                 <li>To display anonymous or pseudonymized study leaderboards if enabled.</li>
                 <li>To communicate product updates, support responses, or security alerts.</li>
@@ -169,7 +169,7 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
               </p>
 
               <h4>4. Third-Party Services</h4>
-              <p>Flowstate relies on vetted third-party service providers for core functionality:</p>
+              <p>Fmood relies on vetted third-party service providers for core functionality:</p>
               <ul>
                 <li><strong>Google Firebase:</strong> Authentication, Firestore database, and hosting.</li>
                 <li><strong>Google Gemini API:</strong> AI study assistant and flashcard generation.</li>
@@ -179,7 +179,7 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
 
               <h4>5. Your Rights & Data Deletion</h4>
               <p>
-                You retain full ownership of your data. You may request account deletion and complete erasure of all associated study logs, notes, and cloud data at any time by contacting us at <a href="mailto:support@flowstate.study">support@flowstate.study</a> or via the Account settings tab.
+                You retain full ownership of your data. You may request account deletion and complete erasure of all associated study logs, notes, and cloud data at any time by contacting us at <a href="mailto:support@fmood.study">support@fmood.study</a> or via the Account settings tab.
               </p>
 
               <h4>6. Cookies & Tracking</h4>
@@ -193,12 +193,12 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
             <div className="legal-article">
               <h3>Terms of Service</h3>
               <p>
-                By accessing or using <strong>FLOWSTATE</strong>, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please discontinue using the service.
+                By accessing or using <strong>FMOOD</strong>, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please discontinue using the service.
               </p>
 
               <h4>1. Use of Service</h4>
               <p>
-                FLOWSTATE provides productivity, time-tracking, ambient audio, and AI-assisted study tools. You are granted a non-exclusive, non-transferable, revocable license to access and use the platform for personal, non-commercial, or educational purposes.
+                FMOOD provides productivity, time-tracking, ambient audio, and AI-assisted study tools. You are granted a non-exclusive, non-transferable, revocable license to access and use the platform for personal, non-commercial, or educational purposes.
               </p>
 
               <h4>2. User Accounts</h4>
@@ -209,7 +209,7 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
               </ul>
 
               <h4>3. Acceptable Use Policy</h4>
-              <p>When using FLOWSTATE, you agree not to:</p>
+              <p>When using FMOOD, you agree not to:</p>
               <ul>
                 <li>Reverse-engineer, scrape, or automate abusive requests to our APIs or third-party AI services.</li>
                 <li>Upload unlawful, defamatory, or copyright-infringing wallpapers, audio, or media.</li>
@@ -218,17 +218,17 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
 
               <h4>4. Intellectual Property</h4>
               <p>
-                The FLOWSTATE interface, branding, custom code, UI designs, and soundscape integrations are the intellectual property of FLOWSTATE. All third-party trademarks (including Spotify, Apple Music, YouTube, and Google) belong to their respective owners.
+                The FMOOD interface, branding, custom code, UI designs, and soundscape integrations are the intellectual property of FMOOD. All third-party trademarks (including Spotify, Apple Music, YouTube, and Google) belong to their respective owners.
               </p>
 
               <h4>5. Disclaimer of Warranties</h4>
               <p>
-                FLOWSTATE is provided on an &ldquo;AS IS&rdquo; and &ldquo;AS AVAILABLE&rdquo; basis without warranties of any kind, whether express or implied. We do not warrant that the service will be uninterrupted, error-free, or completely immune to data loss. Always keep backups of critical academic work.
+                FMOOD is provided on an &ldquo;AS IS&rdquo; and &ldquo;AS AVAILABLE&rdquo; basis without warranties of any kind, whether express or implied. We do not warrant that the service will be uninterrupted, error-free, or completely immune to data loss. Always keep backups of critical academic work.
               </p>
 
               <h4>6. Limitation of Liability</h4>
               <p>
-                To the maximum extent permitted by applicable law, FLOWSTATE and its creators shall not be liable for any indirect, incidental, special, or consequential damages resulting from your use of or inability to use the service.
+                To the maximum extent permitted by applicable law, FMOOD and its creators shall not be liable for any indirect, incidental, special, or consequential damages resulting from your use of or inability to use the service.
               </p>
             </div>
           )}
@@ -237,12 +237,12 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
             <div className="legal-article">
               <h3>Refund &amp; Cancellation Policy</h3>
               <p>
-                We want you to be completely satisfied with <strong>FLOWSTATE</strong>. We take pride in building a world-class focus environment, and we stand behind our software with fair and transparent terms.
+                We want you to be completely satisfied with <strong>FMOOD</strong>. We take pride in building a world-class focus environment, and we stand behind our software with fair and transparent terms.
               </p>
 
               <h4>1. 14-Day Money-Back Guarantee</h4>
               <p>
-                If you purchase <strong>Flowstate Pro</strong> (Lifetime License or Annual Subscription) and find that it does not fit your workflow, you are eligible for a <strong>100% full refund within 14 calendar days</strong> of your initial purchase date—no questions asked.
+                If you purchase <strong>Fmood Pro</strong> (Lifetime License or Annual Subscription) and find that it does not fit your workflow, you are eligible for a <strong>100% full refund within 14 calendar days</strong> of your initial purchase date—no questions asked.
               </p>
 
               <h4>2. How to Request a Refund</h4>
@@ -250,7 +250,7 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
                 To claim a refund within the 14-day window:
               </p>
               <ol>
-                <li>Send an email to <a href="mailto:support@flowstate.study">support@flowstate.study</a> with the subject line <em>&ldquo;Refund Request&rdquo;</em>.</li>
+                <li>Send an email to <a href="mailto:support@fmood.study">support@fmood.study</a> with the subject line <em>&ldquo;Refund Request&rdquo;</em>.</li>
                 <li>Include your account email address and payment receipt/order number.</li>
                 <li>Our team will process your refund within 2 to 3 business days. Funds typically return to your original payment method within 5–10 business days.</li>
               </ol>
@@ -266,12 +266,12 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
 
               <h4>4. Free Trial &amp; Free Tier</h4>
               <p>
-                Flowstate provides a generous Free tier that allows you to experience the core Pomodoro timer, ambient sounds, and productivity tools with zero commitment or payment required.
+                Fmood provides a generous Free tier that allows you to experience the core Pomodoro timer, ambient sounds, and productivity tools with zero commitment or payment required.
               </p>
 
               <h4>5. Chargebacks &amp; Support</h4>
               <p>
-                If you experience any billing discrepancies, please reach out to us at <a href="mailto:support@flowstate.study">support@flowstate.study</a> first so we can promptly resolve the issue directly for you.
+                If you experience any billing discrepancies, please reach out to us at <a href="mailto:support@fmood.study">support@fmood.study</a> first so we can promptly resolve the issue directly for you.
               </p>
             </div>
           )}
@@ -280,7 +280,7 @@ const LegalModal = ({ isOpen, onClose, initialTab = 'privacy' }) => {
         {/* Footer */}
         <div className="legal-modal-footer">
           <div className="legal-modal-contact">
-            Need help? Contact us at <a href="mailto:support@flowstate.study">support@flowstate.study</a>
+            Need help? Contact us at <a href="mailto:support@fmood.study">support@fmood.study</a>
           </div>
           <button type="button" className="btn btn-primary" onClick={onClose}>
             Close

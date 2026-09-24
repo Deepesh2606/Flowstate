@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IconEdit, IconTrash, IconX } from '../Icons';
 
-const STORAGE_KEY = 'flowstate_scratchpad_notes';
+const STORAGE_KEY = 'fmood_scratchpad_notes';
 
 const Notepad = ({ onClose, onTriggerRecall, subject }) => {
   const [notes, setNotes] = useState(() => {
@@ -21,7 +21,7 @@ const Notepad = ({ onClose, onTriggerRecall, subject }) => {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, notes);
-      window.dispatchEvent(new Event('flowstate_notes_updated'));
+      window.dispatchEvent(new Event('fmood_notes_updated'));
     } catch {}
   }, [notes]);
 
@@ -33,8 +33,8 @@ const Notepad = ({ onClose, onTriggerRecall, subject }) => {
         if (val !== notes) setNotes(val);
       } catch {}
     };
-    window.addEventListener('flowstate_notes_updated', handleUpdate);
-    return () => window.removeEventListener('flowstate_notes_updated', handleUpdate);
+    window.addEventListener('fmood_notes_updated', handleUpdate);
+    return () => window.removeEventListener('fmood_notes_updated', handleUpdate);
   }, [notes]);
 
   const wordCount = notes.trim() ? notes.trim().split(/\s+/).length : 0;

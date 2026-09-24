@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS = {
   exams: [],
 };
 
-const SETTINGS_STORAGE_KEY = 'flowstate_settings_cache';
+const SETTINGS_STORAGE_KEY = 'fmood_settings_cache';
 
 export const useSettings = () => {
   const { currentUser } = useAuth();

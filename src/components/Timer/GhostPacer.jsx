@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStats } from '../../hooks/useStats';
 
-const STORAGE_KEY = 'flowstate_ghost_pacer_collapsed';
+const STORAGE_KEY = 'fmood_ghost_pacer_collapsed';
 
 export const GhostPacer = () => {
   const { sessions } = useStats();

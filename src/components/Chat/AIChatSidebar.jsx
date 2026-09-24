@@ -3,8 +3,8 @@ import { streamGeminiResponse } from '../../utils/aiChat';
 import { IconTrash, IconX } from '../Icons';
 
 const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const STORAGE_KEY = 'flowstate_chat_history';
-const GEMINI_KEY_STORAGE = 'flowstate_gemini_key';
+const STORAGE_KEY = 'fmood_chat_history';
+const GEMINI_KEY_STORAGE = 'fmood_gemini_key';
 
 const getApiKey = () => localStorage.getItem(GEMINI_KEY_STORAGE) || DEFAULT_API_KEY;
 const MIN_WIDTH = 300;
@@ -13,7 +13,7 @@ const DEFAULT_WIDTH = 360;
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
-  content: "Hey! I'm your **Flowstate AI** — here to help you study smarter, stay focused, and crush your sessions. 🎯\n\nAsk me anything: study tips, Pomodoro advice, quick explanations, or just a focus check-in.",
+  content: "Hey! I'm your **Fmood AI** — here to help you study smarter, stay focused, and crush your sessions. 🎯\n\nAsk me anything: study tips, Pomodoro advice, quick explanations, or just a focus check-in.",
   id: 'welcome',
   ts: Date.now(),
 };
@@ -143,7 +143,7 @@ const AIChatSidebar = ({ onClose }) => {
   const [errorDetails, setErrorDetails] = useState(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [panelWidth, setPanelWidth] = useState(() => {
-    return parseInt(localStorage.getItem('flowstate_chat_width') || DEFAULT_WIDTH, 10);
+    return parseInt(localStorage.getItem('fmood_chat_width') || DEFAULT_WIDTH, 10);
   });
 
   const messagesContainerRef = useRef(null);
@@ -242,7 +242,7 @@ const AIChatSidebar = ({ onClose }) => {
       const finalWidth = currentWidthRef.current;
       setPanelWidth(finalWidth);
       try {
-        localStorage.setItem('flowstate_chat_width', finalWidth);
+        localStorage.setItem('fmood_chat_width', finalWidth);
       } catch { /* ignore */ }
     };
 
@@ -508,7 +508,7 @@ const AIChatSidebar = ({ onClose }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isLoading ? 'Flowstate AI is thinking…' : 'Ask anything… (Enter to send)'}
+            placeholder={isLoading ? 'Fmood AI is thinking…' : 'Ask anything… (Enter to send)'}
             rows={1}
             aria-label="Chat input"
           />

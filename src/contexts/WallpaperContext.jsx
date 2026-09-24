@@ -11,8 +11,8 @@ export const useWallpaper = () => {
   return ctx;
 };
 
-const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
-const CUSTOM_WALLPAPERS_STORAGE_KEY = 'flowstate_custom_wallpapers';
+const WALLPAPER_STORAGE_KEY = 'fmood_cached_wallpaper';
+const CUSTOM_WALLPAPERS_STORAGE_KEY = 'fmood_custom_wallpapers';
 
 // Filter out legacy un-added Mixkit and Unsplash presets
 const isUserAddedWallpaper = (wp) => {
