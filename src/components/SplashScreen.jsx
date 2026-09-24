@@ -14,10 +14,10 @@ const SplashScreen = ({ onSignIn, loading }) => {
       <div className="splash-hero">
         <img
           src="/favicon.svg"
-          alt="Deeply Logo"
+          alt="F***MOOD Logo"
           style={{ width: 68, height: 68, borderRadius: 18, marginBottom: 16, filter: "drop-shadow(0 10px 24px rgba(6, 182, 212, 0.4))" }}
         />
-        <h1 className="splash-logo">DEEPLY</h1>
+        <h1 className="splash-logo">F***MOOD</h1>
         <p className="splash-tagline">Study smarter. Focus deeper. Live in flow.</p>
       </div>
 

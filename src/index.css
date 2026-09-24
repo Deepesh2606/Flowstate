@@ -5,14 +5,14 @@
   --font-logo: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --accent: #06B6D4;
-  --accent-glow: rgba(6, 182, 212, 0.4);
-  --accent-dim: rgba(6, 182, 212, 0.15);
-  --bg-base: #081226;
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-bg-strong: rgba(255, 255, 255, 0.10);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-strong: rgba(255, 255, 255, 0.20);
+  --accent: #ccff00;
+  --accent-glow: rgba(204, 255, 0, 0.4);
+  --accent-dim: rgba(204, 255, 0, 0.15);
+  --bg-base: #0c0c0c;
+  --glass-bg: rgba(25, 25, 25, 0.6);
+  --glass-bg-strong: rgba(35, 35, 35, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-border-strong: rgba(255, 255, 255, 0.1);
   --text-primary: rgba(255, 255, 255, 0.95);
   --text-secondary: rgba(255, 255, 255, 0.55);
   --text-muted: rgba(255, 255, 255, 0.30);
@@ -10502,7 +10502,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   DEEPLY — LIVE ROOMS, BIONIC READING & SMART MICRO-BREAKS
+   F***MOOD — LIVE ROOMS, BIONIC READING & SMART MICRO-BREAKS
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Topbar Live Rooms Button ─── */
@@ -11142,7 +11142,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   color: #c084fc;
 }
 
-/* ─── Live Study Rooms ("Deeply Rooms") ─── */
+/* ─── Live Study Rooms ("F***MOOD Rooms") ─── */
 .rooms-modal-overlay {
   position: fixed;
   inset: 0;

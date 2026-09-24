@@ -428,8 +428,8 @@ const AppShell = () => {
         {/* Top Bar */}
         <header className="topbar">
           <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <img src="/favicon.svg" alt="Deeply" style={{ width: 18, height: 18, borderRadius: 4 }} />
-            DEEPLY
+            <img src="/favicon.svg" alt="F***MOOD" style={{ width: 18, height: 18, borderRadius: 4 }} />
+            F***MOOD
           </span>
         </header>
 
