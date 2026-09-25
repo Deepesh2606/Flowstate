@@ -5,9 +5,9 @@
   --font-logo: 'Ja Jayagiri Sans', 'Outfit', system-ui, -apple-system, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --accent: #ccff00;
-  --accent-glow: rgba(204, 255, 0, 0.4);
-  --accent-dim: rgba(204, 255, 0, 0.15);
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.4);
+  --accent-dim: rgba(56, 189, 248, 0.15);
   --bg-base: #0c0c0c;
   --glass-bg: rgba(25, 25, 25, 0.6);
   --glass-bg-strong: rgba(35, 35, 35, 0.8);
@@ -107,7 +107,28 @@ input {
 }
 
 .wallpaper-overlay.is-wallpaper-loading {
-  background: rgba(8, 18, 38, 0.56);
+  background: rgba(8, 18, 38, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.wallpaper-overlay.is-wallpaper-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+  margin-left: -24px;
+  border: 4px solid rgba(255,255,255,0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: wallpaper-spinner 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  z-index: 10;
+}
+
+@keyframes wallpaper-spinner {
+  to { transform: rotate(360deg); }
 }
 
 /* ─── App Shell ──────────────────────────────────────────────────────────────── */
@@ -10992,16 +11013,17 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 }
 
 .eye-countdown-circle {
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  border: 3px solid #06b6d4;
-  box-shadow: 0 0 24px rgba(6, 182, 212, 0.3);
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 30px var(--accent-glow), inset 0 0 20px var(--accent-dim);
+  background: rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 10px 0 16px;
+  margin: 10px 0 20px;
 }
 
 .eye-countdown-digits {
@@ -11056,10 +11078,11 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 }
 
 .eye-step-item.active {
-  background: rgba(6, 182, 212, 0.12);
-  border-color: rgba(6, 182, 212, 0.35);
+  background: var(--accent-dim);
+  border-color: var(--accent-glow);
   color: #fff;
-  transform: translateX(3px);
+  transform: translateX(4px);
+  box-shadow: -2px 0 0 var(--accent);
 }
 
 .step-num {

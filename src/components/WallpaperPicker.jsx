@@ -242,13 +242,16 @@ const WallpaperPicker = () => {
                               muted
                               loop
                               playsInline
+                              preload="none"
                               onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
                               onMouseLeave={(e) => e.currentTarget.pause()}
                             />
                           ) : (
-                            <div
+                            <img
                               className="wallpaper-thumb-media"
-                              style={{ backgroundImage: `url(${thumbUrl})` }}
+                              src={thumbUrl}
+                              loading="lazy"
+                              alt="Custom Wallpaper Thumbnail"
                             />
                           )}
                           {isVid && <span className="wallpaper-video-badge">▶ Video</span>}
@@ -305,13 +308,16 @@ const WallpaperPicker = () => {
                               muted
                               loop
                               playsInline
+                              preload="none"
                               onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
                               onMouseLeave={(e) => e.currentTarget.pause()}
                             />
                           ) : (
-                            <div
+                            <img
                               className="wallpaper-thumb-media"
-                              style={{ backgroundImage: `url(${toThumbUrl(wp.url)})` }}
+                              src={toThumbUrl(wp.url)}
+                              loading="lazy"
+                              alt={displayTitle}
                             />
                           )}
                           {isVid && <span className="wallpaper-video-badge">▶ Video</span>}

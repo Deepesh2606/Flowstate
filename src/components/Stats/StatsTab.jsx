@@ -180,7 +180,9 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
             <div className="auth-tab-icon"><IconStats size={36} color="var(--accent)" /></div>
             <h2 className="auth-tab-title">Focus Analytics & Streaks</h2>
             <p className="auth-tab-desc">Sign in with Google to record your study time, monitor weekly charts, track streaks, and unlock your focus heatmap.</p>
-            <div style={{ marginTop: '20px' }}><GoogleSignInButton size="md" /></div>
+            <div style={{ marginTop: '24px' }}>
+              <GoogleSignInButton size="lg" label="Continue with Google" />
+            </div>
           </div>
         </div>
       </div>
