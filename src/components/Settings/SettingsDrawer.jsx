@@ -3,7 +3,7 @@ import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
-import { subscribeLeaderboard, grantProStatus } from '../../firebase/firestore';
+import { subscribeLeaderboard, subscribeAdminUsers, grantProStatus } from '../../firebase/firestore';
 import {
   IconSun,
   IconMoon,
@@ -491,7 +491,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   useEffect(() => {
     if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
-      const unsub = subscribeLeaderboard((list) => {
+      const unsub = subscribeAdminUsers((list) => {
         setAdminUsers(list);
       });
       return () => unsub();

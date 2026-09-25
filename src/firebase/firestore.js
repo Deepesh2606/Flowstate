@@ -203,6 +203,22 @@ export const subscribeLeaderboard = (callback) => {
   );
 };
 
+export const subscribeAdminUsers = (callback) => {
+  const ref = collection(db, 'leaderboard');
+  const q = query(ref, orderBy('updatedAt', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      callback(list);
+    },
+    (err) => {
+      console.warn('Firestore admin users subscribe error:', err);
+      callback([]);
+    }
+  );
+};
+
 export const subscribeLiveRooms = (callback) => {
   const ref = collection(db, 'liveRooms');
   return onSnapshot(

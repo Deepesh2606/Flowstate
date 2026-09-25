@@ -14,13 +14,8 @@ export const useWallpaper = () => {
 const WALLPAPER_STORAGE_KEY = 'fmood_cached_wallpaper';
 const CUSTOM_WALLPAPERS_STORAGE_KEY = 'fmood_custom_wallpapers';
 
-// Filter out legacy un-added Mixkit and Unsplash presets
 const isUserAddedWallpaper = (wp) => {
   if (!wp || !wp.url) return false;
-  const u = wp.url;
-  if (u.includes('assets.mixkit.co') || u.includes('images.unsplash.com')) {
-    return false;
-  }
   return true;
 };
 
@@ -29,7 +24,7 @@ export const WallpaperProvider = ({ children }) => {
   const [customWallpapers, setCustomWallpapers] = useState(() => {
     try {
       const saved = localStorage.getItem(CUSTOM_WALLPAPERS_STORAGE_KEY);
-      return saved ? JSON.parse(saved).filter(url => !url.includes('assets.mixkit.co') && !url.includes('images.unsplash.com')) : [];
+      return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
@@ -38,7 +33,7 @@ export const WallpaperProvider = ({ children }) => {
   const [wallpaper, setWallpaperState] = useState(() => {
     try {
       const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
-      if (cached && !cached.includes('assets.mixkit.co') && !cached.includes('images.unsplash.com')) {
+      if (cached) {
         return cached;
       }
       return '/defaultpreset.png';
@@ -78,7 +73,7 @@ export const WallpaperProvider = ({ children }) => {
       if (validDefault) {
         setGlobalDefaultState(validDefault);
         const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
-        if (!cached || cached.includes('assets.mixkit.co') || cached.includes('images.unsplash.com')) {
+        if (!cached) {
           setWallpaperState(validDefault);
           try { localStorage.setItem(WALLPAPER_STORAGE_KEY, validDefault); } catch {}
         }
@@ -94,13 +89,13 @@ export const WallpaperProvider = ({ children }) => {
     // Optimistically load from localStorage to prevent delayed UI changes on login
     try {
       const cachedWallpaper = localStorage.getItem(`wallpaper_${currentUser.uid}`);
-      if (cachedWallpaper && !cachedWallpaper.includes('assets.mixkit.co') && !cachedWallpaper.includes('images.unsplash.com')) {
+      if (cachedWallpaper) {
         setWallpaperState(cachedWallpaper);
       }
 
       const cachedCustom = localStorage.getItem(`custom_wallpapers_${currentUser.uid}`);
       if (cachedCustom) {
-        const parsed = JSON.parse(cachedCustom).filter(url => !url.includes('assets.mixkit.co') && !url.includes('images.unsplash.com'));
+        const parsed = JSON.parse(cachedCustom);
         setCustomWallpapers(parsed);
       }
 
@@ -111,7 +106,7 @@ export const WallpaperProvider = ({ children }) => {
     }
 
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
-      if (settings?.wallpaper && !settings.wallpaper.includes('assets.mixkit.co') && !settings.wallpaper.includes('images.unsplash.com')) {
+      if (settings?.wallpaper) {
         setWallpaperState(settings.wallpaper);
         try {
           localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);

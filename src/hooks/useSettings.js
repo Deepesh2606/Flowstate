@@ -44,7 +44,11 @@ export const useSettings = () => {
         if (parsed.targets?.length === 1 && parsed.targets[0]?.name === 'SSC CGL') {
           parsed.targets = [];
         }
-        return { ...DEFAULT_SETTINGS, ...parsed };
+        const finalSettings = { ...DEFAULT_SETTINGS, ...parsed };
+        if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+          finalSettings.isPro = true;
+        }
+        return finalSettings;
       }
     } catch {
       // ignore
@@ -66,6 +70,7 @@ export const useSettings = () => {
         const merged = {
           ...DEFAULT_SETTINGS,
           ...data,
+          isPro: currentUser.email === 'deepeshsingh2606@gmail.com' ? true : data.isPro,
           autoClockColor: data.autoClockColor !== undefined ? data.autoClockColor : true,
           theme: data.theme || 'dark',
           clockStyle: data.clockStyle || 'digital',
@@ -107,6 +112,7 @@ export const useSettings = () => {
         const merged = {
           ...prev,
           ...updates,
+          isPro: currentUser?.email === 'deepeshsingh2606@gmail.com' ? true : (updates.isPro !== undefined ? updates.isPro : prev.isPro),
           clockColor: color,
           textColor: color,
           durations: {

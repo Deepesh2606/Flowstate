@@ -9887,6 +9887,22 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
     display: none;
   }
 
+  .settings-content-pane {
+    padding-bottom: 90px; /* Space for the dock */
+  }
+
+  .settings-content-header {
+    padding: 16px 12px;
+  }
+
+  .settings-tab-section {
+    padding: 12px;
+  }
+
+  .settings-section-block {
+    padding: 16px;
+  }
+
   .timer-styles-grid {
     grid-template-columns: repeat(2, 1fr);
   }
