@@ -482,7 +482,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   return (
     <>
-      <div className="drawer-overlay" onClick={onClose} aria-hidden="true" />
+      <div className="settings-modal-overlay" onClick={onClose} aria-hidden="true" />
 
       {/* 2-Column Side Menu Modal */}
       <aside
