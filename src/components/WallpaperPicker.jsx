@@ -26,7 +26,8 @@ const preloadImage = (url) => {
  */
 const toThumbUrl = (url) => {
   if (!url || !url.includes('cloudinary.com')) return url;
-  return url.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto:eco,w_400,c_fill,g_auto/');
+  const imgUrl = url.replace(/\.(mp4|webm|mov)$/i, '.jpg');
+  return imgUrl.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto:eco,w_400,c_fill,g_auto/');
 };
 
 
@@ -260,7 +261,8 @@ const WallpaperPicker = () => {
                               muted
                               loop
                               playsInline
-                              preload="none"
+                              preload="metadata"
+                              poster={thumbUrl}
                               onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
                               onMouseLeave={(e) => e.currentTarget.pause()}
                             />
@@ -326,7 +328,8 @@ const WallpaperPicker = () => {
                               muted
                               loop
                               playsInline
-                              preload="none"
+                              preload="metadata"
+                              poster={toThumbUrl(wp.url)}
                               onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
                               onMouseLeave={(e) => e.currentTarget.pause()}
                             />
