@@ -9850,7 +9850,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .settings-modal-dialog {
-  z-index: 101;
+    z-index: 9999;
     top: 0;
     left: 0;
     transform: none;
