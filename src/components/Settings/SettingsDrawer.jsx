@@ -1426,13 +1426,25 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                       <div className="settings-account-email">{currentUser.email}</div>
                       <div className="settings-account-pill">Pro Member • Cloud Synced</div>
                     </div>
-                    <button
-                      type="button"
-                      className="settings-account-signout-btn"
-                      onClick={signOut}
-                    >
-                      Sign Out
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {ADMIN_EMAILS.includes(currentUser.email) && (
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ padding: '8px 14px', borderRadius: '8px', fontWeight: 700, background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.3)', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '13px' }}
+                          onClick={() => setActiveTab('admin')}
+                        >
+                          👑 Admin Panel
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="settings-account-signout-btn"
+                        onClick={signOut}
+                      >
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="settings-account-guest-card">
