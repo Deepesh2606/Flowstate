@@ -1755,7 +1755,11 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </div>
                 <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {adminUsers.map(u => (
-                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--glass-bg)', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                    <div 
+                      key={u.id} 
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--glass-bg)', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
+                      onClick={() => setAdminManualUid(u.id)}
+                    >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         {u.photoURL ? (
                           <img src={u.photoURL} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
@@ -1766,13 +1770,14 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                         )}
                         <div>
                           <div style={{ fontSize: '13px', fontWeight: 600 }}>{u.displayName}</div>
+                          {u.email && <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Email: {u.email}</div>}
                           <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>UID: {u.id}</div>
                         </div>
                       </div>
                       <button
                         type="button"
                         style={{ background: '#fbbf24', color: '#78350f', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer' }}
-                        onClick={() => handleGrantPro(u.id)}
+                        onClick={(e) => { e.stopPropagation(); handleGrantPro(u.id); }}
                       >
                         Grant PRO
                       </button>
