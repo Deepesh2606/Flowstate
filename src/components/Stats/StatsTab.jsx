@@ -11,6 +11,8 @@ import SubjectTrendChart from './SubjectTrendChart';
 import ReportCard from './ReportCard';
 import LeaderboardView from './LeaderboardView';
 import ExamPlanner from '../Planner/ExamPlanner';
+import ProUpgradeModal from '../Settings/ProUpgradeModal';
+import { IconLock } from '../Icons';
 
 const formatTime = (seconds) => {
   if (!seconds) return '0m';
@@ -95,6 +97,15 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
   const [subTab, setSubTab] = useState(initialSubTab);
   const [showDetails, setShowDetails] = useState(true);
   const [showReport, setShowReport] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
+
+  const handleSubTabChange = (tab) => {
+    if (tab === 'leaderboard' && !settings?.isPro) {
+      setShowProModal(true);
+      return;
+    }
+    setSubTab(tab);
+  };
 
   useEffect(() => {
     if (initialSubTab) {
@@ -109,7 +120,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
         <button
           type="button"
           className={`stats-subnav-pill ${subTab === 'stats' ? 'active' : ''}`}
-          onClick={() => setSubTab('stats')}
+          onClick={() => handleSubTabChange('stats')}
           role="tab"
           aria-selected={subTab === 'stats'}
         >
@@ -118,16 +129,16 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
         <button
           type="button"
           className={`stats-subnav-pill ${subTab === 'leaderboard' ? 'active' : ''}`}
-          onClick={() => setSubTab('leaderboard')}
+          onClick={() => handleSubTabChange('leaderboard')}
           role="tab"
           aria-selected={subTab === 'leaderboard'}
         >
-          <span>🏆</span> Leaderboard
+          <span>🏆</span> Leaderboard {settings?.isPro ? '' : <IconLock size={12} style={{marginLeft: '4px'}} />}
         </button>
         <button
           type="button"
           className={`stats-subnav-pill ${subTab === 'planner' ? 'active' : ''}`}
-          onClick={() => setSubTab('planner')}
+          onClick={() => handleSubTabChange('planner')}
           role="tab"
           aria-selected={subTab === 'planner'}
         >
@@ -148,6 +159,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           currentStreak={currentStreak}
           subjectBreakdown={subjectBreakdown}
         />
+        <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
       </div>
     );
   }
@@ -167,6 +179,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           <span><strong>Study with a group</strong><small>Create a private group or join a live focus room.</small></span>
           <span aria-hidden="true">→</span>
         </button>
+        <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
       </div>
     );
   }
@@ -185,6 +198,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
             </div>
           </div>
         </div>
+        <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
       </div>
     );
   }
@@ -324,6 +338,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
         totalFocusTime={totalFocusTime}
         totalSessions={totalSessions}
       />
+      <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
     </div>
   );
 };

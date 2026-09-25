@@ -3,8 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useWallpaper } from '../contexts/WallpaperContext';
 import { useToast } from './Toast/ToastProvider';
 import { uploadWallpaper } from '../cloudinary';
-import { IconImage, IconCheck, IconTrash, IconStar } from './Icons';
+import { IconImage, IconCheck, IconTrash, IconStar, IconLock } from './Icons';
 import { isVideoUrl } from '../utils/imageUtils';
+import { useSettings } from '../hooks/useSettings';
+import ProUpgradeModal from './Settings/ProUpgradeModal';
 
 const preloadImage = (url) => {
   return new Promise((resolve) => {
@@ -46,8 +48,10 @@ const WallpaperPicker = () => {
     setAsGlobalDefault
   } = useWallpaper();
   const { currentUser } = useAuth();
+  const { settings } = useSettings();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('presets');
+  const [showProModal, setShowProModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('Uploading image...');
@@ -163,12 +167,18 @@ const WallpaperPicker = () => {
           </button>
           <button
             className={`wallpaper-nav-tab ${activeTab === 'upload' ? 'active' : ''}`}
-            onClick={() => setActiveTab('upload')}
+            onClick={() => {
+              if (!settings?.isPro) {
+                setShowProModal(true);
+              } else {
+                setActiveTab('upload');
+              }
+            }}
             role="tab"
             aria-selected={activeTab === 'upload'}
             id="tab-upload"
           >
-            Upload
+            Upload {settings?.isPro ? '' : <IconLock size={12} style={{marginLeft: '4px'}} />}
           </button>
         </div>
 
@@ -182,6 +192,10 @@ const WallpaperPicker = () => {
                     <button
                       type="button"
                       onClick={() => {
+                        if (!settings?.isPro) {
+                          setShowProModal(true);
+                          return;
+                        }
                         setActiveTab('upload');
                         setTimeout(() => fileRef.current?.click(), 80);
                       }}
@@ -214,6 +228,10 @@ const WallpaperPicker = () => {
                         color: 'var(--text-secondary)'
                       }}
                       onClick={() => {
+                        if (!settings?.isPro) {
+                          setShowProModal(true);
+                          return;
+                        }
                         setActiveTab('upload');
                         setTimeout(() => fileRef.current?.click(), 80);
                       }}
@@ -365,6 +383,10 @@ const WallpaperPicker = () => {
                     type="button"
                     className="btn btn-primary"
                     onClick={() => {
+                      if (!settings?.isPro) {
+                        setShowProModal(true);
+                        return;
+                      }
                       setActiveTab('upload');
                       setTimeout(() => fileRef.current?.click(), 80);
                     }}
@@ -631,6 +653,7 @@ const WallpaperPicker = () => {
           )}
         </div>
       </aside>
+      <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
     </>
   );
 };
