@@ -26,7 +26,7 @@ export const getWallpaperContrast = (imageUrl) => {
   if (!imageUrl || isVideoUrl(imageUrl)) {
     return Promise.resolve({
       color: '#ffffff',
-      shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',
+      shadow: '0 2px 14px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)',
       isLight: false,
       brightness: 40,
     });
@@ -53,7 +53,7 @@ export const getWallpaperContrast = (imageUrl) => {
     const timeoutId = setTimeout(() => {
       safeResolve({
         color: '#ffffff',
-        shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',
+        shadow: '0 2px 14px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)',
         isLight: false,
         brightness: 40,
       });
@@ -117,11 +117,11 @@ export const getWallpaperContrast = (imageUrl) => {
         if (isLight) {
           // Deep obsidian clock for light backgrounds with clean ambient glow
           color = '#0a0f1d';
-          shadow = '0 2px 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(255, 255, 255, 0.4)';
+          shadow = '0 2px 10px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.2)';
         } else {
           // Pure crisp white clock with deep drop shadow for dark backgrounds
           color = '#ffffff';
-          shadow = '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)';
+          shadow = '0 2px 14px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)';
         }
 
         safeResolve({
@@ -134,7 +134,7 @@ export const getWallpaperContrast = (imageUrl) => {
         console.warn('Canvas pixel analysis unavailable, using default contrast fallback:', e);
         safeResolve({
           color: '#ffffff',
-          shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',
+          shadow: '0 2px 14px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)',
           isLight: false,
           brightness: 40,
         });
@@ -145,7 +145,7 @@ export const getWallpaperContrast = (imageUrl) => {
       clearTimeout(timeoutId);
       safeResolve({
         color: '#ffffff',
-        shadow: '0 2px 24px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.6)',
+        shadow: '0 2px 14px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)',
         isLight: false,
         brightness: 40,
       });

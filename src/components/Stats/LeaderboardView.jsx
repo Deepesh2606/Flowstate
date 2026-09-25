@@ -1,18 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { updateLeaderboardUser } from '../../firebase/firestore';
-
-const BASE_COMMUNITY_USERS = [
-  { id: 'user_1', name: 'Elena Rostova', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80', subject: 'Neuroscience & MCAT', todaySeconds: 19800, weekSeconds: 118800, allTimeSeconds: 520000, streak: 21 },
-  { id: 'user_2', name: 'Kenji Sato', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80', subject: 'Algorithms & Systems', todaySeconds: 16200, weekSeconds: 104400, allTimeSeconds: 480000, streak: 14 },
-  { id: 'user_3', name: 'Sarah Jenkins', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80', subject: 'Organic Chemistry', todaySeconds: 14400, weekSeconds: 97200, allTimeSeconds: 410000, streak: 18 },
-  { id: 'user_4', name: 'Marcus Chen', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80', subject: 'Corporate Law Finals', todaySeconds: 12600, weekSeconds: 86400, allTimeSeconds: 380000, streak: 9 },
-  { id: 'user_5', name: 'Aaliyah Patel', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80', subject: 'Data Science & ML', todaySeconds: 10800, weekSeconds: 79200, allTimeSeconds: 340000, streak: 12 },
-  { id: 'user_6', name: 'Liam O\'Connor', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&auto=format&fit=crop&q=80', subject: 'Calculus & Physics', todaySeconds: 9000, weekSeconds: 68400, allTimeSeconds: 290000, streak: 7 },
-  { id: 'user_7', name: 'Chloe Dubois', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=120&auto=format&fit=crop&q=80', subject: 'Biochemistry', todaySeconds: 7200, weekSeconds: 54000, allTimeSeconds: 240000, streak: 5 },
-  { id: 'user_8', name: 'Mateo Morales', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&auto=format&fit=crop&q=80', subject: 'Fullstack Engineering', todaySeconds: 5400, weekSeconds: 43200, allTimeSeconds: 190000, streak: 8 },
-  { id: 'user_9', name: 'Zoe Vance', avatar: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=120&auto=format&fit=crop&q=80', subject: 'Medical Physiology', todaySeconds: 3600, weekSeconds: 32400, allTimeSeconds: 150000, streak: 4 },
-];
+import { updateLeaderboardUser, subscribeLeaderboard } from '../../firebase/firestore';
 
 const formatTime = (seconds) => {
   if (!seconds || seconds <= 0) return '0m';
@@ -32,6 +20,24 @@ export const LeaderboardView = ({
   const { currentUser } = useAuth();
   const [timeframe, setTimeframe] = useState('today'); // 'today' | 'week' | 'allTime'
   const [search, setSearch] = useState('');
+  const [communityUsers, setCommunityUsers] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeLeaderboard((list) => {
+      const formatted = list.map(u => ({
+        id: u.id,
+        name: u.displayName || 'Anonymous Student',
+        avatar: u.photoURL || null,
+        subject: u.subject || 'Deep Work',
+        todaySeconds: u.todaySeconds || 0,
+        weekSeconds: u.weekSeconds || 0,
+        allTimeSeconds: u.allTimeSeconds || 0,
+        streak: u.streak || 0,
+      }));
+      setCommunityUsers(formatted);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Calculate current user's weekly focus time from weeklyData
   const weeklyUserSeconds = useMemo(() => {
@@ -72,7 +78,7 @@ export const LeaderboardView = ({
   // Combine community users with current user and sort by active timeframe
   const rankedUsers = useMemo(() => {
     const combined = [
-      ...BASE_COMMUNITY_USERS.filter(u => u.id !== currentUser?.uid),
+      ...communityUsers.filter(u => u.id !== currentUser?.uid),
       currentUserItem,
     ];
 
@@ -84,7 +90,7 @@ export const LeaderboardView = ({
       ...user,
       rank: idx + 1,
     }));
-  }, [currentUserItem, currentUser?.uid, timeframe]);
+  }, [communityUsers, currentUserItem, currentUser?.uid, timeframe]);
 
   // Find user's current rank
   const myRankInfo = useMemo(() => {
