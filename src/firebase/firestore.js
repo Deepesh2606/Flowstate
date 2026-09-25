@@ -28,6 +28,11 @@ export const saveSettings = async (uid, settings) => {
   await setDoc(ref, settings, { merge: true });
 };
 
+export const grantProStatus = async (uid) => {
+  const ref = doc(db, 'users', uid, 'data', 'settings');
+  await setDoc(ref, { isPro: true }, { merge: true });
+};
+
 export const subscribeSettings = (uid, callback) => {
   const ref = doc(db, 'users', uid, 'data', 'settings');
   return onSnapshot(

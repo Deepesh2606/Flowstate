@@ -3,6 +3,7 @@ import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
+import { subscribeLeaderboard, grantProStatus } from '../../firebase/firestore';
 import {
   IconSun,
   IconMoon,
@@ -479,6 +480,34 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
     { id: 'whatsnew',  label: "What's New",  icon: IconRocket },
     { id: 'legal',     label: 'Legal & Policies', icon: IconShield },
   ];
+
+  if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+    NAV_ITEMS.push({ id: 'admin', label: 'Admin Panel', icon: IconShield });
+  }
+
+  // Admin Tab State
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminManualUid, setAdminManualUid] = useState('');
+
+  useEffect(() => {
+    if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
+      const unsub = subscribeLeaderboard((list) => {
+        setAdminUsers(list);
+      });
+      return () => unsub();
+    }
+  }, [activeTab, currentUser]);
+
+  const handleGrantPro = async (uid) => {
+    if (!uid) return;
+    try {
+      await grantProStatus(uid);
+      toast(`PRO status granted to ${uid}!`, 'success', 3000);
+      setAdminManualUid('');
+    } catch (err) {
+      toast('Failed to grant PRO status.', 'error', 3000);
+    }
+  };
 
   return (
     <>
@@ -1672,6 +1701,81 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
               </div>
             </div>
           )}
+          {/* ════════ 9. ADMIN PANEL ════════ */}
+          {activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+            <div className="settings-tab-section">
+              <div className="settings-card-banner" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
+                <div className="settings-card-banner-header">
+                  <span className="settings-card-banner-title" style={{ color: '#fbbf24' }}>👑 Super Admin Panel</span>
+                </div>
+                <p className="settings-card-banner-sub">
+                  Manage users and grant PRO status manually.
+                </p>
+              </div>
+
+              <div className="settings-section-block">
+                <div className="settings-section-header-row">
+                  <div className="settings-section-header-title">Manual Grant via UID</div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <input
+                    type="text"
+                    className="settings-input"
+                    placeholder="Enter User UID"
+                    value={adminManualUid}
+                    onChange={(e) => setAdminManualUid(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => handleGrantPro(adminManualUid)}
+                    disabled={!adminManualUid.trim()}
+                  >
+                    Grant PRO
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-section-block">
+                <div className="settings-section-header-row">
+                  <div className="settings-section-header-title">Recent Active Users (Leaderboard)</div>
+                </div>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {adminUsers.map(u => (
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--glass-bg)', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {u.photoURL ? (
+                          <img src={u.photoURL} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                        ) : (
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {u.displayName?.charAt(0) || 'U'}
+                          </div>
+                        )}
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{u.displayName}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>UID: {u.id}</div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        style={{ background: '#fbbf24', color: '#78350f', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+                        onClick={() => handleGrantPro(u.id)}
+                      >
+                        Grant PRO
+                      </button>
+                    </div>
+                  ))}
+                  {adminUsers.length === 0 && (
+                    <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                      No users found in leaderboard.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </aside>
     </>
