@@ -481,9 +481,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
     { id: 'legal',     label: 'Legal & Policies', icon: IconShield },
   ];
 
-  const ADMIN_EMAILS = ['deepeshsingh2606@gmail.com', 'deeepeshsingh2606@gmail.com'];
-
-  if (ADMIN_EMAILS.includes(currentUser?.email)) {
+  if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
     NAV_ITEMS.push({ id: 'admin', label: 'Admin Panel', icon: IconShield });
   }
 
@@ -492,7 +490,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [adminManualUid, setAdminManualUid] = useState('');
 
   useEffect(() => {
-    if (activeTab === 'admin' && ADMIN_EMAILS.includes(currentUser?.email)) {
+    if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
       const unsub = subscribeLeaderboard((list) => {
         setAdminUsers(list);
       });
@@ -1427,7 +1425,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                       <div className="settings-account-pill">Pro Member • Cloud Synced</div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {ADMIN_EMAILS.includes(currentUser.email) && (
+                      {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
                         <button
                           type="button"
                           className="btn"
@@ -1716,7 +1714,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
             </div>
           )}
           {/* ════════ 9. ADMIN PANEL ════════ */}
-          {activeTab === 'admin' && ADMIN_EMAILS.includes(currentUser?.email) && (
+          {activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com' && (
             <div className="settings-tab-section">
               <div className="settings-card-banner" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
                 <div className="settings-card-banner-header">

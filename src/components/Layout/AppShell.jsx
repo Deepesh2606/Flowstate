@@ -42,7 +42,7 @@ const AppShell = () => {
   // Keep a known local image on screen until a cached/remote wallpaper has
   // completely loaded. This avoids the blank flash that can happen on first
   // paint while Firestore or Cloudinary assets are still arriving.
-  const [renderedWallpaper, setRenderedWallpaper] = useState(WALLPAPER_FALLBACK);
+  const [renderedWallpaper, setRenderedWallpaper] = useState(wallpaper || WALLPAPER_FALLBACK);
   const [isWallpaperLoading, setIsWallpaperLoading] = useState(false);
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, isPlaybackPaused, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
