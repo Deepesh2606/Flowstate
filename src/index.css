@@ -9875,6 +9875,12 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
     flex-direction: row;
   }
 
+  .settings-side-nav-item {
+    width: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .settings-upgrade-plus-btn,
   .settings-sidebar-auth-card {
     display: none;
