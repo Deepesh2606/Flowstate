@@ -203,8 +203,20 @@ export const subscribeLeaderboard = (callback) => {
   );
 };
 
-export const subscribeAdminUsers = (callback) => {
-  const ref = collection(db, 'leaderboard');
+export const updateRegisteredUser = async (uid, data) => {
+  try {
+    const ref = doc(db, 'registeredUsers', uid);
+    await setDoc(ref, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Registered user update error:', err);
+  }
+};
+
+export const subscribeRegisteredUsers = (callback) => {
+  const ref = collection(db, 'registeredUsers');
   const q = query(ref, orderBy('updatedAt', 'desc'));
   return onSnapshot(
     q,

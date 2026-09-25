@@ -3,7 +3,7 @@ import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
-import { subscribeLeaderboard, subscribeAdminUsers, grantProStatus } from '../../firebase/firestore';
+import { subscribeLeaderboard, subscribeRegisteredUsers, grantProStatus } from '../../firebase/firestore';
 import {
   IconSun,
   IconMoon,
@@ -491,7 +491,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   useEffect(() => {
     if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
-      const unsub = subscribeAdminUsers((list) => {
+      const unsub = subscribeRegisteredUsers((list) => {
         setAdminUsers(list);
       });
       return () => unsub();
@@ -1764,7 +1764,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
               <div className="settings-section-block">
                 <div className="settings-section-header-row">
-                  <div className="settings-section-header-title">Recent Active Users (Leaderboard)</div>
+                  <div className="settings-section-header-title">Recent Active Users (Registered)</div>
                 </div>
                 <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {adminUsers.map(u => (
@@ -1798,7 +1798,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   ))}
                   {adminUsers.length === 0 && (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      No users found in leaderboard.
+                      No users found in registered list.
                     </div>
                   )}
                 </div>

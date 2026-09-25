@@ -5,6 +5,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase/config';
+import { updateRegisteredUser } from '../firebase/firestore';
 
 const AuthContext = createContext(null);
 
@@ -53,6 +54,7 @@ export const AuthProvider = ({ children }) => {
         } catch {
           // ignore
         }
+        updateRegisteredUser(user.uid, userData);
       } else {
         setCurrentUser(null);
         try {

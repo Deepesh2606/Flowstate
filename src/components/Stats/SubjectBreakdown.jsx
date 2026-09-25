@@ -39,7 +39,7 @@ const SubjectBreakdown = ({ subjectBreakdown }) => {
   const total = subjectBreakdown.reduce((acc, s) => acc + s.total, 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '16px' }}>
       <div style={{ width: '100%', height: 200 }}>
         <ResponsiveContainer>
           <PieChart>
