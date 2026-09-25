@@ -189,9 +189,9 @@ export const updateLeaderboardUser = async (uid, data) => {
 
 export const subscribeLeaderboard = (callback) => {
   const ref = collection(db, 'leaderboard');
-  const q = query(ref, orderBy('todaySeconds', 'desc'));
+  // Removed orderBy('todaySeconds', 'desc') so users without todaySeconds are not excluded. Sorting is handled client-side.
   return onSnapshot(
-    q,
+    ref,
     (snap) => {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       callback(list);
@@ -205,7 +205,7 @@ export const subscribeLeaderboard = (callback) => {
 
 export const updateRegisteredUser = async (uid, data) => {
   try {
-    const ref = doc(db, 'registeredUsers', uid);
+    const ref = doc(db, 'users', uid);
     await setDoc(ref, {
       ...data,
       updatedAt: serverTimestamp(),
@@ -216,10 +216,10 @@ export const updateRegisteredUser = async (uid, data) => {
 };
 
 export const subscribeRegisteredUsers = (callback) => {
-  const ref = collection(db, 'registeredUsers');
-  const q = query(ref, orderBy('updatedAt', 'desc'));
+  const ref = collection(db, 'users');
+  // Removed orderBy('updatedAt', 'desc') so users without updatedAt are not excluded.
   return onSnapshot(
-    q,
+    ref,
     (snap) => {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       callback(list);

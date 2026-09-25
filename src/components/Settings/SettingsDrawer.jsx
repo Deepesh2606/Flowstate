@@ -492,7 +492,13 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   useEffect(() => {
     if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
       const unsub = subscribeRegisteredUsers((list) => {
-        setAdminUsers(list);
+        // Sort users client-side, e.g. alphabetically by name or email
+        const sorted = [...list].sort((a, b) => {
+          const aName = a.displayName || a.email || '';
+          const bName = b.displayName || b.email || '';
+          return aName.localeCompare(bName);
+        });
+        setAdminUsers(sorted);
       });
       return () => unsub();
     }
@@ -1798,7 +1804,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   ))}
                   {adminUsers.length === 0 && (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      No users found in registered list.
+                      No users found.
                     </div>
                   )}
                 </div>
