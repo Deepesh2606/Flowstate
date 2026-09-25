@@ -498,11 +498,24 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
     }
   }, [activeTab, currentUser]);
 
-  const handleGrantPro = async (uid) => {
-    if (!uid) return;
+  const handleGrantPro = async (inputVal) => {
+    if (!inputVal) return;
+    const val = inputVal.trim();
+    let targetUid = val;
+    // If it looks like an email, try to find the user in adminUsers
+    if (val.includes('@')) {
+      const foundUser = adminUsers.find(u => u.email?.toLowerCase() === val.toLowerCase());
+      if (foundUser) {
+        targetUid = foundUser.id;
+      } else {
+        toast('User not found by email. Please enter their exact UID.', 'error', 4000);
+        return;
+      }
+    }
+
     try {
-      await grantProStatus(uid);
-      toast(`PRO status granted to ${uid}!`, 'success', 3000);
+      await grantProStatus(targetUid);
+      toast(`PRO status granted to ${targetUid}!`, 'success', 3000);
       setAdminManualUid('');
     } catch (err) {
       toast('Failed to grant PRO status.', 'error', 3000);
@@ -1727,13 +1740,13 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
               <div className="settings-section-block">
                 <div className="settings-section-header-row">
-                  <div className="settings-section-header-title">Manual Grant via UID</div>
+                  <div className="settings-section-header-title">Manual Grant via Email or UID</div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                   <input
                     type="text"
                     className="settings-input"
-                    placeholder="Enter User UID"
+                    placeholder="Enter User Email or UID"
                     value={adminManualUid}
                     onChange={(e) => setAdminManualUid(e.target.value)}
                     style={{ flex: 1 }}
