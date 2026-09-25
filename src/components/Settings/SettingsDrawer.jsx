@@ -481,7 +481,9 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
     { id: 'legal',     label: 'Legal & Policies', icon: IconShield },
   ];
 
-  if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+  const ADMIN_EMAILS = ['deepeshsingh2606@gmail.com', 'deeepeshsingh2606@gmail.com'];
+
+  if (ADMIN_EMAILS.includes(currentUser?.email)) {
     NAV_ITEMS.push({ id: 'admin', label: 'Admin Panel', icon: IconShield });
   }
 
@@ -490,7 +492,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [adminManualUid, setAdminManualUid] = useState('');
 
   useEffect(() => {
-    if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
+    if (activeTab === 'admin' && ADMIN_EMAILS.includes(currentUser?.email)) {
       const unsub = subscribeLeaderboard((list) => {
         setAdminUsers(list);
       });
@@ -1702,7 +1704,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
             </div>
           )}
           {/* ════════ 9. ADMIN PANEL ════════ */}
-          {activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+          {activeTab === 'admin' && ADMIN_EMAILS.includes(currentUser?.email) && (
             <div className="settings-tab-section">
               <div className="settings-card-banner" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
                 <div className="settings-card-banner-header">

@@ -348,7 +348,7 @@ const WallpaperPicker = () => {
                             </div>
                           )}
                         </button>
-                      {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+                      {['deepeshsingh2606@gmail.com', 'deeepeshsingh2606@gmail.com'].includes(currentUser?.email) && (
                         <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '6px', zIndex: 10 }}>
                           <button
                             onClick={(e) => { e.stopPropagation(); deleteGlobalCurated(wp.id); }}
@@ -589,7 +589,7 @@ const WallpaperPicker = () => {
                 )}
               </div>
               
-              {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+              {['deepeshsingh2606@gmail.com', 'deeepeshsingh2606@gmail.com'].includes(currentUser?.email) && (
                 <div className={`curated-toggle-card ${uploadAsCurated ? 'active' : ''}`}>
                   <div className="curated-toggle-content">
                   <div className="curated-toggle-header">
