@@ -17,14 +17,11 @@ export const ProUpgradeModal = ({ isOpen, onClose }) => {
     // Ideally, open the payment link
     window.open(RAZORPAY_PAYMENT_LINK, '_blank');
     
-    // For testing/demonstration, we'll auto-upgrade after 2 seconds
-    // In production, this should happen via webhook or manual verification
     setLoading(true);
     setTimeout(() => {
-      updateSettings({ isPro: true });
       setLoading(false);
       onClose();
-      alert('Success! You are now a PRO user. (This is a mock success for testing)');
+      alert('Payment integration is pending. Please contact the administrator to get PRO access.');
     }, 2000);
   };
 

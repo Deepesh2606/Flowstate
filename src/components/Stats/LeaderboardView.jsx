@@ -193,36 +193,42 @@ export const LeaderboardView = ({
         </div>
       </div>
 
-      {/* Podium for Top 3 (Shown when not searching) */}
-      {!search.trim() && topThree.length === 3 && (
+      {/* Podium for Top (Shown when not searching) */}
+      {!search.trim() && topThree.length > 0 && (
         <div className="leaderboard-podium">
           {/* 2nd Place */}
-          <div className="podium-col second">
-            <div className="podium-badge">🥈 #2</div>
-            <img src={topThree[1].avatar} alt={topThree[1].name} className="podium-avatar" />
-            <div className="podium-name">{topThree[1].name.split(' ')[0]}</div>
-            <div className="podium-time">{getSortScore(topThree[1])}</div>
-            <div className="podium-bar second-bar" />
-          </div>
+          {topThree[1] && (
+            <div className="podium-col second">
+              <div className="podium-badge">🥈 #2</div>
+              <img src={topThree[1].avatar} alt={topThree[1].name} className="podium-avatar" />
+              <div className="podium-name">{topThree[1].name.split(' ')[0]}</div>
+              <div className="podium-time">{getSortScore(topThree[1])}</div>
+              <div className="podium-bar second-bar" />
+            </div>
+          )}
 
           {/* 1st Place */}
-          <div className="podium-col first">
-            <div className="podium-crown">👑</div>
-            <div className="podium-badge gold">🥇 #1</div>
-            <img src={topThree[0].avatar} alt={topThree[0].name} className="podium-avatar first-avatar" />
-            <div className="podium-name">{topThree[0].name.split(' ')[0]}</div>
-            <div className="podium-time">{getSortScore(topThree[0])}</div>
-            <div className="podium-bar first-bar" />
-          </div>
+          {topThree[0] && (
+            <div className="podium-col first">
+              <div className="podium-crown">👑</div>
+              <div className="podium-badge gold">🥇 #1</div>
+              <img src={topThree[0].avatar} alt={topThree[0].name} className="podium-avatar first-avatar" />
+              <div className="podium-name">{topThree[0].name.split(' ')[0]}</div>
+              <div className="podium-time">{getSortScore(topThree[0])}</div>
+              <div className="podium-bar first-bar" />
+            </div>
+          )}
 
           {/* 3rd Place */}
-          <div className="podium-col third">
-            <div className="podium-badge bronze">🥉 #3</div>
-            <img src={topThree[2].avatar} alt={topThree[2].name} className="podium-avatar" />
-            <div className="podium-name">{topThree[2].name.split(' ')[0]}</div>
-            <div className="podium-time">{getSortScore(topThree[2])}</div>
-            <div className="podium-bar third-bar" />
-          </div>
+          {topThree[2] && (
+            <div className="podium-col third">
+              <div className="podium-badge bronze">🥉 #3</div>
+              <img src={topThree[2].avatar} alt={topThree[2].name} className="podium-avatar" />
+              <div className="podium-name">{topThree[2].name.split(' ')[0]}</div>
+              <div className="podium-time">{getSortScore(topThree[2])}</div>
+              <div className="podium-bar third-bar" />
+            </div>
+          )}
         </div>
       )}
 

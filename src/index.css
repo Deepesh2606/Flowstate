@@ -2435,7 +2435,7 @@ input {
 .gap-8 { gap: 8px; }
 
 /* ─── Comprehensive Mobile Responsiveness ───────────────────────────────────── */
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape) {
   /* Layout & Content Area */
   .content-area {
     padding: 16px 12px calc(var(--tab-height) + env(safe-area-inset-bottom, 0) + 72px);
@@ -2616,13 +2616,13 @@ input {
   }
 
   .flip-card-wrapper {
-    width: clamp(50px, 15.5vw, 68px);
-    height: clamp(66px, 20.5vw, 90px);
-    border-radius: 10px;
+    width: clamp(65px, 20vw, 85px);
+    height: clamp(85px, 26vw, 110px);
+    border-radius: 12px;
   }
 
   .flip-flap span {
-    font-size: clamp(2.2rem, 9vw, 3.2rem);
+    font-size: clamp(3rem, 12vw, 4.5rem);
   }
 
   .flip-clock-colon {
@@ -2647,7 +2647,7 @@ input {
   }
 
   .digital-clock-container .flocus-timer-digits {
-    font-size: clamp(2.8rem, 13vw, 4.8rem);
+    font-size: clamp(3.6rem, 17vw, 6rem);
   }
 
   .stopwatch-ms {
@@ -2702,20 +2702,19 @@ input {
     letter-spacing: 0.03em;
   }
 
-  /* 3D Flip Clock on Mobile & Tablet */
   .flip-clock-container {
-    gap: clamp(6px, 1.6vw, 14px);
-    margin-bottom: 18px;
+    gap: clamp(8px, 2vw, 16px);
+    margin-bottom: 22px;
   }
 
   .flip-card-wrapper {
-    width: clamp(56px, 15vw, 92px);
-    height: clamp(74px, 19.5vw, 120px);
-    border-radius: 12px;
+    width: clamp(65px, 22vw, 95px);
+    height: clamp(85px, 28vw, 125px);
+    border-radius: 14px;
   }
 
   .flip-flap span {
-    font-size: clamp(2.6rem, 8vw, 4.4rem);
+    font-size: clamp(3.2rem, 14vw, 5rem);
   }
 
   .flip-clock-colon {
@@ -3043,6 +3042,10 @@ input {
   .live-date-capsule--minimal {
     padding: 4px 12px;
     font-size: 0.8rem;
+  }
+
+  .digital-clock-container .flocus-timer-digits {
+    font-size: clamp(3rem, 30vh, 7rem);
   }
 
   .live-clock-controls {
