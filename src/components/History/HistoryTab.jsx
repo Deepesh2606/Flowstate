@@ -7,7 +7,8 @@ import { IconHistory, IconTrash, IconEdit, IconCheck } from '../Icons';
 import GoogleSignInButton from '../Auth/GoogleSignInButton';
 
 const formatTime = (seconds) => {
-  if (!seconds) return '0m';
+  if (!seconds || seconds <= 0) return '0m';
+  if (seconds > 0 && seconds < 60) return '< 1m';
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   if (h > 0) return `${h}h ${m}m`;

@@ -353,52 +353,7 @@ const AppShell = () => {
     setCurrentTimerMode(modeId);
   };
 
-  const renderTab = () => {
-    switch (activeTab) {
-      case 'timer':
-        return (
-        <TimerTab
-            settings={settings}
-            onUpdateSettings={updateSettings}
-            onOpenSettings={() => setShowSettings(true)}
-            hasWallpaper={!!wallpaper}
-            onTabChange={handleTabChange}
-            initialMode={pendingSwitchMode}
-            onInitialModeConsumed={() => setPendingSwitchMode(null)}
-            timerActionsRef={timerActionsRef}
-            onModeChange={setCurrentTimerMode}
-          />
-        );
-      case 'clock':
-        return (
-          <ClockTab
-            settings={settings}
-            onUpdateSettings={updateSettings}
-            hasWallpaper={!!wallpaper}
-            onTabChange={handleTabChange}
-            onOpenSettings={() => setShowSettings(true)}
-          />
-        );
-      case 'stats':
-        return (
-          <Suspense fallback={<FallbackLoader />}>
-            <StatsTab
-              initialSubTab={pendingSwitchMode === 'leaderboard' ? 'leaderboard' : 'stats'}
-              onSubTabConsumed={() => setPendingSwitchMode(null)}
-              onOpenStudyGroups={() => setShowLiveRooms(true)}
-            />
-          </Suspense>
-        );
-      case 'history':
-        return (
-          <Suspense fallback={<FallbackLoader />}>
-            <HistoryTab onTabChange={handleTabChange} />
-          </Suspense>
-        );
-      default:
-        return null;
-    }
-  };
+
 
   return (
     <div className={`app-layout${showAIChat ? ' app-layout--chat-open' : ''}`}>
@@ -765,12 +720,51 @@ const AppShell = () => {
         <main className="content-area" id={`panel-${activeTab}`}>
           <div
             className="tab-content"
-            key={activeTab}
-            style={{
-              animation: 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-            }}
+            style={{ display: activeTab === 'timer' ? 'block' : 'none', animation: activeTab === 'timer' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
           >
-            {renderTab()}
+            <TimerTab
+              settings={settings}
+              onUpdateSettings={updateSettings}
+              onOpenSettings={() => setShowSettings(true)}
+              hasWallpaper={!!wallpaper}
+              onTabChange={handleTabChange}
+              initialMode={pendingSwitchMode}
+              onInitialModeConsumed={() => setPendingSwitchMode(null)}
+              timerActionsRef={timerActionsRef}
+              onModeChange={setCurrentTimerMode}
+            />
+          </div>
+          <div
+            className="tab-content"
+            style={{ display: activeTab === 'clock' ? 'block' : 'none', animation: activeTab === 'clock' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
+          >
+            <ClockTab
+              settings={settings}
+              onUpdateSettings={updateSettings}
+              hasWallpaper={!!wallpaper}
+              onTabChange={handleTabChange}
+              onOpenSettings={() => setShowSettings(true)}
+            />
+          </div>
+          <div
+            className="tab-content"
+            style={{ display: activeTab === 'stats' ? 'block' : 'none', animation: activeTab === 'stats' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
+          >
+            <Suspense fallback={<FallbackLoader />}>
+              <StatsTab
+                initialSubTab={pendingSwitchMode === 'leaderboard' ? 'leaderboard' : 'stats'}
+                onSubTabConsumed={() => setPendingSwitchMode(null)}
+                onOpenStudyGroups={() => setShowLiveRooms(true)}
+              />
+            </Suspense>
+          </div>
+          <div
+            className="tab-content"
+            style={{ display: activeTab === 'history' ? 'block' : 'none', animation: activeTab === 'history' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
+          >
+            <Suspense fallback={<FallbackLoader />}>
+              <HistoryTab onTabChange={handleTabChange} />
+            </Suspense>
           </div>
         </main>
 
