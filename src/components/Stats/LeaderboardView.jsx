@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { updateLeaderboardUser, subscribeLeaderboard } from '../../firebase/firestore';
+import { updateLeaderboardUser, subscribeLeaderboard, subscribeRegisteredUsers } from '../../firebase/firestore';
 
 const formatTime = (seconds) => {
   if (!seconds || seconds <= 0) return '0m';
@@ -23,20 +23,54 @@ export const LeaderboardView = ({
   const [communityUsers, setCommunityUsers] = useState([]);
 
   useEffect(() => {
-    const unsubscribe = subscribeLeaderboard((list) => {
-      const formatted = list.map(u => ({
-        id: u.id,
-        name: u.displayName || 'Anonymous Student',
-        avatar: u.photoURL || null,
-        subject: u.subject || 'Deep Work',
-        todaySeconds: u.todaySeconds || 0,
-        weekSeconds: u.weekSeconds || 0,
-        allTimeSeconds: u.allTimeSeconds || 0,
-        streak: u.streak || 0,
-      }));
-      setCommunityUsers(formatted);
+    let leaderboardList = [];
+    let registeredList = [];
+
+    const updateCommunity = () => {
+      const merged = registeredList.map(ru => {
+        const lbUser = leaderboardList.find(lu => lu.id === ru.id) || {};
+        return {
+          id: ru.id,
+          name: ru.displayName || ru.email || lbUser.displayName || 'Anonymous Student',
+          avatar: ru.photoURL || lbUser.photoURL || null,
+          subject: lbUser.subject || 'Deep Work',
+          todaySeconds: lbUser.todaySeconds || 0,
+          weekSeconds: lbUser.weekSeconds || 0,
+          allTimeSeconds: lbUser.allTimeSeconds || 0,
+          streak: lbUser.streak || 0,
+        };
+      });
+      leaderboardList.forEach(lbUser => {
+        if (!merged.find(m => m.id === lbUser.id)) {
+          merged.push({
+            id: lbUser.id,
+            name: lbUser.displayName || 'Anonymous Student',
+            avatar: lbUser.photoURL || null,
+            subject: lbUser.subject || 'Deep Work',
+            todaySeconds: lbUser.todaySeconds || 0,
+            weekSeconds: lbUser.weekSeconds || 0,
+            allTimeSeconds: lbUser.allTimeSeconds || 0,
+            streak: lbUser.streak || 0,
+          });
+        }
+      });
+      setCommunityUsers(merged);
+    };
+
+    const unsubLeaderboard = subscribeLeaderboard((list) => {
+      leaderboardList = list;
+      updateCommunity();
     });
-    return () => unsubscribe();
+
+    const unsubRegistered = subscribeRegisteredUsers((list) => {
+      registeredList = list;
+      updateCommunity();
+    });
+
+    return () => {
+      unsubLeaderboard();
+      unsubRegistered();
+    };
   }, []);
 
   // Calculate current user's weekly focus time from weeklyData

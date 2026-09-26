@@ -3871,7 +3871,7 @@ input {
 
 .flocus-timer-digits {
   font-family: var(--clock-font-family, 'Inter', system-ui, sans-serif);
-  font-size: clamp(6rem, 18vw, 15rem);
+  font-size: clamp(8rem, 25vw, 22rem);
   font-weight: 900;
   line-height: 1;
   color: var(--clock-text-color, #ffffff);
@@ -3917,13 +3917,13 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(10px, 1.4vw, 16px);
+  gap: clamp(12px, 1.8vw, 24px);
 }
 
 .flip-card-wrapper {
   position: relative;
-  width: clamp(88px, 15.5vw, 190px);
-  height: clamp(110px, 18.5vw, 225px);
+  width: clamp(110px, 20vw, 240px);
+  height: clamp(140px, 25vw, 300px);
   perspective: 1200px;
   transform-style: preserve-3d;
   border-radius: clamp(16px, 2vw, 24px);
@@ -4000,7 +4000,7 @@ input {
   align-items: center;
   justify-content: center;
   font-family: var(--clock-font-family, 'Space Grotesk', sans-serif);
-  font-size: clamp(4.4rem, 9.6vw, 10.5rem);
+  font-size: clamp(5.5rem, 13vw, 14.5rem);
   font-weight: 800;
   line-height: 1;
   color: var(--clock-text-color, #ffffff);
@@ -12154,3 +12154,36 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   }
 }
 
+@media (max-width: 768px) {
+  .leaderboard-user-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  .user-banner-left {
+    flex-direction: column;
+    text-align: center;
+  }
+  .leaderboard-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    gap: 12px;
+  }
+  .leaderboard-user-col {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .leaderboard-podium {
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+  }
+  .podium-col {
+    transform: none !important;
+  }
+  .podium-bar {
+    height: 10px !important;
+    width: 100%;
+  }
+}
