@@ -11717,11 +11717,12 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   }
 
   .user-menu {
-    position: fixed;
-    top: calc(max(10px, env(safe-area-inset-top, 10px)) + 44px);
-    left: 12px;
-    right: 12px;
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: auto;
     bottom: auto;
+    width: calc(100vw - 24px);
     min-width: 0;
     max-height: min(70dvh, 520px);
     overflow-y: auto;
