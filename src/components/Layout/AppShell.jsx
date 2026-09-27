@@ -392,8 +392,9 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
-          <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center" }}>
-            <img src="/favicon.svg" alt="FLOWSTATE" style={{ height: 160, width: 'auto' }} />
+          <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center", gap: "12px", fontWeight: "700", letterSpacing: "2px", fontSize: "1.1rem" }}>
+            <img src="/favicon.svg" alt="FLOWSTATE" style={{ height: 36, width: 'auto' }} />
+            FLOWSTATE
           </span>
         </header>
 

@@ -1,4 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  
-  <path d="M 128 256 C 213 128, 299 384, 384 256" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" data-index="0"></path>
+  <defs>
+    <linearGradient id="flowGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+    <linearGradient id="flowGrad2" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#e879f9" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#glow)">
+    <!-- Primary dynamic infinity curve representing FLOW -->
+    <path d="M 256 256 C 340 100, 470 130, 470 256 C 470 382, 340 412, 256 256 C 172 100, 42 130, 42 256 C 42 382, 172 412, 256 256 Z" 
+          stroke="url(#flowGrad1)" 
+          stroke-width="28" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+          
+    <!-- Secondary internal rhythmic curve representing STATE -->
+    <path d="M 256 256 C 320 150, 420 170, 420 256 C 420 342, 320 362, 256 256 C 192 150, 92 170, 92 256 C 92 342, 192 362, 256 256 Z" 
+          stroke="url(#flowGrad2)" 
+          stroke-width="14" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          opacity="0.9" />
+  </g>
 </svg>
