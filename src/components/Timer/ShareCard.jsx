@@ -76,7 +76,7 @@ const ShareCard = ({ isOpen, onClose, duration, subject, sessionCount }) => {
     ctx.fillText(dateStr, 32, H - 20);
 
     const link = document.createElement('a');
-    link.download = 'fmood-session.png';
+    link.download = 'flowstate-session.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };

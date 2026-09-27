@@ -96,7 +96,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
   const [isRunning, setIsRunning] = useState(false);
   const [sessionCount, setSessionCount] = useState(() => {
     try {
-      const saved = localStorage.getItem('fmood_sessionCount');
+      const saved = localStorage.getItem('flowstate_sessionCount');
       if (saved) {
         const { count, date } = JSON.parse(saved);
         if (date === new Date().toISOString().split('T')[0]) {
@@ -169,10 +169,10 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
         }
       } else if (!currentUser && studiedDuration > 0) {
         try {
-          const guestSessions = JSON.parse(localStorage.getItem('fmood_guest_sessions') || '[]');
+          const guestSessions = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
           guestSessions.unshift({ id: 'guest_' + Date.now(), ...sessionPayload });
-          localStorage.setItem('fmood_guest_sessions', JSON.stringify(guestSessions.slice(0, 200)));
-          window.dispatchEvent(new Event('fmood_guest_sessions_updated'));
+          localStorage.setItem('flowstate_guest_sessions', JSON.stringify(guestSessions.slice(0, 200)));
+          window.dispatchEvent(new Event('flowstate_guest_sessions_updated'));
         } catch (e) {
           console.warn('Failed to save guest session:', e);
         }
@@ -180,7 +180,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
 
       if (currentMode === MODES.stopwatch) {
         if (notifyOnComplete) toast?.('Stopwatch session recorded.', 'success', 3000);
-        sendBrowserNotification('Fmood', 'Stopwatch session recorded!');
+        sendBrowserNotification('Flowstate', 'Stopwatch session recorded!');
         return; // Stopwatch just stops and saves
       }
 
@@ -193,7 +193,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
       setSessionCount(newCount);
       sessionCountRef.current = newCount;
       try {
-        localStorage.setItem('fmood_sessionCount', JSON.stringify({
+        localStorage.setItem('flowstate_sessionCount', JSON.stringify({
           count: newCount,
           date: new Date().toISOString().split('T')[0]
         }));
@@ -202,7 +202,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
       if (newCount % longBreakInterval === 0) {
         const msg = `${newCount} sessions done — long break time! 🎉`;
         if (notifyOnComplete) toast?.(msg, 'longbreak', 4000);
-        sendBrowserNotification('Fmood — Long Break!', msg);
+        sendBrowserNotification('Flowstate — Long Break!', msg);
         setMode(MODES.longBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       } else {
@@ -216,13 +216,13 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
             toast?.('Session complete. Take a short break! ☕', 'focus', 3500);
           }
         }
-        sendBrowserNotification('Fmood — Break Time!', 'Great focus session! Take a short break.');
+        sendBrowserNotification('Flowstate — Break Time!', 'Great focus session! Take a short break.');
         setMode(MODES.shortBreak);
         if (autoStartBreaks) setTimeout(() => setIsRunning(true), 800);
       }
     } else {
       if (notifyOnComplete) toast?.('Break over — back to focus! 🚀', 'info', 3500);
-      sendBrowserNotification('Fmood — Focus Time!', 'Break is over. Time to focus!');
+      sendBrowserNotification('Flowstate — Focus Time!', 'Break is over. Time to focus!');
       setMode(MODES.pomodoro);
       if (autoStartPomodoros) setTimeout(() => setIsRunning(true), 800);
     }
@@ -260,19 +260,19 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
           // Tab title for stopwatch
           const sw_m = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
           const sw_s = String(elapsedSec % 60).padStart(2, '0');
-          document.title = `[${sw_m}:${sw_s}] Fmood`;
+          document.title = `[${sw_m}:${sw_s}] Flowstate`;
         } else {
           const remaining = Math.max(0, Math.ceil((targetTimeRef.current - now) / 1000));
           setTimeLeft(remaining);
           // Update tab title with live countdown
           const modeLabel = modeRef.current === MODES.pomodoro ? '🎯' :
                             modeRef.current === MODES.shortBreak ? '☕' : '🌙';
-          document.title = `${modeLabel} [${formatTitleTime(remaining)}] Fmood`;
+          document.title = `${modeLabel} [${formatTitleTime(remaining)}] Flowstate`;
           
           if (remaining <= 0) {
             clearInterval(intervalRef.current);
             setIsRunning(false);
-            document.title = 'Fmood';
+            document.title = 'Flowstate';
             handleSessionComplete(false);
           }
         }
@@ -280,11 +280,11 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
     } else {
       clearInterval(intervalRef.current);
       // Restore tab title when paused
-      document.title = 'Fmood';
+      document.title = 'Flowstate';
     }
     return () => {
       clearInterval(intervalRef.current);
-      document.title = 'Fmood';
+      document.title = 'Flowstate';
     };
   }, [isRunning, handleSessionComplete, soundEnabled]);
 
@@ -330,10 +330,10 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
         }
       } else {
         try {
-          const guestSessions = JSON.parse(localStorage.getItem('fmood_guest_sessions') || '[]');
+          const guestSessions = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
           guestSessions.unshift({ id: 'guest_' + Date.now(), ...sessionPayload });
-          localStorage.setItem('fmood_guest_sessions', JSON.stringify(guestSessions.slice(0, 200)));
-          window.dispatchEvent(new Event('fmood_guest_sessions_updated'));
+          localStorage.setItem('flowstate_guest_sessions', JSON.stringify(guestSessions.slice(0, 200)));
+          window.dispatchEvent(new Event('flowstate_guest_sessions_updated'));
         } catch (e) {
           console.warn('Failed to save guest session:', e);
         }

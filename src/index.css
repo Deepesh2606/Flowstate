@@ -5665,7 +5665,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   FMOOD — NEW FEATURES CSS (Phase 1–6)
+   FLOWSTATE — NEW FEATURES CSS (Phase 1–6)
 ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Countdown Glow Ring ──────────────────────────────────────────────────── */
@@ -10619,7 +10619,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   F***MOOD — LIVE ROOMS, BIONIC READING & SMART MICRO-BREAKS
+   FLOWSTATE — LIVE ROOMS, BIONIC READING & SMART MICRO-BREAKS
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Topbar Live Rooms Button ─── */
@@ -11261,7 +11261,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   color: #c084fc;
 }
 
-/* ─── Live Study Rooms ("F***MOOD Rooms") ─── */
+/* ─── Live Study Rooms ("FLOWSTATE Rooms") ─── */
 .rooms-modal-overlay {
   position: fixed;
   inset: 0;

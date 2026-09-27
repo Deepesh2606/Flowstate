@@ -14,7 +14,7 @@ const SplashScreen = ({ onSignIn, loading }) => {
       <div className="splash-hero">
         <img
           src="/favicon.svg"
-          alt="FUCK YOUR MOOD Logo"
+          alt="FLOWSTATE Logo"
           style={{ width: '80%', maxWidth: 400, height: 'auto', marginBottom: 24, filter: "drop-shadow(0 10px 24px rgba(255, 67, 40, 0.4))" }}
         />
         <p className="splash-tagline">Study smarter. Focus deeper. Live in flow.</p>

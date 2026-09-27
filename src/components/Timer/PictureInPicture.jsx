@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
- * PictureInPicture component for Fmood timer.
+ * PictureInPicture component for Flowstate timer.
  * Supports:
  * 1. Document Picture-in-Picture API (Chrome/Edge/Arc - rich interactive DOM window)
  * 2. Canvas-to-Video Stream PiP fallback (Safari on macOS / Firefox / other browsers)
@@ -208,7 +208,7 @@ export const usePictureInPicture = ({
         });
 
         // Set title and body styles
-        pipWindow.document.title = 'FUCK YOUR MOOD Timer';
+        pipWindow.document.title = 'FLOWSTATE Timer';
         pipWindow.document.body.style.margin = '0';
         pipWindow.document.body.style.background = '#090e1a';
         pipWindow.document.body.style.overflow = 'hidden';

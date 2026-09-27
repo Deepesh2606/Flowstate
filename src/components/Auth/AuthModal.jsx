@@ -32,7 +32,7 @@ const AuthModal = () => {
         <div className="auth-modal-header">
           <img
             src="/favicon.svg"
-            alt="FUCK YOUR MOOD"
+            alt="FLOWSTATE"
             className="auth-modal-logo"
           />
           <h2 className="auth-modal-title">Continue to <span style={{ color: '#FF4328' }}>FUCK</span><span style={{ color: '#ffffff' }}> YOUR MOOD</span></h2>
