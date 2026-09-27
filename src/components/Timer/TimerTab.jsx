@@ -31,7 +31,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const [noteSessionInfo, setNoteSessionInfo] = useState(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const [shareInfo, setShareInfo] = useState(null);
-  const [showMicroBreak, setShowMicroBreak] = useState(false);
+  const [activeMicroBreakTab, setActiveMicroBreakTab] = useState(null);
   const lastSessionDurationRef = useRef(0);
 
   // ─── Linked task state ─────────────────────────────────────────────────────
@@ -248,10 +248,10 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const linkedTask = tasks?.find(t => t.id === linkedTaskId && !t.completed);
   const pendingTasks = tasks?.filter(t => !t.completed) || [];
   const smartBreakSuggestion = mode === 'longBreak'
-    ? { icon: '🧘', title: 'Desk stretches', detail: 'Loosen your neck and shoulders before the next sprint.' }
+    ? { id: 'stretch', icon: '🧘', title: 'Desk stretches', detail: 'Loosen your neck and shoulders before the next sprint.' }
     : sessionCount % 2 === 0
-      ? { icon: '👁️', title: '20-20-20 eye rest', detail: 'Look 20 feet away for 20 seconds.' }
-      : { icon: '🫁', title: 'Box breathing', detail: 'Use a 60-second reset to clear mental noise.' };
+      ? { id: 'eye', icon: '👁️', title: '20-20-20 eye rest', detail: 'Look 20 feet away for 20 seconds.' }
+      : { id: 'breathing', icon: '🫁', title: 'Box breathing', detail: 'Use a 60-second reset to clear mental noise.' };
 
   const exams = settings?.exams || [];
   const showExamDeadline = settings?.showExamDeadline ?? true;
@@ -284,49 +284,52 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       {/* Mode Pills */}
       <ModePills mode={mode} onSwitch={handleSwitchMode} />
 
-      {/* Popular Focus Presets (Minimal Buttons for 15m, 25m, 45m, 50m, 60m) */}
-      {mode === 'pomodoro' && (
-        <div className="focus-presets-row" role="group" aria-label="Quick focus durations">
-          {[
-            { mins: 15, label: '15m' },
-            { mins: 25, label: '25m', popular: true },
-            { mins: 45, label: '45m' },
-            { mins: 50, label: '50m' },
-            { mins: 60, label: '60m' },
-          ].map((preset) => {
-            const currentMins = Math.round((settings?.durations?.pomodoro || 45 * 60) / 60);
-            const isSelected = currentMins === preset.mins;
-            return (
-              <button
-                key={preset.mins}
-                type="button"
-                className={`focus-preset-btn ${isSelected ? 'active' : ''}`}
-                onClick={() => handlePresetClick(preset.mins)}
-                title={preset.popular ? `Popular 25 min Pomodoro timer` : `Set focus timer to ${preset.mins} minutes`}
-              >
-                {preset.popular && <span className="focus-preset-popular-dot" aria-hidden="true" />}
-                {preset.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {/* Dynamic Header Wrapper to prevent layout shift */}
+      <div className="timer-dynamic-header">
+        {/* Popular Focus Presets (Minimal Buttons for 15m, 25m, 45m, 50m, 60m) */}
+        {mode === 'pomodoro' && (
+          <div className="focus-presets-row" role="group" aria-label="Quick focus durations">
+            {[
+              { mins: 15, label: '15m' },
+              { mins: 25, label: '25m', popular: true },
+              { mins: 45, label: '45m' },
+              { mins: 50, label: '50m' },
+              { mins: 60, label: '60m' },
+            ].map((preset) => {
+              const currentMins = Math.round((settings?.durations?.pomodoro || 45 * 60) / 60);
+              const isSelected = currentMins === preset.mins;
+              return (
+                <button
+                  key={preset.mins}
+                  type="button"
+                  className={`focus-preset-btn ${isSelected ? 'active' : ''}`}
+                  onClick={() => handlePresetClick(preset.mins)}
+                  title={preset.popular ? `Popular 25 min Pomodoro timer` : `Set focus timer to ${preset.mins} minutes`}
+                >
+                  {preset.popular && <span className="focus-preset-popular-dot" aria-hidden="true" />}
+                  {preset.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-      {/* Smart Guided Micro-Break Trigger when in Break Modes */}
-      {(mode === 'shortBreak' || mode === 'longBreak') && (
-        <div className="break-micro-banner" role="region" aria-label="Micro-break activities">
-          <button
-            type="button"
-            className="micro-break-trigger-btn"
-            onClick={() => setShowMicroBreak(true)}
-            title="Open Smart Guided Micro-Break (Box Breathing, Eye Rest, Desk Stretches)"
-          >
-              <span className="micro-sparkle">🌿</span>
-              <span className="micro-text">Try {smartBreakSuggestion.title}</span>
-              <span className="micro-sub-pill">{smartBreakSuggestion.icon} {smartBreakSuggestion.detail} →</span>
-          </button>
-        </div>
-      )}
+        {/* Smart Guided Micro-Break Trigger when in Break Modes */}
+        {(mode === 'shortBreak' || mode === 'longBreak') && (
+          <div className="break-micro-banner" role="region" aria-label="Micro-break activities">
+            <button
+              type="button"
+              className="micro-break-trigger-btn"
+              onClick={() => setActiveMicroBreakTab(smartBreakSuggestion.id)}
+              title="Open Smart Guided Micro-Break (Box Breathing, Eye Rest, Desk Stretches)"
+            >
+                <span className="micro-sparkle">🌿</span>
+                <span className="micro-text">Try {smartBreakSuggestion.title}</span>
+                <span className="micro-sub-pill">{smartBreakSuggestion.icon} {smartBreakSuggestion.detail} →</span>
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Timer Card */}
       <TimerDisplay
@@ -699,8 +702,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       />
 
       {/* Smart Guided Micro-Break Modal */}
-      {showMicroBreak && (
-        <MicroBreakModal onClose={() => setShowMicroBreak(false)} />
+      {activeMicroBreakTab && (
+        <MicroBreakModal initialTab={activeMicroBreakTab} onClose={() => setActiveMicroBreakTab(null)} />
       )}
     </div>
   );

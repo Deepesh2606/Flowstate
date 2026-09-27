@@ -47,12 +47,15 @@ const STRETCHES = [
   },
 ];
 
-const MicroBreakModal = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState('breathing'); // 'breathing' | 'eye' | 'stretch'
+const MicroBreakModal = ({ onClose, initialTab = 'breathing' }) => {
+  const [activeTab, setActiveTab] = useState(initialTab); // 'breathing' | 'eye' | 'stretch'
+
+  const [prepSeconds, setPrepSeconds] = useState(3);
+  const [isPrepActive, setIsPrepActive] = useState(true);
 
   // Breathing state
   const [breathMethod, setBreathMethod] = useState('box');
-  const [isBreathingRunning, setIsBreathingRunning] = useState(true);
+  const [isBreathingRunning, setIsBreathingRunning] = useState(false);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [phaseSecondsLeft, setPhaseSecondsLeft] = useState(BREATH_MODES[breathMethod].phases[0].duration);
   const [cycleCount, setCycleCount] = useState(0);
@@ -65,6 +68,26 @@ const MicroBreakModal = ({ onClose }) => {
   const [activeStretchIdx, setActiveStretchIdx] = useState(0);
   const [stretchSeconds, setStretchSeconds] = useState(STRETCHES[0].duration);
   const [isStretchRunning, setIsStretchRunning] = useState(false);
+
+  // Handle Preparation Timer
+  useEffect(() => {
+    if (!isPrepActive) return;
+
+    const interval = setInterval(() => {
+      setPrepSeconds((prev) => {
+        if (prev <= 1) {
+          setIsPrepActive(false);
+          if (activeTab === 'breathing') setIsBreathingRunning(true);
+          if (activeTab === 'eye') setIsEyeRunning(true);
+          if (activeTab === 'stretch') setIsStretchRunning(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPrepActive, activeTab]);
 
   // Handle Breathing Timer
   useEffect(() => {
@@ -193,8 +216,25 @@ const MicroBreakModal = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Tab 1: Box Breathing */}
-        {activeTab === 'breathing' && (
+        {isPrepActive ? (
+          <div className="micro-prep-screen">
+            <div className="prep-icon">
+              {activeTab === 'breathing' ? '🫁' : activeTab === 'eye' ? '👁️' : '🧘'}
+            </div>
+            <h3 className="prep-title">Get Ready...</h3>
+            <p className="prep-desc">
+              {activeTab === 'breathing' ? 'Sit comfortably and relax your shoulders.' : 
+               activeTab === 'eye' ? 'Find an object far away to look at.' : 
+               'Make sure you have enough space to stretch.'}
+            </p>
+            <div className="prep-countdown-circle">
+              <span>{prepSeconds}</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Tab 1: Box Breathing */}
+            {activeTab === 'breathing' && (
           <div className="micro-content-panel">
             <div className="breathing-method-selector">
               <button
@@ -352,6 +392,8 @@ const MicroBreakModal = ({ onClose }) => {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
