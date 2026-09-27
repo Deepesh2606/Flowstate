@@ -16,6 +16,7 @@ const CUSTOM_WALLPAPERS_STORAGE_KEY = 'fmood_custom_wallpapers';
 
 const isUserAddedWallpaper = (wp) => {
   if (!wp || !wp.url) return false;
+  if (wp.url.includes('assets.mixkit.co') || wp.url.includes('images.unsplash.com')) return false;
   return true;
 };
 
@@ -33,8 +34,10 @@ export const WallpaperProvider = ({ children }) => {
   const [wallpaper, setWallpaperState] = useState(() => {
     try {
       const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
-      if (cached) {
-        return cached;
+      if (cached && cached !== 'null' && cached !== 'undefined') {
+        if (!cached.includes('assets.mixkit.co') && !cached.includes('images.unsplash.com')) {
+          return cached;
+        }
       }
       return '/defaultpreset.png';
     } catch {
@@ -89,8 +92,10 @@ export const WallpaperProvider = ({ children }) => {
     // Optimistically load from localStorage to prevent delayed UI changes on login
     try {
       const cachedWallpaper = localStorage.getItem(`wallpaper_${currentUser.uid}`);
-      if (cachedWallpaper) {
-        setWallpaperState(cachedWallpaper);
+      if (cachedWallpaper && cachedWallpaper !== 'null' && cachedWallpaper !== 'undefined') {
+        if (!cachedWallpaper.includes('assets.mixkit.co') && !cachedWallpaper.includes('images.unsplash.com')) {
+          setWallpaperState(cachedWallpaper);
+        }
       }
 
       const cachedCustom = localStorage.getItem(`custom_wallpapers_${currentUser.uid}`);
@@ -107,12 +112,14 @@ export const WallpaperProvider = ({ children }) => {
 
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
       if (settings?.wallpaper) {
-        setWallpaperState(settings.wallpaper);
-        try {
-          localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);
-          localStorage.setItem(`wallpaper_${currentUser.uid}`, settings.wallpaper);
-        } catch {
-          // ignore
+        if (!settings.wallpaper.includes('assets.mixkit.co') && !settings.wallpaper.includes('images.unsplash.com')) {
+          setWallpaperState(settings.wallpaper);
+          try {
+            localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);
+            localStorage.setItem(`wallpaper_${currentUser.uid}`, settings.wallpaper);
+          } catch {
+            // ignore
+          }
         }
       }
       if (settings?.customWallpapers) {

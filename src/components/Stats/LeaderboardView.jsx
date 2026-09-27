@@ -31,7 +31,7 @@ export const LeaderboardView = ({
         const lbUser = leaderboardList.find(lu => lu.id === ru.id) || {};
         return {
           id: ru.id,
-          name: ru.displayName || ru.email || lbUser.displayName || 'Anonymous Student',
+          name: ru.displayName || lbUser.displayName || (ru.email ? ru.email.split('@')[0] : null) || 'Anonymous Student',
           avatar: ru.photoURL || lbUser.photoURL || null,
           subject: lbUser.subject || 'Deep Work',
           todaySeconds: lbUser.todaySeconds || 0,
@@ -99,7 +99,7 @@ export const LeaderboardView = ({
   // Current user item
   const currentUserItem = useMemo(() => ({
     id: currentUser?.uid || 'current_user',
-    name: currentUser?.displayName || 'You',
+    name: currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'You'),
     avatar: currentUser?.photoURL || null,
     subject: topSubject,
     todaySeconds: todayFocusTime,
@@ -200,7 +200,7 @@ export const LeaderboardView = ({
           </div>
           <div>
             <div className="user-banner-name">
-              {currentUser?.displayName || 'You'} <span className="user-banner-tag">You</span>
+              {currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'You')} <span className="user-banner-tag">You</span>
             </div>
             <div className="user-banner-sub">
               {topSubject} · 🔥 {currentStreak} day streak
