@@ -98,7 +98,12 @@ const AppShell = () => {
       video.muted = true;
       video.playsInline = true;
       video.addEventListener('loadeddata', applyWhenReady, { once: true });
-      video.addEventListener('error', () => !cancelled && setIsWallpaperLoading(false), { once: true });
+      video.addEventListener('error', () => {
+        if (!cancelled) {
+          setIsWallpaperLoading(false);
+          if (nextWallpaper !== WALLPAPER_FALLBACK) setRenderedWallpaper(WALLPAPER_FALLBACK);
+        }
+      }, { once: true });
       video.src = nextWallpaper;
       video.load();
       return () => {
@@ -111,7 +116,12 @@ const AppShell = () => {
     const image = new Image();
     image.decoding = 'async';
     image.onload = applyWhenReady;
-    image.onerror = () => !cancelled && setIsWallpaperLoading(false);
+    image.onerror = () => {
+      if (!cancelled) {
+        setIsWallpaperLoading(false);
+        if (nextWallpaper !== WALLPAPER_FALLBACK) setRenderedWallpaper(WALLPAPER_FALLBACK);
+      }
+    };
     image.src = nextWallpaper;
     return () => {
       cancelled = true;
@@ -719,7 +729,7 @@ const AppShell = () => {
         {/* Tab Content */}
         <main className="content-area" id={`panel-${activeTab}`}>
           <div
-            className="tab-content"
+            className="tab-content fs-snap-section"
             style={{ display: activeTab === 'timer' ? 'block' : 'none', animation: activeTab === 'timer' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
           >
             <TimerTab
@@ -735,7 +745,7 @@ const AppShell = () => {
             />
           </div>
           <div
-            className="tab-content"
+            className="tab-content fs-snap-section"
             style={{ display: activeTab === 'clock' ? 'block' : 'none', animation: activeTab === 'clock' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
           >
             <ClockTab
@@ -747,7 +757,7 @@ const AppShell = () => {
             />
           </div>
           <div
-            className="tab-content"
+            className="tab-content fs-normal-section"
             style={{ display: activeTab === 'stats' ? 'block' : 'none', animation: activeTab === 'stats' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
           >
             <Suspense fallback={<FallbackLoader />}>
@@ -759,7 +769,7 @@ const AppShell = () => {
             </Suspense>
           </div>
           <div
-            className="tab-content"
+            className="tab-content fs-normal-section"
             style={{ display: activeTab === 'history' ? 'block' : 'none', animation: activeTab === 'history' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
           >
             <Suspense fallback={<FallbackLoader />}>
