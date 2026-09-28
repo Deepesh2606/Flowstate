@@ -745,7 +745,7 @@ input {
   justify-content: center;
   gap: 12px;
   width: 100%;
-  margin: 2px 0 6px 0;
+  margin: -16px 0 -4px 0;
   text-align: center;
 }
 
@@ -4211,6 +4211,7 @@ input {
   display: flex;
   justify-content: center;
   gap: 16px;
+  margin-top: -8px;
 }
 
 .flocus-ctrl-btn {
@@ -5702,7 +5703,7 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   text-shadow: var(--clock-text-shadow, none);
   letter-spacing: 0.04em;
   font-family: 'Space Grotesk', sans-serif;
-  margin-top: -6px;
+  margin-top: -14px;
 }
 .keyboard-hints span { display: flex; align-items: center; gap: 4px; }
 .keyboard-hint-sep { opacity: 0.4; }
