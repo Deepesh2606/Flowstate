@@ -21,6 +21,14 @@ const countdownLabel = (days) => {
   return `${days} days left`;
 };
 
+const getUrgencyClass = (days) => {
+  if (days < 0) return 'is-past';
+  if (days <= 7) return 'is-urgent';
+  if (days <= 14) return 'is-soon';
+  if (days <= 30) return 'is-medium';
+  return 'is-far';
+};
+
 const dateKey = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 
 const ExamPlanner = ({ exams = [], onChange, showExamDeadline = true, onToggleShow = () => {} }) => {
@@ -90,8 +98,9 @@ const ExamPlanner = ({ exams = [], onChange, showExamDeadline = true, onToggleSh
         <div className="exam-countdowns">
           {sortedExams.map((exam) => {
             const days = daysUntil(exam.date);
+            const urgencyClass = getUrgencyClass(days);
             return (
-              <article className={`exam-countdown ${days <= 7 && days >= 0 ? 'is-soon' : ''}`} key={exam.id}>
+              <article className={`exam-countdown ${urgencyClass}`} key={exam.id}>
                 <div className="exam-countdown-copy">
                   <strong>{exam.title}</strong>
                   <span>{toLocalDate(exam.date)?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>

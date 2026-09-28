@@ -201,6 +201,20 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     onModeChange?.(mode);
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Deep Work Strict Mode
+  useEffect(() => {
+    if (settings?.strictMode && isRunning && mode === 'pomodoro') {
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          handlePause();
+          toast('Deep Work Interrupted! Tab switched.', 'warning', 4000);
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
+  }, [settings?.strictMode, isRunning, mode]);
+
   // Expose timer actions to AppShell for keyboard shortcuts
   useEffect(() => {
     if (timerActionsRef) {

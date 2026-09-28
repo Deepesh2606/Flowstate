@@ -208,6 +208,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [autoStartPomodoros, setAutoStartPomodoros] = useState(settings?.autoStartPomodoros ?? false);
   const [soundEnabled, setSoundEnabled]             = useState(settings?.soundEnabled ?? true);
   const [notifyOnComplete, setNotifyOnComplete]     = useState(settings?.notifyOnComplete ?? true);
+  const [strictMode, setStrictMode]                 = useState(settings?.strictMode ?? false);
 
   // Timer Styles & Toggles matching screenshot
   const [timerStyle, setTimerStyle]                 = useState(settings?.timerStyle || (settings?.clockStyle === 'flip' ? 'flip' : 'default'));
@@ -248,6 +249,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       if (settings.chimeStyle) setChimeStyle(settings.chimeStyle);
       if (settings.showQuotes !== undefined) setShowQuotes(settings.showQuotes);
       if (settings.showExamDeadline !== undefined) setShowExamDeadline(settings.showExamDeadline);
+      if (settings.strictMode !== undefined) setStrictMode(settings.strictMode);
       if (settings.presets) setPresets(settings.presets);
     }
   }, [settings]);
@@ -444,6 +446,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       autoStartPomodoros,
       soundEnabled,
       notifyOnComplete,
+      strictMode,
       timerStyle,
       showTimerProgressBar,
       showStreakCounter,
@@ -850,6 +853,14 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   }}
                   label="Auto start timer on segment end"
                   sub="This will run through the full focus sequence automatically. For Countdown, this will auto restart your timer upon completion."
+                />
+
+                <Toggle
+                  id="toggle-strict-mode"
+                  checked={strictMode}
+                  onChange={(val) => handleToggleChange('strictMode', setStrictMode, val)}
+                  label="Deep Work Strict Mode"
+                  sub="Automatically pauses the timer and warns you if you switch tabs during a focus session."
                 />
 
                 <Toggle
