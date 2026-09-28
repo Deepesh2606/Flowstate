@@ -94,7 +94,7 @@ const SubjectBreakdown = ({ subjectBreakdown }) => {
                 boxShadow: `0 0 6px ${color}`
               }} />
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.9)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.9)', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {item.subject}
                 </span>
                 <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>

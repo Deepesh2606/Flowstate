@@ -362,6 +362,36 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         )}
       </div>
 
+      {/* Centered Focus Topic Badge & Session Counter (Combined & Above Clock) */}
+      <div className="timer-focus-center-container combined-focus-pill" style={{ 
+        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', 
+        gap: '8px', background: 'rgba(10, 14, 24, 0.65)', border: '1px solid rgba(255, 255, 255, 0.1)', 
+        borderRadius: '100px', padding: '4px 12px', width: 'max-content', margin: '0 auto 24px auto',
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center' }} className="focus-pill-left">
+          <SubjectSelector
+            subject={subject}
+            setSubject={setSubject}
+            studyMode={studyMode}
+            setStudyMode={setStudyMode}
+            targets={settings?.targets || []}
+            isRunning={isRunning}
+            isEditing={isEditingSubject}
+            setIsEditing={setIsEditingSubject}
+          />
+        </div>
+        {subject && <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', margin: '0 4px' }} />}
+        <div style={{ display: 'flex', alignItems: 'center' }} className="focus-pill-right">
+          <SessionCounter
+            count={sessionCount}
+            dailyGoal={settings?.dailyGoal || 8}
+            longBreakInterval={settings?.longBreakInterval || 4}
+            pomodoroDuration={settings?.durations?.pomodoro || 2700}
+          />
+        </div>
+      </div>
+
       {/* Timer Card */}
       <TimerDisplay
         progress={progress}
@@ -375,28 +405,6 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         showProgressBar={settings?.showTimerProgressBar ?? true}
         showSeconds={settings?.showSeconds ?? true}
       />
-
-      {/* Centered Focus Topic Badge & Session Counter */}
-      <div className="timer-focus-center-container">
-        <SubjectSelector
-          subject={subject}
-          setSubject={setSubject}
-          studyMode={studyMode}
-          setStudyMode={setStudyMode}
-          targets={settings?.targets || []}
-          isRunning={isRunning}
-          isEditing={isEditingSubject}
-          setIsEditing={setIsEditingSubject}
-        />
-        <div className="timer-counter-wrapper">
-          <SessionCounter
-            count={sessionCount}
-            dailyGoal={settings?.dailyGoal || 8}
-            longBreakInterval={settings?.longBreakInterval || 4}
-            pomodoroDuration={settings?.durations?.pomodoro || 2700}
-          />
-        </div>
-      </div>
 
       {/* Ghost Pacer: Race Against Yesterday's You */}
       {settings?.showGhostPacer && <GhostPacer />}
@@ -474,27 +482,27 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
 
       {/* Upcoming Exam Countdowns */}
       {upcomingExams.length > 0 && (
-        <div className="timer-exams-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+        <div className="timer-exams-container" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
           {upcomingExams.map(exam => {
             const daysLeft = getExamDaysLeft(exam.date);
             return (
               <div key={exam.id} className="timer-exam-countdown" style={{
-                padding: '12px 20px',
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: '16px',
+                padding: '6px 12px',
+                background: 'rgba(10, 14, 24, 0.4)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '100px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '6px',
                 backdropFilter: 'blur(10px)'
               }}>
-                <span style={{ fontSize: '20px' }}>🎯</span>
-                <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-                  <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Upcoming Exam</span>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
-                    {exam.title} • {daysLeft === 0 ? 'Today!' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft} days left`}
-                  </span>
-                </div>
+                <span style={{ fontSize: '13px' }}>🎯</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>
+                  {exam.title}
+                </span>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '8px' }}>
+                  {daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft}d`}
+                </span>
               </div>
             );
           })}

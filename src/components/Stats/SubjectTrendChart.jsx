@@ -75,7 +75,7 @@ const SubjectTrendChart = ({ weeklySubjectTrend }) => {
         {weeklySubjectTrend.map((subj, si) => (
           <div key={subj.subject} className="trend-legend-item">
             <span className="trend-legend-dot" style={{ background: COLORS[si % COLORS.length] }} />
-            <span className="trend-legend-label">{subj.subject}</span>
+            <span className="trend-legend-label" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', maxWidth: '200px' }}>{subj.subject}</span>
           </div>
         ))}
       </div>
