@@ -330,7 +330,7 @@ export const PiPWindowPortal = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <img src="/favicon.svg" alt="Logo" style={{ width: 15, height: 15, borderRadius: 3 }} />
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)' }}>
-            <span style={{ color: '#FF4328' }}>FUCK</span><span style={{ color: '#ffffff' }}> YOUR MOOD</span>
+            <span style={{ color: '#FF4328' }}>FLOW</span><span style={{ color: '#ffffff' }}>STATE</span>
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

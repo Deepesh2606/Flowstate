@@ -35,7 +35,7 @@ const AuthModal = () => {
             alt="FLOWSTATE"
             className="auth-modal-logo"
           />
-          <h2 className="auth-modal-title">Continue to <span style={{ color: '#FF4328' }}>FUCK</span><span style={{ color: '#ffffff' }}> YOUR MOOD</span></h2>
+          <h2 className="auth-modal-title">Continue to <span style={{ color: '#FF4328' }}>FLOW</span><span style={{ color: '#ffffff' }}>STATE</span></h2>
           <p className="auth-modal-desc">
             {authModalReason || 'Sign in with Google to sync your study sessions, tasks, and streaks across devices.'}
           </p>

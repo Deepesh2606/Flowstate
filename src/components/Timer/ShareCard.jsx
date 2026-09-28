@@ -38,10 +38,10 @@ const ShareCard = ({ isOpen, onClose, duration, subject, sessionCount }) => {
     // App logo text
     ctx.font = 'bold 16px system-ui, sans-serif';
     ctx.fillStyle = '#FF4328';
-    ctx.fillText('FUCK', 32, 44);
-    const fw = ctx.measureText('FUCK').width;
+    ctx.fillText('FLOW', 32, 44);
+    const fw = ctx.measureText('FLOW').width;
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(' YOUR MOOD', 32 + fw, 44);
+    ctx.fillText('STATE', 32 + fw, 44);
 
     // Tagline
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
@@ -104,7 +104,7 @@ const ShareCard = ({ isOpen, onClose, duration, subject, sessionCount }) => {
 
         <div className="share-card-preview">
           <div className="share-preview-inner">
-            <div className="share-preview-app"><span style={{ color: '#FF4328' }}>FUCK</span><span style={{ color: '#ffffff' }}> YOUR MOOD</span></div>
+            <div className="share-preview-app"><span style={{ color: '#FF4328' }}>FLOW</span><span style={{ color: '#ffffff' }}>STATE</span></div>
             <div className="share-preview-dur">{fmt(duration)}</div>
             {subject && <div className="share-preview-subj">on {subject}</div>}
             <div className="share-preview-session">🎯 Session #{sessionCount}</div>
