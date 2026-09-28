@@ -392,7 +392,7 @@ const AppShell = () => {
       <div className="app-shell">
         {/* Top Bar */}
         <header className="topbar">
-          <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center", fontWeight: "900", letterSpacing: "1px", fontSize: "1.2rem", background: "linear-gradient(135deg, #FF00CC, #333399, #00C6FF)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent" }}>
+          <span className="topbar-logo" style={{ display: "inline-flex", alignItems: "center", fontWeight: "700", letterSpacing: "2px", fontSize: "1.1rem", color: "rgba(255, 255, 255, 0.95)", textShadow: "0 2px 12px rgba(255, 255, 255, 0.25)" }}>
             FLOWSTATE
           </span>
         </header>
