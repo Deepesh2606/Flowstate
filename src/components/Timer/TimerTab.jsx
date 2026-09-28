@@ -293,10 +293,11 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return exams.filter(e => {
+      if (!e.date) return false;
       const [y, m, d] = e.date.split('-').map(Number);
       const target = new Date(y, m - 1, d);
       return (target - today) >= 0;
-    }).sort((a, b) => a.date.localeCompare(b.date));
+    }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   }, [exams, showExamDeadline]);
 
   const getExamDaysLeft = (examDate) => {
