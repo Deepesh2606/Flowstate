@@ -82,7 +82,7 @@ const ExamPlanner = ({ exams = [], onChange, showExamDeadline = true, onToggleSh
         <label className="sr-only" htmlFor="exam-title">Exam name</label>
         <input id="exam-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Exam or deadline" maxLength={60} />
         <label className="sr-only" htmlFor="exam-date">Exam date</label>
-        <input id="exam-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        <input id="exam-date" type="text" value={date} readOnly placeholder="Select date from calendar below" style={{ cursor: 'pointer' }} />
         <button type="submit" disabled={!title.trim() || !date}>Add</button>
       </form>
 

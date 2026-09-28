@@ -143,25 +143,21 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
 
   // Calculate nearest exam
   const showExamDeadline = settings?.showExamDeadline ?? true;
-  const nearestExam = useMemo(() => {
-    if (!showExamDeadline || !settings?.exams || settings.exams.length === 0) return null;
+  const upcomingExams = useMemo(() => {
+    if (!showExamDeadline || !settings?.exams || settings.exams.length === 0) return [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const valid = settings.exams.filter(e => {
+    return settings.exams.filter(e => {
       if (!e || !e.date) return false;
       const [y, m, d] = e.date.split('-').map(Number);
       const target = new Date(y, m - 1, d);
       return (target - today) >= 0;
-    }).sort((a, b) => a.date.localeCompare(b.date));
-
-    if (valid.length === 0) return null;
-    
-    const upcoming = valid[0];
-    const [y, m, d] = upcoming.date.split('-').map(Number);
-    const target = new Date(y, m - 1, d);
-    const daysLeft = Math.round((target - today) / 86400000);
-    
-    return { ...upcoming, daysLeft, target };
+    }).sort((a, b) => a.date.localeCompare(b.date)).map(upcoming => {
+      const [y, m, d] = upcoming.date.split('-').map(Number);
+      const target = new Date(y, m - 1, d);
+      const daysLeft = Math.round((target - today) / 86400000);
+      return { ...upcoming, daysLeft, target };
+    });
   }, [showExamDeadline, settings?.exams]);
 
   // Floating PiP support via Canvas & Video element
@@ -380,28 +376,30 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         </div>
       </div>
 
-      {showExamDeadline && nearestExam && (
-        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.4)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            padding: '8px 16px',
-            borderRadius: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#fff',
-            fontSize: '14px',
-            fontWeight: 500
-          }}>
-            <span style={{ fontSize: '16px' }}>🗓️</span>
-            <span>{nearestExam.title}</span>
-            <span style={{ opacity: 0.6 }}>·</span>
-            <span style={{ color: 'var(--accent, #06b6d4)' }}>
-              {nearestExam.daysLeft === 0 ? 'Today' : nearestExam.daysLeft === 1 ? 'Tomorrow' : `${nearestExam.daysLeft} days left`}
-            </span>
-          </div>
+      {showExamDeadline && upcomingExams.length > 0 && (
+        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+          {upcomingExams.map(exam => (
+            <div key={exam.id} style={{
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              padding: '8px 16px',
+              borderRadius: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              <span style={{ fontSize: '16px' }}>🗓️</span>
+              <span>{exam.title}</span>
+              <span style={{ opacity: 0.6 }}>·</span>
+              <span style={{ color: 'var(--accent, #06b6d4)' }}>
+                {exam.daysLeft === 0 ? 'Today' : exam.daysLeft === 1 ? 'Tomorrow' : `${exam.daysLeft} days left`}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 
