@@ -796,6 +796,15 @@ input {
   border-radius: 100px;
   background: rgba(10, 14, 26, 0.72);
   border: 1px solid rgba(6, 182, 212, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(6, 182, 212, 0.15);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  max-width: 90%;
+  animation: fadeIn 0.3s ease;
+  user-select: none;
+}
 
 /* Overrides for combined minimal pill layout */
 .combined-focus-pill .current-focus-badge {
@@ -811,15 +820,6 @@ input {
   box-shadow: none;
   padding-left: 4px;
   padding-right: 4px;
-}
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(6, 182, 212, 0.15);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  max-width: 90%;
-  animation: fadeIn 0.3s ease;
-  user-select: none;
 }
 
 .current-focus-badge:hover {
