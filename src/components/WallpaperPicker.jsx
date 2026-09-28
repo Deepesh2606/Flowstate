@@ -31,6 +31,15 @@ const toThumbUrl = (url) => {
 };
 
 
+const UNSPLASH_WALLPAPERS = [
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80&fit=crop",
+  "https://images.unsplash.com/photo-1511497584788-876760111969?w=1920&q=80&fit=crop",
+  "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=80&fit=crop",
+  "https://images.unsplash.com/photo-1434725039720-aaad6dd32faa?w=1920&q=80&fit=crop",
+  "https://images.unsplash.com/photo-1506744626753-143b66565411?w=1920&q=80&fit=crop",
+  "https://images.unsplash.com/photo-1494500764479-0c8f2919a3d4?w=1920&q=80&fit=crop"
+];
+
 
 const WallpaperPicker = () => {
   const { 
@@ -165,6 +174,15 @@ const WallpaperPicker = () => {
             id="tab-presets"
           >
             Presets
+          </button>
+          <button
+            className={`wallpaper-nav-tab ${activeTab === 'unsplash' ? 'active' : ''}`}
+            onClick={() => setActiveTab('unsplash')}
+            role="tab"
+            aria-selected={activeTab === 'unsplash'}
+            id="tab-unsplash"
+          >
+            Unsplash
           </button>
           <button
             className={`wallpaper-nav-tab ${activeTab === 'upload' ? 'active' : ''}`}
@@ -399,6 +417,41 @@ const WallpaperPicker = () => {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'unsplash' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px', letterSpacing: '0.05em' }}>Unsplash Wallpapers</h3>
+                <div className="wallpaper-grid">
+                  {UNSPLASH_WALLPAPERS.map((url, i) => (
+                    <div key={`unsplash-${i}`} style={{ position: 'relative' }}>
+                      <button
+                        className={`wallpaper-thumb ${wallpaper === url ? 'selected' : ''}`}
+                        style={{ width: '100%', position: 'relative', overflow: 'hidden' }}
+                        onClick={() => handlePresetSelect(url)}
+                        title="Unsplash Wallpaper"
+                      >
+                        <img
+                          className="wallpaper-thumb-media"
+                          src={url.replace('w=1920', 'w=400')}
+                          loading="lazy"
+                          alt="Unsplash Wallpaper"
+                        />
+                        {wallpaper === url && (
+                          <div style={{
+                            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'var(--accent-glow)', borderRadius: 'inherit', backdropFilter: 'blur(4px)', zIndex: 3
+                          }}>
+                            <IconCheck size={28} color="#081226" />
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

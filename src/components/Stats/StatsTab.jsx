@@ -58,6 +58,60 @@ const GoalRing = ({ current, goal }) => {
   );
 };
 
+// XP & Leveling System
+const LevelBar = ({ totalFocusTime }) => {
+  const totalXP = Math.floor((totalFocusTime || 0) / 60) * 10;
+  const currentLevel = Math.floor(Math.sqrt(totalXP / 100)) + 1;
+  const xpForCurrentLevel = Math.pow(currentLevel - 1, 2) * 100;
+  const xpForNextLevel = Math.pow(currentLevel, 2) * 100;
+  const progressPct = Math.min(100, Math.max(0, ((totalXP - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100));
+
+  return (
+    <div className="level-bar-container">
+      <div className="level-bar-header">
+        <div className="level-badge">
+          <span className="level-icon">⭐</span>
+          <span className="level-text">Level {currentLevel}</span>
+        </div>
+        <div className="xp-text">{totalXP} / {xpForNextLevel} XP</div>
+      </div>
+      <div className="level-progress-track">
+        <div className="level-progress-fill" style={{ width: `${progressPct}%` }} />
+      </div>
+    </div>
+  );
+};
+
+// Unlockable Badges Gamification
+const UnlockableBadges = ({ currentStreak, totalSessions, totalFocusTime }) => {
+  const BADGES = [
+    { id: 'first_session', name: 'First Step', icon: '🌱', desc: 'Completed first session', unlocked: totalSessions >= 1 },
+    { id: 'streak_3', name: 'On Fire', icon: '🔥', desc: '3 Day Streak', unlocked: currentStreak >= 3 },
+    { id: 'streak_7', name: 'Unstoppable', icon: '⚡', desc: '7 Day Streak', unlocked: currentStreak >= 7 },
+    { id: 'hours_10', name: 'Dedicated', icon: '⏳', desc: '10 Hours Focused', unlocked: totalFocusTime >= 36000 },
+    { id: 'hours_50', name: 'Scholar', icon: '🎓', desc: '50 Hours Focused', unlocked: totalFocusTime >= 180000 },
+    { id: 'sessions_100', name: 'Centurion', icon: '💯', desc: '100 Sessions', unlocked: totalSessions >= 100 },
+  ];
+
+  return (
+    <div className="glass-card">
+      <div className="section-header">
+        <span className="section-title">Unlockable Badges</span>
+        <span className="section-sub">{BADGES.filter(b => b.unlocked).length} / {BADGES.length} Unlocked</span>
+      </div>
+      <div className="badges-grid">
+        {BADGES.map(badge => (
+          <div key={badge.id} className={`badge-card ${badge.unlocked ? 'unlocked' : 'locked'}`} title={badge.desc}>
+            <div className="badge-icon">{badge.unlocked ? badge.icon : '🔒'}</div>
+            <div className="badge-name">{badge.name}</div>
+            <div className="badge-desc">{badge.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Export helper
 const exportSessions = (sessions, format = 'csv') => {
   if (format === 'csv') {
@@ -209,6 +263,10 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {renderSubNav()}
+
+      {/* Level & XP Bar */}
+      <LevelBar totalFocusTime={totalFocusTime} />
+
       {/* Top row: Goal ring + Streak */}
       <div className="stats-top-row">
         <GoalRing current={todayFocusTime} goal={settings?.dailyGoal} />
@@ -299,6 +357,9 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
             </div>
             <HeatmapCalendar monthlyData={monthlyData} />
           </div>
+
+          {/* Unlockable Badges */}
+          <UnlockableBadges currentStreak={currentStreak} totalSessions={totalSessions} totalFocusTime={totalFocusTime} />
 
           {/* Weekly Bar Chart */}
           <div className="glass-card">
