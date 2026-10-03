@@ -157,7 +157,7 @@ const SubjectSelector = ({
           </div>
         )}
         <div
-          className="current-focus-badge"
+          className="current-focus-badge current-focus-badge--minimal"
           onClick={() => setEditingState(true)}
           title="Click to edit focus topic"
           role="button"
@@ -166,9 +166,7 @@ const SubjectSelector = ({
           id="current-focus-badge"
         >
           <span className="focus-badge-pulse" />
-          <span className="focus-badge-tag">FOCUSING ON</span>
-          <span className="focus-badge-text" title={subject}>{subject}</span>
-          <span className="focus-badge-edit-icon" aria-hidden="true" title="Edit">✎</span>
+          <span className="focus-badge-text" title={subject} style={{ fontWeight: 600, fontSize: '15px' }}>{subject}</span>
           <button
             type="button"
             className="focus-badge-clear-btn"
@@ -195,9 +193,10 @@ const SubjectSelector = ({
       onClick={() => setEditingState(true)}
       id="btn-set-focus-prompt"
       title="Set a focus topic"
+      style={{ padding: '6px 14px', gap: '6px', fontSize: '14px' }}
     >
-      <span className="focus-prompt-plus">+</span>
-      <span>Set what you're focusing on</span>
+      <span className="focus-prompt-plus" style={{ fontSize: '16px' }}>+</span>
+      <span>Daily Focus</span>
     </button>
   );
 };

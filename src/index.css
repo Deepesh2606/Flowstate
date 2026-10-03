@@ -4368,7 +4368,12 @@ body.is-fullscreen .floating-controls,
 body.is-fullscreen .top-right-controls,
 body.is-fullscreen .tab-bar,
 body.is-fullscreen .right-side-nav,
-body.is-fullscreen .bottom-left-controls {
+body.is-fullscreen .bottom-left-controls,
+body.is-fullscreen .liquid-pills-wrapper,
+body.is-fullscreen .flocus-controls,
+body.is-fullscreen .keyboard-hints,
+body.is-fullscreen .timer-controls,
+body.is-fullscreen .current-focus-prompt-btn {
   display: none !important;
 }
 
@@ -4385,10 +4390,10 @@ body.is-fullscreen .content-area {
   scroll-behavior: smooth;
 }
 
-:fullscreen .tab-content,
-:-webkit-full-screen .tab-content,
-[data-fullscreen="true"] .tab-content,
-body.is-fullscreen .tab-content {
+:fullscreen .tab-content:not([style*="display: none"]),
+:-webkit-full-screen .tab-content:not([style*="display: none"]),
+[data-fullscreen="true"] .tab-content:not([style*="display: none"]),
+body.is-fullscreen .tab-content:not([style*="display: none"]) {
   margin: 0 !important;
   padding: max(24px, 3vh) 16px !important;
   display: flex !important;

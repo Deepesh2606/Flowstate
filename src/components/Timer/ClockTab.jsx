@@ -268,7 +268,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {settings?.clockStyle === 'flip' ? (
+        {(settings?.clockStyle || 'flip') === 'flip' ? (
           <div
             className="flip-clock-container live-flip-clock-container active"
             aria-live="polite"

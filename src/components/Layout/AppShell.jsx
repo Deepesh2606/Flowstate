@@ -399,6 +399,19 @@ const AppShell = () => {
 
         {/* Top Right Controls (Notes/Tasks + Sign In) */}
         <div className="top-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            className="topbar-signin-btn"
+            onClick={() => setShowLiveRooms(true)}
+            title="Join Live Study Rooms"
+            aria-label="Live Rooms"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 12px', background: 'rgba(255, 255, 255, 0.1)' }}
+          >
+            <span className="rooms-live-indicator-small" />
+            <span style={{ fontWeight: 600 }}>Live Rooms</span>
+            {realOnlineCount > 0 && (
+              <span className="rooms-dock-badge">{realOnlineCount}</span>
+            )}
+          </button>
           {!currentUser && (
             <button
               className="topbar-signin-btn"
@@ -709,21 +722,7 @@ const AppShell = () => {
             <span className="ai-chat-btn-text">Ask AI</span>
           </button>
 
-          <div className="dock-divider" style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 4px' }} />
-
-          <button
-            type="button"
-            className={`bottom-dock-btn live-rooms-dock-btn${showLiveRooms ? ' active' : ''}`}
-            onClick={() => setShowLiveRooms(true)}
-            title="Join Live Study Rooms"
-            aria-label="Live Rooms"
-          >
-            <span className="rooms-live-indicator-small" />
-            <span className="ai-chat-btn-text" style={{ fontWeight: 600 }}>Live Rooms</span>
-            {realOnlineCount > 0 && (
-              <span className="rooms-dock-badge">{realOnlineCount} online</span>
-            )}
-          </button>
+          <div className="dock-divider" style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 4px', display: 'none' }} />
         </div>
 
         {/* Tab Content */}
