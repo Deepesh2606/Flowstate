@@ -4001,8 +4001,8 @@ input {
     0 14px 28px -8px rgba(0, 0, 0, 0.22),
     0 0 45px -5px rgba(255, 255, 255, 0.05),
     inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(32px) saturate(160%) brightness(1.08);
-  -webkit-backdrop-filter: blur(32px) saturate(160%) brightness(1.08);
+  backdrop-filter: blur(8px) saturate(160%) brightness(1.08);
+  -webkit-backdrop-filter: blur(8px) saturate(160%) brightness(1.08);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
 }
 
