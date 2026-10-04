@@ -218,7 +218,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [showGhostPacer, setShowGhostPacer]         = useState(settings?.showGhostPacer ?? false);
 
   // Customization
-  const [clockStyle, setClockStyle]                 = useState(settings?.clockStyle || 'digital');
+  const [clockStyle, setClockStyle]                 = useState(settings?.clockStyle || 'flip');
   const [showSeconds, setShowSeconds]               = useState(settings?.showSeconds ?? true);
   const [clockFormat, setClockFormat]               = useState(settings?.clockFormat || '12h');
   const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
@@ -338,7 +338,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   const handleTimerStyleSelect = (style) => {
     setTimerStyle(style);
-    applyRealtime({ timerStyle: style, clockStyle: style === 'flip' ? 'flip' : 'digital' });
+    applyRealtime({ timerStyle: style, clockStyle: style === 'flip' ? 'flip' : 'flip' });
   };
 
   const handleShowSecondsChange = (val) => {

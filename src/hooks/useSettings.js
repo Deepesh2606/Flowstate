@@ -12,8 +12,8 @@ const DEFAULT_SETTINGS = {
   clockColor: '#ffffff',
   textColor: '#ffffff',
   autoClockColor: true,
-  clockStyle: 'digital', // 'digital' | 'flip'
-  timerStyle: 'default', // 'default' | 'flip' | 'progress' | 'gauge' | 'dotmatrix' | 'pie'
+  clockStyle: 'flip', // 'digital' | 'flip'
+  timerStyle: 'flip', // 'default' | 'flip' | 'progress' | 'gauge' | 'dotmatrix' | 'pie'
   showTimerProgressBar: true,
   showStreakCounter: true,
   showTaskInPip: true,
@@ -73,8 +73,8 @@ export const useSettings = () => {
           isPro: currentUser.email === 'deepeshsingh2606@gmail.com' ? true : data.isPro,
           autoClockColor: data.autoClockColor !== undefined ? data.autoClockColor : true,
           theme: data.theme || 'dark',
-          clockStyle: data.clockStyle || 'digital',
-          timerStyle: data.timerStyle || (data.clockStyle === 'flip' ? 'flip' : 'default'),
+          clockStyle: data.clockStyle || 'flip',
+          timerStyle: data.timerStyle || (data.clockStyle === 'digital' ? 'default' : 'flip'),
           showTimerProgressBar: data.showTimerProgressBar !== undefined ? data.showTimerProgressBar : true,
           showStreakCounter: data.showStreakCounter !== undefined ? data.showStreakCounter : true,
           showTaskInPip: data.showTaskInPip !== undefined ? data.showTaskInPip : true,

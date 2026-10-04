@@ -260,16 +260,22 @@ const AppShell = () => {
           const docEl = document.documentElement;
           const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
           if (req) {
-            req.call(docEl).catch((err) => {
-              console.warn('Error attempting to enable fullscreen:', err);
-            });
+            const promise = req.call(docEl);
+            if (promise !== undefined && promise.catch) {
+              promise.catch((err) => {
+                console.warn('Error attempting to enable fullscreen:', err);
+              });
+            }
           }
         } else {
           const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
           if (exit) {
-            exit.call(document).catch((err) => {
-              console.warn('Error attempting to exit fullscreen:', err);
-            });
+            const promise = exit.call(document);
+            if (promise !== undefined && promise.catch) {
+              promise.catch((err) => {
+                console.warn('Error attempting to exit fullscreen:', err);
+              });
+            }
           }
         }
       }

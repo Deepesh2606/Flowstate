@@ -8,7 +8,7 @@ const TimerDisplay = ({
   isRunning,
   mode,
   hasWallpaper,
-  clockStyle = 'digital',
+  clockStyle = 'flip',
   timerStyle = 'default',
   showProgressBar = true,
   showSeconds = true,

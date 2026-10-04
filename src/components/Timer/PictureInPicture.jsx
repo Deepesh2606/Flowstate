@@ -15,7 +15,7 @@ export const usePictureInPicture = ({
   progress = 0,
   subject,
   sessionCount = 0,
-  clockStyle = 'digital',
+  clockStyle = 'flip',
   play,
   pause,
   reset,

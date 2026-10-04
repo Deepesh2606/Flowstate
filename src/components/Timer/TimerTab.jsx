@@ -260,12 +260,18 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       const docEl = document.documentElement;
       const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
       if (req) {
-        req.call(docEl).catch((err) => console.warn(err));
+        const promise = req.call(docEl);
+        if (promise !== undefined && promise.catch) {
+          promise.catch((err) => console.warn(err));
+        }
       }
     } else {
       const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
       if (exit) {
-        exit.call(document).catch((err) => console.warn(err));
+        const promise = exit.call(document);
+        if (promise !== undefined && promise.catch) {
+          promise.catch((err) => console.warn(err));
+        }
       }
     }
   };
@@ -273,7 +279,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
   const [isEditingSubject, setIsEditingSubject] = useState(false);
   const { isPipActive, togglePip, pipDoc, showPipHelp, setShowPipHelp } = usePictureInPicture({
     timeLeft, stopwatchMs, mode, isRunning, progress, subject, sessionCount,
-    clockStyle: settings?.clockStyle || 'digital',
+    clockStyle: settings?.clockStyle || 'flip',
     play: handlePlay, pause: handlePause, reset: handleReset, skip: handleConfirmSkip, toast,
   });
 
@@ -401,7 +407,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         mode={mode}
         isRunning={isRunning}
         hasWallpaper={hasWallpaper}
-        clockStyle={settings?.clockStyle || 'digital'}
+        clockStyle={settings?.clockStyle || 'flip'}
         timerStyle={settings?.timerStyle || 'default'}
         showProgressBar={settings?.showTimerProgressBar ?? true}
         showSeconds={settings?.showSeconds ?? true}
