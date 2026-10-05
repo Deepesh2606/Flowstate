@@ -1,56 +1,96 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0A0A0F" />
-    <link rel="preload" as="image" href="/defaultpreset.png" fetchpriority="high" />
+<!DOCTYPE html>
 
-    <!-- SEO -->
-    <title>FLOWSTATE — Get In The Zone</title>
-    <meta name="description" content="FLOWSTATE. The ultimate dark matte study sanctuary. Track deep work, join live rooms, and focus." />
-    <meta name="keywords" content="flowstate, Flowstate, flowstate, study tracker, pomodoro, deep work, flow state" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://flowstate.in/" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="FLOWSTATE — Get In The Zone" />
-    <meta property="og:description" content="FLOWSTATE. Live Study Rooms & Deep Work Sanctuary." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://flowstate.in/" />
-    <meta property="og:site_name" content="FLOWSTATE" />
-
-    <!-- PWA / Mobile / Mac Install -->
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="FLOWSTATE" />
-  </head>
-  <body>
-    <!-- Liquid Design Gooey Filter -->
-    <svg style="visibility: hidden; position: absolute;" width="0" height="0" xmlns="http://www.w3.org/2000/svg" version="1.1">
-      <defs>
-        <filter id="goo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
-          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
-          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-        </filter>
-      </defs>
-    </svg>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(
-            (registration) => { console.log('ServiceWorker registration successful'); },
-            (err) => { console.log('ServiceWorker registration failed: ', err); }
-          );
-        });
-      }
-    </script>
-  </body>
-</html>
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode": "class", "theme": {"extend": {"colors": {"inverse-surface": "#dfe2f1", "on-secondary": "#002e6a", "secondary": "#adc6ff", "error": "#ffb4ab", "tertiary": "#ffeac0", "on-tertiary": "#3e2e00", "surface-container-lowest": "#0a0e18", "on-secondary-fixed-variant": "#004395", "background": "#0f131d", "tertiary-container": "#fec931", "tertiary-fixed": "#ffdf96", "outline": "#849396", "primary-fixed": "#9cf0ff", "on-surface": "#dfe2f1", "surface-container-highest": "#313540", "surface-container-high": "#262a35", "inverse-primary": "#006875", "on-tertiary-container": "#6f5500", "on-secondary-container": "#e6ecff", "surface-container": "#1c1f2a", "on-tertiary-fixed": "#251a00", "primary": "#c3f5ff", "on-primary": "#00363d", "secondary-fixed-dim": "#adc6ff", "surface-card": "#1E2235", "obsidian": "#0A0A0F", "on-tertiary-fixed-variant": "#594400", "secondary-fixed": "#d8e2ff", "outline-variant": "#3b494c", "on-primary-fixed-variant": "#004f58", "on-secondary-fixed": "#001a42", "tertiary-fixed-dim": "#f3bf26", "error-container": "#93000a", "on-primary-container": "#00626e", "text-primary": "#FFFFFF", "on-surface-variant": "#bac9cc", "surface-variant": "#313540", "primary-fixed-dim": "#00daf3", "on-background": "#dfe2f1", "on-primary-fixed": "#001f24", "surface-container-low": "#171b26", "surface": "#0f131d", "on-error": "#690005", "surface-bright": "#353944", "secondary-container": "#0566d9", "inverse-on-surface": "#2c303b", "surface-tint": "#00daf3", "surface-dim": "#0f131d", "on-error-container": "#ffdad6", "surface-dark": "#131B2E", "primary-container": "#00e5ff"}, "borderRadius": {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"}, "spacing": {"space-sm": "0.5rem", "margin": "2rem", "space-xl": "2.5rem", "space-md": "1rem", "gutter": "1.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem"}, "fontFamily": {"label-md": ["Inter"], "headline-lg": ["Space Grotesk"], "headline-md": ["Space Grotesk"], "label-lg": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "body-md": ["Inter"], "label-sm": ["Inter"], "headline-sm": ["Space Grotesk"]}, "fontSize": {"label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}], "headline-lg": ["48px", {"lineHeight": "56px", "fontWeight": "700"}], "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}], "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "500"}], "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}], "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}], "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}], "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}], "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]}}}};</script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 w-full z-50 bg-obsidian/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-20 max-w-7xl mx-auto px-gutter flex items-center justify-between"><div class="flex items-center space-x-space-lg"><span class="font-headline-sm text-primary tracking-wider">FLOWSTATE</span><div class="flex items-center space-x-space-sm bg-surface-container-high px-space-md py-space-xs rounded-full"><span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span><span class="text-label-md text-on-surface-variant">3 active rooms</span></div></div><nav class="hidden md:flex items-center space-x-space-md" data-active-classes="bg-primary-container text-on-primary-container font-bold rounded-full"><a aria-current="page" class="px-space-md py-space-sm transition-colors bg-primary-container text-on-primary-container font-bold rounded-full" data-path="explore" href="#">Explore</a><a class="text-label-lg px-space-md py-space-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="rooms" href="#">Rooms</a><a class="text-label-lg px-space-md py-space-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="analytics" href="#">Analytics</a></nav><div class="flex items-center space-x-space-md"><button class="px-space-md py-space-sm bg-surface-container-highest hover:bg-surface-bright text-on-surface text-label-lg rounded-full transition-all">Sign In</button><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPR-DwQSojHSk7YADb39TiZWH7cu8BLL3H3NQNsqEARFx_VGHET8lxg4wwahAvj-jxrb4E_ayewi_AOie6asvAYPurmBxuqAFIKd-FSnpqGaWdMS6FCkWDOdXTmx8FP08dSqeRgT-24v_fZbGe_Xf1WGwiAosc5vgQfoQSHHIskIlaR7KWLMhjNzHbbzT3bj4nl5CVwvUPYJXsVeN0cziwMoaitC_bmkP6FlbOkmTh8ResX8C7ANW2fQ"/></div></div></header><main class="w-full pt-20 pb-24 bg-surface"><div class="flex flex-col w-full items-center justify-center min-h-[calc(100vh-5rem)] px-gutter py-space-xl relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none" data-alt="Abstract dark obsidian waves with subtle flowing gradients of deep blue and electric cyan glow accents, creating a calm, high-contrast, professional productivity atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-VQo-WdT4eMxsgT0f63NVn0KK7g5axHBS9aR5inKQQYY-BoleQr-kvXUwJ6Cxu7nTK6Xnxpf5AfmfOU7Bwjhcq99Z989-yPAkCbGS7Razw18CMRSqa20-gtIwSR7H2YC6_UxoP3Q71z-eXmkaYAMhBPhMsh2FxtUw4LQ7Qg_2DCyvC2WS1oQ0nm5mUjQju3VjyaX_x7kI483iVH8paXmMimCFDAh-XzaApzH2G3fRkxv2XdZ3DBBHEA')"></div>
+<div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center">
+<div class="flex items-center space-x-space-sm bg-surface-container-high/80 backdrop-blur-xl p-1.5 rounded-full shadow-lg mb-space-lg">
+<button class="px-space-lg py-space-xs rounded-full bg-primary text-on-primary text-label-lg font-bold transition-all shadow-[0_0_15px_rgba(0,225,255,0.4)]">FOCUS</button>
+<button class="px-space-lg py-space-xs rounded-full text-on-surface-variant hover:text-on-surface text-label-lg font-medium transition-all">SHORT BREAK</button>
+<button class="px-space-lg py-space-xs rounded-full text-on-surface-variant hover:text-on-surface text-label-lg font-medium transition-all">LONG BREAK</button>
+<button class="px-space-lg py-space-xs rounded-full text-on-surface-variant hover:text-on-surface text-label-lg font-medium transition-all">STOPWATCH</button>
+</div>
+<div class="flex items-center space-x-space-sm mb-space-lg">
+<button class="px-space-md py-1 rounded-full bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface text-label-md transition-all">15m</button>
+<button class="px-space-md py-1 rounded-full bg-primary/20 text-primary text-label-md font-bold transition-all border border-primary/40 shadow-[0_0_10px_rgba(0,225,255,0.2)]">25m</button>
+<button class="px-space-md py-1 rounded-full bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface text-label-md transition-all">45m</button>
+<button class="px-space-md py-1 rounded-full bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface text-label-md transition-all">50m</button>
+<button class="px-space-md py-1 rounded-full bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface text-label-md transition-all">60m</button>
+</div>
+<div class="flex items-center space-x-space-md bg-surface-container-high/40 backdrop-blur-md px-space-lg py-2 rounded-full mb-space-xl border border-outline-variant/10">
+<button class="flex items-center space-x-space-sm text-on-surface text-label-lg font-bold hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-primary text-sm">add_circle</span>
+<span>Daily Focus</span>
+</button>
+<div class="w-px h-4 bg-outline-variant/30"></div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,225,255,0.6)]"></span>
+<span class="text-label-md text-on-surface font-medium mr-space-sm">Daily Focus</span>
+<div class="flex items-center space-x-1">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+</div>
+<span class="text-label-sm text-on-surface-variant ml-space-sm">0/8</span>
+<span class="text-label-sm text-primary font-bold ml-1">0m</span>
+</div>
+</div>
+<div class="relative my-space-md flex flex-col items-center">
+<h1 class="text-[120px] md:text-[180px] font-headline-lg tracking-tight text-white drop-shadow-[0_0_35px_rgba(0,225,255,0.25)] select-none leading-none">45:00</h1>
+</div>
+<div class="w-72 md:w-96 h-1.5 bg-surface-container-highest rounded-full relative mb-space-xl overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1/3 bg-gradient-to-r from-primary-fixed-dim to-primary rounded-full shadow-[0_0_12px_rgba(0,225,255,0.6)]"></div>
+</div>
+<div class="flex items-center space-x-space-md bg-surface-card/60 backdrop-blur-2xl p-3 rounded-full border border-outline-variant/20 shadow-2xl">
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all shadow-md group">
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all shadow-md group">
+<span class="material-symbols-outlined text-xl group-hover:rotate-180 transition-transform duration-500">restart_alt</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all shadow-md group">
+<span class="material-symbols-outlined text-xl group-hover:translate-x-0.5 transition-transform">skip_next</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all shadow-md group">
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">fullscreen</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all shadow-md group">
+<span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">picture_in_picture</span>
+</button>
+</div>
+<div class="flex items-center space-x-space-xl mt-space-lg text-label-sm text-on-surface-variant">
+<span class="flex items-center space-x-1"><span class="font-bold text-on-surface">Space</span><span>· play/pause</span></span>
+<span class="flex items-center space-x-1"><span class="font-bold text-on-surface">R</span><span>· reset</span></span>
+<span class="flex items-center space-x-1"><span class="font-bold text-on-surface">S</span><span>· skip</span></span>
+<span class="flex items-center space-x-1"><span class="font-bold text-on-surface">F</span><span>· fullscreen</span></span>
+</div>
+</div>
+<div class="fixed right-6 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center space-y-space-md bg-surface-card/80 backdrop-blur-xl p-2 rounded-full border border-outline-variant/20 shadow-2xl">
+<button class="w-12 h-12 rounded-full bg-primary text-on-primary flex flex-col items-center justify-center shadow-[0_0_15px_rgba(0,225,255,0.4)]">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="text-[9px] font-bold tracking-tighter">FOCUS</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center transition-all">
+<span class="material-symbols-outlined text-base">hourglass_top</span>
+<span class="text-[8px] tracking-tight">BREAK</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center transition-all">
+<span class="material-symbols-outlined text-base">hourglass_bottom</span>
+<span class="text-[8px] tracking-tight">LONG</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center transition-all">
+<span class="material-symbols-outlined text-base">alarm</span>
+<span class="text-[8px] tracking-tight">STOP</span>
+</button>
+<div class="w-6 h-px bg-outline-variant/30 my-1"></div>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center transition-all">
+<span class="material-symbols-outlined text-base">schedule</span>
+<span class="text-[8px] tracking-tight">CLOCK</span>
+</button>
+</div>
+</div></main><aside class="fixed bottom-0 left-0 right-0 z-40 bg-obsidian/90 backdrop-blur-xl border-t border-outline-variant/20 px-gutter py-space-md"><div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center space-x-space-md"><div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container"><span class="material-symbols-outlined">headphones</span></div><div><p class="text-label-lg text-on-surface font-bold">Ambient Audio Engine</p><p class="text-label-sm text-on-surface-variant">Playing: Rain &amp; Cafe</p></div></div><div class="flex items-center space-x-space-sm"><button class="px-space-md py-space-xs rounded-full bg-surface-container-high text-on-surface text-label-md hover:bg-primary hover:text-on-primary transition-all">Rain</button><button class="px-space-md py-space-xs rounded-full bg-surface-container-high text-on-surface text-label-md hover:bg-primary hover:text-on-primary transition-all">Cafe</button><button class="px-space-md py-space-xs rounded-full bg-surface-container-high text-on-surface text-label-md hover:bg-primary hover:text-on-primary transition-all">White Noise</button></div><div class="flex items-center space-x-space-md w-full md:w-48"><span class="material-symbols-outlined text-on-surface-variant text-sm">volume_down</span><div class="flex-1 h-1 bg-surface-container-highest rounded-full relative"><div class="absolute left-0 top-0 bottom-0 w-2/3 bg-primary rounded-full"></div></div><span class="material-symbols-outlined text-on-surface-variant text-sm">volume_up</span></div></div></aside></body></html>
