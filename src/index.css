@@ -557,11 +557,12 @@ input {
 
 .timer-time {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 3.2rem;
-  font-weight: 700;
+  font-size: 4.5rem;
+  font-weight: 800;
   letter-spacing: -0.04em;
   color: var(--clock-text-color, var(--text-primary));
   line-height: 1;
+  text-shadow: 0 0 30px var(--accent-glow), 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .timer-mode-label {
@@ -585,14 +586,16 @@ input {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--glass-bg-strong);
-  border: 1px solid var(--glass-border);
+  background: rgba(30, 34, 53, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   font-size: 18px;
   transition: all var(--transition-fast);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .ctrl-btn:hover {
