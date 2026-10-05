@@ -80,6 +80,11 @@ async function streamWithModel(modelName, contents, apiKey, onChunk) {
       temperature: 0.7,
       maxOutputTokens: 8192,
     },
+    tools: [
+      {
+        googleSearch: {}
+      }
+    ]
   };
 
   const response = await fetch(url, {

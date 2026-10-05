@@ -13,7 +13,7 @@ const DEFAULT_WIDTH = 360;
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
-  content: "Hey! I'm your **Flowstate AI** — here to help you study smarter, stay focused, and crush your sessions. 🎯\n\nAsk me anything: study tips, Pomodoro advice, quick explanations, or just a focus check-in.",
+  content: "Hey! I'm your **Flowstate AI** — here to help you study smarter, stay focused, and crush your sessions. 🎯\n\nI also have **real-time web search** enabled, so you can ask me for the latest information online!\n\nAsk me anything: study tips, live web searches, quick explanations, or just a focus check-in.",
   id: 'welcome',
   ts: Date.now(),
 };

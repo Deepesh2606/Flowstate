@@ -177,6 +177,10 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     lastLapTimeRef.current = 0;
   };
   const handleSwitchMode = (newMode) => {
+    if (isRunning && mode === 'pomodoro' && (newMode === 'shortBreak' || newMode === 'longBreak')) {
+      toast('Pause or skip the focus session first!', 'warning', 3000);
+      return;
+    }
     switchMode(newMode);
     onModeChange?.(newMode);
   };
@@ -323,7 +327,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       <ModePills mode={mode} onSwitch={handleSwitchMode} />
 
       {/* Dynamic Header Wrapper to prevent layout shift */}
-      <div className="timer-dynamic-header">
+      {!isFullscreen && (
+        <div className="timer-dynamic-header">
         {/* Popular Focus Presets (Minimal Buttons for 15m, 25m, 45m, 50m, 60m) */}
         {mode === 'pomodoro' && (
           <div className="focus-presets-row" role="group" aria-label="Quick focus durations">
@@ -368,6 +373,28 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
           </div>
         )}
       </div>
+      )}
+
+      {/* Centered Target Name */}
+      {(() => {
+        const targets = settings?.targets || [];
+        if (targets.length === 0) return null;
+        const currentTarget = targets.find((t) => t.name === studyMode) || targets.find((t) => t.subjects && t.subjects.includes(subject)) || targets[0];
+        const targetName = (studyMode && targets.some((t) => t.name === studyMode)) ? studyMode : targets.find((t) => t.subjects && t.subjects.includes(subject))?.name || (currentTarget?.subjects?.includes(subject) ? currentTarget.name : '');
+        
+        if (!targetName) return null;
+        return (
+          <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+            <span style={{ 
+              background: 'rgba(10, 14, 24, 0.4)', padding: '6px 16px', borderRadius: '100px', 
+              fontSize: '14px', color: 'rgba(255,255,255,0.9)', border: '1px solid rgba(255,255,255,0.1)',
+              display: 'inline-flex', alignItems: 'center', gap: '6px', backdropFilter: 'blur(10px)'
+            }}>
+              🎯 <span style={{ fontWeight: 600 }}>{targetName}</span>
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Centered Focus Topic Badge & Session Counter (Combined & Above Clock) */}
       <div className="timer-focus-center-container combined-focus-pill" style={{ 
@@ -426,29 +453,33 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         >
           {isRunning ? <IconPause size={20} /> : <IconPlay size={20} />}
         </button>
-        <button className="flocus-ctrl-btn" onClick={handleResetClick} aria-label="Reset" title="Reset (R)">
-          <IconRotateCcw size={18} />
-        </button>
-        {mode === 'stopwatch' && isRunning && (
-          <button
-            className="flocus-ctrl-btn"
-            onClick={handleLap}
-            aria-label="Lap"
-            title="Record lap time"
-            style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
-          >
-            LAP
-          </button>
-        )}
-        {mode !== 'stopwatch' && (
-          <button
-            className="flocus-ctrl-btn"
-            onClick={handleSkipClick}
-            aria-label="Skip session"
-            title="Skip (S)"
-          >
-            <IconSkipForward size={18} />
-          </button>
+        {!isFullscreen && (
+          <>
+            <button className="flocus-ctrl-btn" onClick={handleResetClick} aria-label="Reset" title="Reset (R)">
+              <IconRotateCcw size={18} />
+            </button>
+            {mode === 'stopwatch' && isRunning && (
+              <button
+                className="flocus-ctrl-btn"
+                onClick={handleLap}
+                aria-label="Lap"
+                title="Record lap time"
+                style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
+              >
+                LAP
+              </button>
+            )}
+            {mode !== 'stopwatch' && (
+              <button
+                className="flocus-ctrl-btn"
+                onClick={handleSkipClick}
+                aria-label="Skip session"
+                title="Skip (S)"
+              >
+                <IconSkipForward size={18} />
+              </button>
+            )}
+          </>
         )}
         <button
           className="flocus-ctrl-btn"
@@ -459,16 +490,18 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         >
           {isFullscreen ? <IconMinimize size={20} /> : <IconMaximize size={20} />}
         </button>
-        <button
-          className={`flocus-ctrl-btn ${isPipActive ? 'active' : ''}`}
-          onClick={togglePip}
-          aria-label="Picture-in-Picture"
-          title="Picture-in-Picture (floating mini timer)"
-          style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          id="timer-pip-btn"
-        >
-          <IconPip size={18} />
-        </button>
+        {!isFullscreen && (
+          <button
+            className={`flocus-ctrl-btn ${isPipActive ? 'active' : ''}`}
+            onClick={togglePip}
+            aria-label="Picture-in-Picture"
+            title="Picture-in-Picture (floating mini timer)"
+            style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            id="timer-pip-btn"
+          >
+            <IconPip size={18} />
+          </button>
+        )}
       </div>
 
       {/* Keyboard shortcut hint */}

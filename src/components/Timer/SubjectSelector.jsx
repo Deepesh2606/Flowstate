@@ -151,11 +151,6 @@ const SubjectSelector = ({
   if (subject) {
     return (
       <div className="current-focus-wrapper">
-        {targetName && (
-          <div className="current-focus-target-label">
-            <span className="current-focus-target-name">🎯 {targetName}</span>
-          </div>
-        )}
         <div
           className="current-focus-badge current-focus-badge--minimal"
           onClick={() => setEditingState(true)}
