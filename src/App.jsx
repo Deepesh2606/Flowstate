@@ -4,7 +4,7 @@ import { WallpaperProvider } from './contexts/WallpaperContext';
 import { ToastProvider } from './components/Toast/ToastProvider';
 import { AudioProvider } from './contexts/AudioContext';
 import { SpotifyProvider } from './contexts/SpotifyContext';
-import AppShell from './components/Layout/AppShell';
+import ModernMainPage from './components/Layout/ModernMainPage';
 import AuthModal from './components/Auth/AuthModal';
 
 const AppInner = () => {
@@ -12,7 +12,7 @@ const AppInner = () => {
     <WallpaperProvider>
       <SpotifyProvider>
         <AudioProvider>
-          <AppShell />
+          <ModernMainPage />
           <AuthModal />
         </AudioProvider>
       </SpotifyProvider>
