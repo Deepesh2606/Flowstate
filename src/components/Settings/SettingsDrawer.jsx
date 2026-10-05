@@ -211,7 +211,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [strictMode, setStrictMode]                 = useState(settings?.strictMode ?? false);
 
   // Timer Styles & Toggles matching screenshot
-  const [timerStyle, setTimerStyle]                 = useState(settings?.timerStyle || (settings?.clockStyle === 'flip' ? 'flip' : 'default'));
+  const [timerStyle, setTimerStyle]                 = useState(settings?.timerStyle || 'default');
   const [showTimerProgressBar, setShowTimerProgressBar] = useState(settings?.showTimerProgressBar ?? true);
   const [showStreakCounter, setShowStreakCounter]   = useState(settings?.showStreakCounter ?? true);
   const [showTaskInPip, setShowTaskInPip]           = useState(settings?.showTaskInPip ?? true);
@@ -338,7 +338,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
 
   const handleTimerStyleSelect = (style) => {
     setTimerStyle(style);
-    applyRealtime({ timerStyle: style, clockStyle: style === 'flip' ? 'flip' : 'flip' });
+    applyRealtime({ timerStyle: style });
   };
 
   const handleShowSecondsChange = (val) => {
@@ -452,7 +452,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       showStreakCounter,
       showTaskInPip,
       showGhostPacer,
-      clockStyle: timerStyle === 'flip' ? 'flip' : clockStyle,
+      clockStyle,
       showSeconds,
       clockFormat,
       autoClockColor,

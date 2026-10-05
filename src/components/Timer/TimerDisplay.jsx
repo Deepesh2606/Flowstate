@@ -20,8 +20,8 @@ const TimerDisplay = ({
   const isStopwatch = mode === 'stopwatch';
   const msFormatted = String(stopwatchMs).padStart(2, '0');
 
-  // Resolved timer style (clockStyle === 'flip' acts as flip if timerStyle is default)
-  const resolvedStyle = timerStyle !== 'default' ? timerStyle : (clockStyle === 'flip' ? 'flip' : 'default');
+  // Resolved timer style
+  const resolvedStyle = timerStyle || 'default';
 
   // Digital time string
   let timeStr = '';

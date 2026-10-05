@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS = {
   textColor: '#ffffff',
   autoClockColor: true,
   clockStyle: 'flip', // 'digital' | 'flip'
-  timerStyle: 'flip', // 'default' | 'flip' | 'progress' | 'gauge' | 'dotmatrix' | 'pie'
+  timerStyle: 'default', // 'default' | 'flip' | 'progress' | 'gauge' | 'dotmatrix' | 'pie'
   showTimerProgressBar: true,
   showStreakCounter: true,
   showTaskInPip: true,
@@ -74,7 +74,7 @@ export const useSettings = () => {
           autoClockColor: data.autoClockColor !== undefined ? data.autoClockColor : true,
           theme: data.theme || 'dark',
           clockStyle: data.clockStyle || 'flip',
-          timerStyle: data.timerStyle || (data.clockStyle === 'digital' ? 'default' : 'flip'),
+          timerStyle: data.timerStyle || 'default',
           showTimerProgressBar: data.showTimerProgressBar !== undefined ? data.showTimerProgressBar : true,
           showStreakCounter: data.showStreakCounter !== undefined ? data.showStreakCounter : true,
           showTaskInPip: data.showTaskInPip !== undefined ? data.showTaskInPip : true,
