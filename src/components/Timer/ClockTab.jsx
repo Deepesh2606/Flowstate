@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import FlipCard from './FlipCard';
 import { IconMaximize, IconMinimize, IconPip, IconSettings } from '../Icons';
 
-const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpenSettings }) => {
+const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpenSettings, isActive = true }) => {
   const [time, setTime] = useState(() => new Date());
   const [is12Hour, setIs12Hour] = useState(() => {
     return (settings?.clockFormat || '12h') === '12h';
@@ -49,8 +49,10 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
     }
   }, [settings?.showSeconds]);
 
-  // Keep live real time updated every second
+  // Keep live real time updated every second only when active
   useEffect(() => {
+    if (!isActive) return;
+
     const updateTime = () => setTime(new Date());
     updateTime();
 
@@ -68,7 +70,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
       clearTimeout(timeoutId);
       if (intervalId) clearInterval(intervalId);
     };
-  }, []);
+  }, [isActive]);
 
   // Listen for fullscreen changes
   useEffect(() => {

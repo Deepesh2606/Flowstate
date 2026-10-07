@@ -12,6 +12,32 @@ export const isVideoUrl = (url) => {
   );
 };
 
+/**
+ * Optimizes a wallpaper URL for fast loading and low bandwidth.
+ * Injects Cloudinary f_auto,q_auto,w_1920 transformations and falls back to lightweight formats.
+ */
+export const getOptimizedWallpaperUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url === '/defaultpreset.png') return '/defaultpreset.jpg';
+
+  if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+    if (isVideoUrl(url)) {
+      if (!url.includes('f_auto') && !url.includes('q_auto')) {
+        return url.replace('/upload/', '/upload/f_auto,q_auto/');
+      }
+      return url;
+    }
+    if (!url.includes('f_auto')) {
+      return url.replace(/\/upload\/(?:[a-zA-Z0-9_,:]+\/)?/, (match) => {
+        if (match.includes('f_auto')) return match;
+        return '/upload/f_auto,q_auto:good,w_1920,c_limit/';
+      });
+    }
+  }
+  return url;
+};
+
+
 const contrastCache = new Map();
 
 /**

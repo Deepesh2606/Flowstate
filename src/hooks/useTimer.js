@@ -117,6 +117,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
   const timeLeftRef = useRef(timeLeft);
   const stopwatchMsRef = useRef(stopwatchMs);
   const targetTimeRef = useRef(null); // Stores the absolute timestamp for calculation
+  const lastTitleRef = useRef('');
 
   modeRef.current = mode;
   sessionCountRef.current = sessionCount;
@@ -260,18 +261,27 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
           // Tab title for stopwatch
           const sw_m = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
           const sw_s = String(elapsedSec % 60).padStart(2, '0');
-          document.title = `[${sw_m}:${sw_s}] Flowstate`;
+          const nextTitle = `[${sw_m}:${sw_s}] Flowstate`;
+          if (lastTitleRef.current !== nextTitle) {
+            lastTitleRef.current = nextTitle;
+            document.title = nextTitle;
+          }
         } else {
           const remaining = Math.max(0, Math.ceil((targetTimeRef.current - now) / 1000));
           setTimeLeft(remaining);
           // Update tab title with live countdown
           const modeLabel = modeRef.current === MODES.pomodoro ? '🎯' :
                             modeRef.current === MODES.shortBreak ? '☕' : '🌙';
-          document.title = `${modeLabel} [${formatTitleTime(remaining)}] Flowstate`;
+          const nextTitle = `${modeLabel} [${formatTitleTime(remaining)}] Flowstate`;
+          if (lastTitleRef.current !== nextTitle) {
+            lastTitleRef.current = nextTitle;
+            document.title = nextTitle;
+          }
           
           if (remaining <= 0) {
             clearInterval(intervalRef.current);
             setIsRunning(false);
+            lastTitleRef.current = 'Flowstate';
             document.title = 'Flowstate';
             handleSessionComplete(false);
           }

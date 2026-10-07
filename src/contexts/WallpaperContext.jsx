@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated, removeGlobalCurated, setGlobalDefault } from '../firebase/firestore';
-import { isVideoUrl } from '../utils/imageUtils';
+import { isVideoUrl, getOptimizedWallpaperUrl } from '../utils/imageUtils';
 
 const WallpaperContext = createContext(null);
 
@@ -36,12 +36,12 @@ export const WallpaperProvider = ({ children }) => {
       const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
       if (cached && cached !== 'null' && cached !== 'undefined') {
         if (!cached.includes('assets.mixkit.co') && !cached.includes('images.unsplash.com')) {
-          return cached;
+          return cached === '/defaultpreset.png' ? '/defaultpreset.jpg' : cached;
         }
       }
-      return '/defaultpreset.png';
+      return '/defaultpreset.jpg';
     } catch {
-      return '/defaultpreset.png';
+      return '/defaultpreset.jpg';
     }
   });
 
@@ -53,10 +53,11 @@ export const WallpaperProvider = ({ children }) => {
   // Preload the active wallpaper immediately on mount so it renders with 0 delay
   useEffect(() => {
     try {
-      const currentWp = wallpaper || localStorage.getItem(WALLPAPER_STORAGE_KEY);
-      if (currentWp && !isVideoUrl(currentWp)) {
+      const currentWp = wallpaper || localStorage.getItem(WALLPAPER_STORAGE_KEY) || '/defaultpreset.jpg';
+      const optUrl = getOptimizedWallpaperUrl(currentWp);
+      if (optUrl && !isVideoUrl(optUrl)) {
         const img = new window.Image();
-        img.src = currentWp;
+        img.src = optUrl;
       }
     } catch {
       // ignore
@@ -79,6 +80,23 @@ export const WallpaperProvider = ({ children }) => {
         if (!cached) {
           setWallpaperState(validDefault);
           try { localStorage.setItem(WALLPAPER_STORAGE_KEY, validDefault); } catch {}
+        }
+      }
+
+      // Preload curated thumbnails during idle time so picker opens instantly
+      if (typeof window !== 'undefined') {
+        const preloadIdle = () => {
+          validCurated.slice(0, 10).forEach(wp => {
+            if (wp.url && !isVideoUrl(wp.url)) {
+              const img = new Image();
+              img.src = getOptimizedWallpaperUrl(wp.url);
+            }
+          });
+        };
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(preloadIdle);
+        } else {
+          setTimeout(preloadIdle, 1000);
         }
       }
     });

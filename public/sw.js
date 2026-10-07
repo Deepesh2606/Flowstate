@@ -3,7 +3,9 @@ self.addEventListener('install', (e) => {
     caches.open('flowstate-store').then((cache) => cache.addAll([
       '/',
       '/index.html',
-      '/favicon.svg'
+      '/favicon.svg',
+      '/defaultpreset.jpg',
+      '/defaultpreset.png'
     ])),
   );
 });

@@ -25,9 +25,41 @@ const preloadImage = (url) => {
  * 400px wide, auto format/quality — loads ~4x faster than the full image.
  */
 const toThumbUrl = (url) => {
-  if (!url || !url.includes('cloudinary.com')) return url;
+  if (!url) return '/defaultpreset.jpg';
+  if (url === '/defaultpreset.png') return '/defaultpreset.jpg';
+  if (!url.includes('cloudinary.com')) return url;
   const imgUrl = url.replace(/\.(mp4|webm|mov)$/i, '.jpg');
   return imgUrl.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto:eco,w_400,c_fill,g_auto/');
+};
+
+const WallpaperMediaItem = ({ isVid, url, thumbUrl, alt }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      style={{ width: '100%', height: '100%', position: 'relative' }}
+      onMouseEnter={() => isVid && setIsHovered(true)}
+      onMouseLeave={() => isVid && setIsHovered(false)}
+    >
+      {isVid && isHovered ? (
+        <video
+          src={url}
+          className="wallpaper-thumb-media"
+          muted
+          autoPlay
+          loop
+          playsInline
+        />
+      ) : (
+        <img
+          className="wallpaper-thumb-media"
+          src={thumbUrl}
+          loading="lazy"
+          alt={alt}
+        />
+      )}
+    </div>
+  );
 };
 
 
@@ -257,26 +289,12 @@ const WallpaperPicker = () => {
                           title="Custom Wallpaper"
                           aria-label={`Select custom wallpaper ${i + 1}`}
                         >
-                          {isVid ? (
-                            <video
-                              src={url}
-                              className="wallpaper-thumb-media"
-                              muted
-                              loop
-                              playsInline
-                              preload="metadata"
-                              poster={thumbUrl}
-                              onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                              onMouseLeave={(e) => e.currentTarget.pause()}
-                            />
-                          ) : (
-                            <img
-                              className="wallpaper-thumb-media"
-                              src={thumbUrl}
-                              loading="lazy"
-                              alt="Custom Wallpaper Thumbnail"
-                            />
-                          )}
+                          <WallpaperMediaItem
+                            isVid={isVid}
+                            url={url}
+                            thumbUrl={thumbUrl}
+                            alt="Custom Wallpaper Thumbnail"
+                          />
                           {isVid && <span className="wallpaper-video-badge">▶ Video</span>}
                           {wallpaper === url && (
                             <div style={{
@@ -324,26 +342,12 @@ const WallpaperPicker = () => {
                           title={displayTitle}
                           aria-label={`Select ${displayTitle}`}
                         >
-                          {isVid ? (
-                            <video
-                              src={wp.url}
-                              className="wallpaper-thumb-media"
-                              muted
-                              loop
-                              playsInline
-                              preload="metadata"
-                              poster={toThumbUrl(wp.url)}
-                              onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                              onMouseLeave={(e) => e.currentTarget.pause()}
-                            />
-                          ) : (
-                            <img
-                              className="wallpaper-thumb-media"
-                              src={toThumbUrl(wp.url)}
-                              loading="lazy"
-                              alt={displayTitle}
-                            />
-                          )}
+                          <WallpaperMediaItem
+                            isVid={isVid}
+                            url={wp.url}
+                            thumbUrl={toThumbUrl(wp.url)}
+                            alt={displayTitle}
+                          />
                           {isVid && <span className="wallpaper-video-badge">▶ Video</span>}
                           {wallpaper === wp.url && (
                             <div style={{

@@ -8,7 +8,7 @@ import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
 import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat, IconEdit, IconMusicNote, IconDockTasks } from '../Icons';
-import { getWallpaperContrast, isVideoUrl } from '../../utils/imageUtils';
+import { getWallpaperContrast, isVideoUrl, getOptimizedWallpaperUrl } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import WallpaperPicker from '../WallpaperPicker';
 import InstallModal from '../InstallModal';
@@ -28,7 +28,7 @@ import GoogleSignInButton from '../Auth/GoogleSignInButton';
 import LegalModal, { IconShield } from '../Legal/LegalModal';
 
 const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/deepesh2606';
-const WALLPAPER_FALLBACK = '/defaultpreset.png';
+const WALLPAPER_FALLBACK = '/defaultpreset.jpg';
 
 const FallbackLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'rgba(255,255,255,0.5)' }}>
@@ -42,7 +42,10 @@ const AppShell = () => {
   // Keep a known local image on screen until a cached/remote wallpaper has
   // completely loaded. This avoids the blank flash that can happen on first
   // paint while Firestore or Cloudinary assets are still arriving.
-  const [renderedWallpaper, setRenderedWallpaper] = useState(wallpaper || WALLPAPER_FALLBACK);
+  const [renderedWallpaper, setRenderedWallpaper] = useState(() => {
+    const raw = wallpaper || WALLPAPER_FALLBACK;
+    return getOptimizedWallpaperUrl(raw);
+  });
   const [isWallpaperLoading, setIsWallpaperLoading] = useState(false);
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, isPlaybackPaused, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
@@ -77,14 +80,14 @@ const AppShell = () => {
   const menuRef = useRef(null);
 
   useEffect(() => {
-    const nextWallpaper = wallpaper || WALLPAPER_FALLBACK;
+    const rawWallpaper = wallpaper || WALLPAPER_FALLBACK;
+    const nextWallpaper = getOptimizedWallpaperUrl(rawWallpaper);
     if (nextWallpaper === renderedWallpaper) {
       setIsWallpaperLoading(false);
       return undefined;
     }
 
     let cancelled = false;
-    setIsWallpaperLoading(true);
 
     const applyWhenReady = () => {
       if (cancelled) return;
@@ -123,6 +126,9 @@ const AppShell = () => {
       }
     };
     image.src = nextWallpaper;
+    if (image.decode) {
+      image.decode().then(applyWhenReady).catch(applyWhenReady);
+    }
     return () => {
       cancelled = true;
       image.onload = null;
@@ -759,6 +765,7 @@ const AppShell = () => {
               hasWallpaper={!!wallpaper}
               onTabChange={handleTabChange}
               onOpenSettings={() => setShowSettings(true)}
+              isActive={activeTab === 'clock'}
             />
           </div>
           <div
