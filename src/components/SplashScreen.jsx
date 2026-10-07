@@ -15,7 +15,7 @@ const SplashScreen = ({ onSignIn, loading }) => {
         <img
           src="/favicon.svg"
           alt="FLOWSTATE Logo"
-          style={{ width: '80%', maxWidth: 400, height: 'auto', marginBottom: 24, filter: "drop-shadow(0 10px 24px rgba(56, 189, 248, 0.5))" }}
+          style={{ width: '80%', maxWidth: 400, height: 'auto', marginBottom: 24, filter: "drop-shadow(0 10px 24px rgba(255, 255, 255, 0.2))" }}
         />
         <p className="splash-tagline">Study smarter. Focus deeper. Live in flow.</p>
       </div>
