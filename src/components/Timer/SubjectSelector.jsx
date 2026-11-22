@@ -188,10 +188,9 @@ const SubjectSelector = ({
       onClick={() => setEditingState(true)}
       id="btn-set-focus-prompt"
       title="Set a focus topic"
-      style={{ padding: '6px 14px', gap: '6px', fontSize: '14px' }}
     >
-      <span className="focus-prompt-plus" style={{ fontSize: '16px' }}>+</span>
-      <span>Daily Focus</span>
+      <span className="focus-prompt-plus">+</span>
+      <span>Set Focus Topic</span>
     </button>
   );
 };

@@ -3,11 +3,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAudio } from '../../contexts/AudioContext';
 import TabBar from './TabBar';
-import RightSideNav from './RightSideNav';
 import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconTasks, IconImage, IconSettings, IconUser, IconHeadphones, IconChat, IconEdit, IconMusicNote, IconDockTasks } from '../Icons';
+import { IconImage, IconSettings, IconUser, IconHeadphones, IconChat, IconEdit, IconMusicNote, IconDockTasks } from '../Icons';
 import { getWallpaperContrast, isVideoUrl, getOptimizedWallpaperUrl } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import WallpaperPicker from '../WallpaperPicker';
@@ -76,7 +75,6 @@ const AppShell = () => {
   const [showLegalModal, setShowLegalModal] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState('privacy');
   const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
-  const [currentTimerMode, setCurrentTimerMode] = useState('pomodoro');
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -369,12 +367,6 @@ const AppShell = () => {
     if (subMode) setPendingSwitchMode(subMode);
   };
 
-  // RightSideNav requests a mode switch
-  const handleRightNavModeSwitch = (modeId) => {
-    setPendingSwitchMode(modeId);
-    setCurrentTimerMode(modeId);
-  };
-
 
 
   return (
@@ -402,292 +394,262 @@ const AppShell = () => {
 
       {/* App Shell */}
       <div className="app-shell">
-        {/* Top Bar */}
+        {/* Top Bar — Clean 3-Zone Header */}
         <header className="topbar">
-          <span className="topbar-logo">
+          <button
+            type="button"
+            className="topbar-logo"
+            onClick={() => handleTabChange('timer')}
+            aria-label="FLOWSTATE Home"
+          >
             FLOWSTATE
-          </span>
-        </header>
-
-        {/* Top Right Controls (Notes/Tasks + Sign In) */}
-        <div className="top-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            className="topbar-signin-btn"
-            onClick={() => setShowLiveRooms(true)}
-            title="Join Live Study Rooms"
-            aria-label="Live Rooms"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 12px', background: 'rgba(255, 255, 255, 0.1)' }}
-          >
-            <span className="rooms-live-indicator-small" />
-            <span style={{ fontWeight: 600 }}>Live Rooms</span>
-            {realOnlineCount > 0 && (
-              <span className="rooms-dock-badge">{realOnlineCount}</span>
-            )}
           </button>
-          {!currentUser && (
+
+          <button
+            type="button"
+            className="topbar-cmd-btn"
+            onClick={() => setShowCommandPalette(true)}
+            aria-label="Open quick command palette"
+            title="Quick Jump (Cmd/Ctrl + K)"
+          >
+            <span>Quick Jump</span>
+            <kbd className="topbar-cmd-kbd">⌘K</kbd>
+          </button>
+
+          <div className="topbar-actions" ref={menuRef}>
             <button
-              className="topbar-signin-btn"
-              onClick={() => openAuthModal('Sign in with Google to sync your study data')}
-              id="topbar-signin-btn"
-              title="Sign in with Google"
+              type="button"
+              className="topbar-action-btn topbar-rooms-btn"
+              onClick={() => setShowLiveRooms(true)}
+              title="Join Live Study Rooms"
+              aria-label="Live Rooms"
             >
-              Sign In
+              <span>Live Rooms</span>
+              {realOnlineCount > 0 && (
+                <span className="rooms-dock-badge">{realOnlineCount}</span>
+              )}
             </button>
-          )}
-          <button
-            className="floating-icon-btn"
-            onClick={() => setShowTasks((v) => !v)}
-            aria-label="Tasks & Notes (T)"
-            id="tasks-btn"
-            title="Tasks & Notes (T)"
-          >
-            <IconTasks size={18} />
-          </button>
-        </div>
 
-        {/* Bottom Right Floating Controls */}
-        <div className={`floating-controls ${currentUser ? 'floating-controls--signed-in' : 'floating-controls--guest'}`} ref={menuRef}>
-          {/* Horizontal group for Audio, Wallpaper, Settings, and User */}
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {/* Audio & Ambience button */}
+            {/* Mobile-only quick tools so Audio, Wallpaper & Settings are 1 tap away on phones */}
             <button
-              className="floating-icon-btn"
+              type="button"
+              className="topbar-mobile-icon-btn"
               onClick={() => setShowAudioDrawer((v) => !v)}
-              aria-label="Music Player & Ambience (M)"
-              id="audio-drawer-btn"
-              title="Music Player & Ambience (M)"
-              style={{ position: 'relative' }}
+              aria-label="Music Player & Ambience"
+              title="Music & Ambience"
             >
-              <IconHeadphones size={18} />
+              <IconHeadphones size={16} />
               {(isAnyPlaying || isPlaybackPaused) && <span className="audio-badge-active" />}
             </button>
-
-            {/* Wallpaper change button */}
             <button
-              className="floating-icon-btn"
+              type="button"
+              className="topbar-mobile-icon-btn"
               onClick={() => setShowPicker(true)}
-              aria-label="Change wallpaper"
-              id="wallpaper-change-btn"
-              title="Change wallpaper"
+              aria-label="Wallpapers"
+              title="Wallpapers"
             >
-              <IconImage size={18} />
+              <IconImage size={16} />
             </button>
-
-            {/* Settings button */}
             <button
-              className="floating-icon-btn"
+              type="button"
+              className="topbar-mobile-icon-btn"
               onClick={() => setShowSettings(true)}
-              aria-label="Open settings"
-              id="settings-btn"
+              aria-label="Settings"
               title="Settings"
             >
-              <IconSettings size={18} />
+              <IconSettings size={16} />
             </button>
 
-            {/* User avatar */}
-            {currentUser?.photoURL ? (
-              <img
-                src={currentUser.photoURL}
-                alt={currentUser.displayName || 'User'}
-                className="user-avatar"
-                onClick={() => setShowUserMenu((v) => !v)}
-                id="user-avatar"
-              />
+            {currentUser ? (
+              currentUser.photoURL ? (
+                <button
+                  type="button"
+                  className="topbar-avatar-btn"
+                  onClick={() => setShowUserMenu((v) => !v)}
+                  aria-label="Account menu"
+                  aria-expanded={showUserMenu}
+                  id="user-avatar"
+                >
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="user-avatar"
+                    referrerPolicy="no-referrer"
+                  />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="topbar-icon-btn"
+                  onClick={() => setShowUserMenu((v) => !v)}
+                  aria-label="Account menu"
+                  aria-expanded={showUserMenu}
+                  id="user-avatar-fallback"
+                >
+                  <IconUser size={16} />
+                </button>
+              )
             ) : (
               <button
-                className="floating-icon-btn"
-                onClick={() => setShowUserMenu((v) => !v)}
-                id="user-avatar-fallback"
-                title={currentUser ? 'User Menu' : 'Guest / Sign In'}
+                type="button"
+                className="topbar-signin-btn"
+                onClick={() => openAuthModal('Sign in with Google to sync your study data')}
+                id="topbar-signin-btn"
+                title="Sign in with Google"
               >
-                <IconUser size={18} />
+                Sign In
               </button>
             )}
-          </div>
 
-          {/* User dropdown menu */}
-          {showUserMenu && (
-            <div className="user-menu" role="menu">
-              {currentUser ? (
-                <>
-                  <div className="user-menu-info">
-                    <div className="user-menu-name">{currentUser.displayName || 'User'}</div>
-                    <div className="user-menu-email">{currentUser.email}</div>
-                  </div>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      openMusicPlayer('spotify');
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-open-music"
-                  >
-                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Music Player (Spotify · Apple · YT)
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      openAudioDrawerWithTab('ambient');
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-open-ambience"
-                  >
-                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Sounds
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      setShowPicker(true);
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-change-wallpaper"
-                  >
-                    <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      setShowSettings(true);
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-open-settings"
-                  >
-                    <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      handleOpenLegal('privacy');
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-legal-auth"
-                  >
-                    <IconShield size={14} style={{ marginRight: 8 }} /> Legal &amp; Policies
-                  </button>
-                  <a
-                    href={BUY_ME_A_COFFEE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="user-menu-item coffee-item"
-                    onClick={() => setShowUserMenu(false)}
-                    role="menuitem"
-                    id="menu-coffee-auth"
-                  >
-                    <span style={{ marginRight: 8, fontSize: '15px' }}>☕</span> Buy Me a Coffee
-                  </a>
-                  <button
-                    className="user-menu-item danger"
-                    onClick={() => {
-                      signOut();
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-sign-out"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="user-menu-info">
-                    <div className="user-menu-name">Guest Mode</div>
-                    <div className="user-menu-email">Data stored locally</div>
-                  </div>
-                  <div style={{ padding: '6px 8px 10px' }}>
-                    <GoogleSignInButton
-                      size="sm"
+            {/* Account dropdown menu (anchored cleanly under top-right account trigger) */}
+            {showUserMenu && (
+              <div className="user-menu user-menu--top" role="menu">
+                {currentUser ? (
+                  <>
+                    <div className="user-menu-info">
+                      <div className="user-menu-name">{currentUser.displayName || 'User'}</div>
+                      <div className="user-menu-email">{currentUser.email}</div>
+                    </div>
+                    <button
+                      type="button"
+                      className="user-menu-item"
                       onClick={() => {
+                        openMusicPlayer('spotify');
                         setShowUserMenu(false);
-                        openAuthModal('Sign in with Google to sync your study data across devices');
                       }}
-                    />
-                  </div>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      openMusicPlayer('spotify');
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-open-music-guest"
-                  >
-                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Music Player (Spotify · Apple · YT)
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      openAudioDrawerWithTab('ambient');
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-open-ambience"
-                  >
-                    <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Sounds
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      setShowPicker(true);
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-change-wallpaper"
-                  >
-                    <IconImage size={14} style={{ marginRight: 8 }} /> Change Wallpaper
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      setShowSettings(true);
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-open-settings"
-                  >
-                    <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
-                  </button>
-                  <button
-                    className="user-menu-item"
-                    onClick={() => {
-                      handleOpenLegal('privacy');
-                      setShowUserMenu(false);
-                    }}
-                    role="menuitem"
-                    id="menu-legal-guest"
-                  >
-                    <IconShield size={14} style={{ marginRight: 8 }} /> Legal &amp; Policies
-                  </button>
-                  <a
-                    href={BUY_ME_A_COFFEE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="user-menu-item coffee-item"
-                    onClick={() => setShowUserMenu(false)}
-                    role="menuitem"
-                    id="menu-coffee-guest"
-                  >
-                    <span style={{ marginRight: 8, fontSize: '15px' }}>☕</span> Buy Me a Coffee
-                  </a>
-                </>
-              )}
-            </div>
-          )}
+                      role="menuitem"
+                      id="menu-open-music"
+                    >
+                      <IconHeadphones size={14} style={{ marginRight: 8 }} /> Music Player
+                    </button>
+                    <button
+                      type="button"
+                      className="user-menu-item"
+                      onClick={() => {
+                        openAudioDrawerWithTab('ambient');
+                        setShowUserMenu(false);
+                      }}
+                      role="menuitem"
+                      id="menu-open-ambience"
+                    >
+                      <IconHeadphones size={14} style={{ marginRight: 8 }} /> Ambience & Sounds
+                    </button>
+                    <button
+                      type="button"
+                      className="user-menu-item"
+                      onClick={() => {
+                        setShowPicker(true);
+                        setShowUserMenu(false);
+                      }}
+                      role="menuitem"
+                      id="menu-change-wallpaper"
+                    >
+                      <IconImage size={14} style={{ marginRight: 8 }} /> Wallpapers
+                    </button>
+                    <button
+                      type="button"
+                      className="user-menu-item"
+                      onClick={() => {
+                        setShowSettings(true);
+                        setShowUserMenu(false);
+                      }}
+                      role="menuitem"
+                      id="menu-open-settings"
+                    >
+                      <IconSettings size={14} style={{ marginRight: 8 }} /> Settings
+                    </button>
+                    <button
+                      type="button"
+                      className="user-menu-item"
+                      onClick={() => {
+                        handleOpenLegal('privacy');
+                        setShowUserMenu(false);
+                      }}
+                      role="menuitem"
+                      id="menu-legal-auth"
+                    >
+                      <IconShield size={14} style={{ marginRight: 8 }} /> Legal &amp; Policies
+                    </button>
+                    <a
+                      href={BUY_ME_A_COFFEE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="user-menu-item coffee-item"
+                      onClick={() => setShowUserMenu(false)}
+                      role="menuitem"
+                      id="menu-coffee-auth"
+                    >
+                      <span style={{ marginRight: 8, fontSize: '14px' }}>☕</span> Buy Me a Coffee
+                    </a>
+                    <button
+                      type="button"
+                      className="user-menu-item danger"
+                      onClick={() => {
+                        signOut();
+                        setShowUserMenu(false);
+                      }}
+                      role="menuitem"
+                      id="menu-sign-out"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="user-menu-info">
+                      <div className="user-menu-name">Guest Mode</div>
+                      <div className="user-menu-email">Data stored locally</div>
+                    </div>
+                    <div style={{ padding: '6px 8px 10px' }}>
+                      <GoogleSignInButton
+                        size="sm"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          openAuthModal('Sign in with Google to sync your study data across devices');
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Bottom Right Controls (Desktop — Wallpapers & Settings only, zero duplicates) */}
+        <div className="floating-controls" role="group" aria-label="Appearance and settings">
+          <button
+            type="button"
+            className={`bottom-dock-btn${showPicker ? ' active' : ''}`}
+            onClick={() => setShowPicker(true)}
+            aria-label="Change wallpaper"
+            id="wallpaper-change-btn"
+            title="Wallpapers"
+          >
+            <IconImage size={18} />
+          </button>
+
+          <button
+            type="button"
+            className={`bottom-dock-btn${showSettings ? ' active' : ''}`}
+            onClick={() => setShowSettings(true)}
+            aria-label="Open settings"
+            id="settings-btn"
+            title="Settings"
+          >
+            <IconSettings size={18} />
+          </button>
         </div>
 
-        {/* Floating Notepad (Matching Screenshot) */}
+        {/* Floating Notepad */}
         {showNotepad && (
           <div className="bottom-left-notepad-floating">
             <Notepad onClose={() => setShowNotepad(false)} />
           </div>
         )}
 
-        {/* Bottom Left Dock (Tasks, Music, Notepad, Ask AI) */}
-        <div className="bottom-left-dock">
+        {/* Bottom Left Dock (Tasks, Audio, Notepad, Ask AI — each appears once) */}
+        <div className="bottom-left-dock" role="group" aria-label="Workspace tools">
           <button
             type="button"
             className={`bottom-dock-btn${showTasks ? ' active' : ''}`}
@@ -706,8 +668,10 @@ const AppShell = () => {
             title="Music Player & Ambience (M)"
             aria-label="Music Player & Ambience (M)"
             id="dock-music-btn"
+            style={{ position: 'relative' }}
           >
             <IconMusicNote size={18} />
+            {(isAnyPlaying || isPlaybackPaused) && <span className="audio-badge-active" />}
           </button>
 
           <button
@@ -733,8 +697,6 @@ const AppShell = () => {
             <IconChat size={18} />
             <span className="ai-chat-btn-text">Ask AI</span>
           </button>
-
-          <div className="dock-divider" style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 4px', display: 'none' }} />
         </div>
 
         {/* Tab Content */}
@@ -752,7 +714,6 @@ const AppShell = () => {
               initialMode={pendingSwitchMode}
               onInitialModeConsumed={() => setPendingSwitchMode(null)}
               timerActionsRef={timerActionsRef}
-              onModeChange={setCurrentTimerMode}
             />
           </div>
           <div
@@ -797,14 +758,6 @@ const AppShell = () => {
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
 
-      {/* Right Side Mode Nav */}
-      <RightSideNav
-        activeTab={activeTab}
-        timerMode={currentTimerMode}
-        onSwitchMode={handleRightNavModeSwitch}
-        onTabChange={handleTabChange}
-      />
-
       {/* AI Chat — persistent left sidebar (push layout, no overlay) */}
       {showAIChat && (
         <AIChatSidebar onClose={() => setShowAIChat(false)} />
@@ -832,9 +785,21 @@ const AppShell = () => {
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
         onNavigate={(id) => {
-          if (id === 'timer') setActiveTab('timer');
-          else if (id === 'stats') setActiveTab('stats');
-          else {
+          if (id === 'timer' || id === 'clock' || id === 'stats' || id === 'history') {
+            setActiveTab(id);
+          } else if (id === 'wallpaper') {
+            setShowPicker(true);
+          } else if (id === 'audio') {
+            setShowAudioDrawer(true);
+          } else if (id === 'tasks') {
+            setShowTasks(true);
+          } else if (id === 'notepad') {
+            setShowNotepad(true);
+          } else if (id === 'chat') {
+            setShowAIChat(true);
+          } else if (id === 'rooms') {
+            setShowLiveRooms(true);
+          } else {
             setShowSettings(true);
           }
         }}

@@ -139,33 +139,35 @@ const MotivationalQuote = ({ enabled = true, isRunning, sessionCount, onSessionS
       role="complementary"
       aria-live="polite"
     >
-      <div className="quote-top-bar">
-        {quote.tag && <span className="quote-tag">{quote.tag}</span>}
-        <div className="quote-actions">
-          <button
-            type="button"
-            className="quote-action-btn"
-            onClick={rotateQuote}
-            title="Next quote (changes automatically every 30s)"
-            aria-label="Next quote"
-          >
-            ↻
-          </button>
-          <button
-            type="button"
-            className="quote-action-btn"
-            onClick={() => setVisible(false)}
-            title="Dismiss quote"
-            aria-label="Dismiss quote"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-
       <div className="quote-content">
         <p className="quote-text">“{quote.text}”</p>
-        <span className="quote-author">— {quote.author}</span>
+        <div className="quote-meta-row">
+          <span className="quote-author">
+            {quote.author}
+            {quote.tag ? <span className="quote-meta-sep" aria-hidden="true"> · </span> : null}
+            {quote.tag ? <span className="quote-tag-text">{quote.tag}</span> : null}
+          </span>
+          <div className="quote-actions">
+            <button
+              type="button"
+              className="quote-action-btn"
+              onClick={rotateQuote}
+              title="Next quote (changes automatically every 30s)"
+              aria-label="Next quote"
+            >
+              ↻
+            </button>
+            <button
+              type="button"
+              className="quote-action-btn"
+              onClick={() => setVisible(false)}
+              title="Dismiss quote"
+              aria-label="Dismiss quote"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Subtle 30-second timer progress indicator */}

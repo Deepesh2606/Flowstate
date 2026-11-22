@@ -12440,3 +12440,834 @@ body.fullscreen-mode .flip-card-wrapper.flip-ampm-wrapper .flip-flap span,
   line-height: 1.3;
 }
 
+/* ═════════════════════════════════════════════════════════════════════════════
+   LAUNCH UI POLISH & GLOBAL DEFAULT WALLPAPER SYSTEM
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* Accessible focus rings */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Clean 3-Zone Top Bar ────────────────────────────────────────────────── */
+.topbar {
+  height: 64px;
+  min-height: 64px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 120;
+  pointer-events: auto;
+  background: linear-gradient(180deg, rgba(8, 10, 18, 0.52) 0%, rgba(8, 10, 18, 0) 100%);
+}
+
+.topbar-logo {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #ffffff;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 6px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  pointer-events: auto;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.topbar-logo:hover {
+  opacity: 0.9;
+}
+
+.topbar-cmd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 12px 0 14px;
+  border-radius: 999px;
+  background: rgba(15, 18, 28, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12.5px;
+  font-weight: 500;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.topbar-cmd-btn:hover {
+  background: rgba(22, 27, 42, 0.72);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.topbar-cmd-kbd {
+  font-family: 'Space Grotesk', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 2px 6px;
+  line-height: 1.1;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.topbar-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(15, 18, 28, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.topbar-action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.topbar-signin-btn {
+  height: 36px !important;
+  padding: 0 16px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #081220 !important;
+  border: 1px solid transparent !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.topbar-signin-btn:hover {
+  background: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.topbar-avatar-btn,
+.topbar-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(15, 18, 28, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+}
+
+.topbar-avatar-btn .user-avatar {
+  width: 34px;
+  height: 34px;
+  border-width: 1.5px;
+}
+
+.topbar-mobile-icon-btn {
+  display: none;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 18, 28, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.user-menu--top {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  bottom: auto;
+  left: auto;
+  min-width: 230px;
+  z-index: 200;
+  transform-origin: top right;
+}
+
+/* ─── Symmetrical Bottom Chrome (Desktop) ─────────────────────────────────── */
+:root {
+  --tab-height: 68px;
+}
+
+.tab-bar {
+  height: var(--tab-height);
+  background: rgba(9, 12, 20, 0.72);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  gap: 6px;
+}
+
+.tab-btn {
+  max-width: 112px;
+  height: 50px;
+  border-radius: 14px;
+}
+
+.bottom-left-dock {
+  position: fixed;
+  bottom: 14px !important;
+  left: 20px !important;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.floating-controls {
+  position: fixed;
+  bottom: 14px !important;
+  right: 20px !important;
+  top: auto;
+  left: auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  z-index: 90;
+}
+
+.floating-controls:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* ─── Balanced Hero Timer Canvas (Zero Clipping on 1440x900) ──────────────── */
+.content-area {
+  padding: 6px 20px calc(var(--tab-height) + 12px);
+  scroll-padding-bottom: calc(var(--tab-height) + 16px);
+}
+
+.timer-tab-wrapper {
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.timer-tab-bottom-spacer {
+  height: 10px;
+}
+
+.liquid-pills-wrapper {
+  margin-bottom: 2px;
+}
+
+.combined-focus-pill {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(10, 14, 24, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 5px 14px;
+  width: fit-content;
+  max-width: calc(100vw - 32px);
+  margin: 0 auto 2px auto;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.focus-pill-left,
+.focus-pill-right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.focus-pill-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  flex-shrink: 0;
+}
+
+.current-focus-prompt-btn {
+  padding: 5px 10px !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  white-space: nowrap;
+}
+
+.flocus-timer-wrapper {
+  margin-bottom: 8px;
+}
+
+.flocus-timer-digits {
+  font-family: var(--clock-font-family, 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-size: clamp(5rem, 13.2vw, 10.25rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-bottom-progress-bar {
+  margin-top: 10px !important;
+}
+
+/* Primary CTA + Uniform Secondary Controls */
+.flocus-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.flocus-secondary-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flocus-ctrl-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(15, 20, 32, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.flocus-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+}
+
+.flocus-ctrl-btn--primary {
+  width: auto !important;
+  min-width: 148px;
+  height: 46px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  gap: 9px;
+  background: var(--accent, #38bdf8) !important;
+  color: #06131f !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  text-shadow: none !important;
+  box-shadow: 0 8px 26px -6px var(--accent-glow, rgba(56, 189, 248, 0.55));
+}
+
+.flocus-ctrl-btn--primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  color: #06131f !important;
+}
+
+.flocus-ctrl-btn--primary.is-running {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #07111e !important;
+  box-shadow: 0 8px 24px -8px rgba(255, 255, 255, 0.45);
+}
+
+.flocus-ctrl-btn--lap {
+  width: auto !important;
+  padding: 0 14px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em;
+}
+
+.keyboard-hints {
+  margin-top: 2px;
+  opacity: 0.65;
+}
+
+/* ─── Calm, Compact Motivational Quote Card ───────────────────────────────── */
+.motivational-quote {
+  padding: 10px 18px 11px;
+  max-width: 520px;
+  border-radius: 14px;
+  background: rgba(10, 14, 24, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  margin-top: 4px;
+}
+
+.quote-content {
+  gap: 5px;
+}
+
+.quote-text {
+  font-size: 13px;
+  line-height: 1.48;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.quote-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.quote-author {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  margin-top: 0;
+}
+
+.quote-meta-sep {
+  opacity: 0.45;
+}
+
+.quote-tag-text {
+  color: var(--accent, #38bdf8);
+  opacity: 0.85;
+}
+
+.quote-meta-row .quote-actions {
+  margin-left: 4px;
+}
+
+/* ─── Upgraded Command Palette ────────────────────────────────────────────── */
+.cmd-result-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+
+.cmd-result-item.is-active,
+.cmd-result-item:hover {
+  background: rgba(56, 189, 248, 0.14);
+  color: #ffffff;
+}
+
+.cmd-result-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.cmd-result-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmd-result-cat {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.cmd-result-kbd {
+  font-family: 'Space Grotesk', monospace;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* ─── Wallpaper Gallery & Set Default for Everyone UI ─────────────────────── */
+.wp-global-default-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wp-global-default-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wp-global-default-thumb {
+  width: 60px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.wp-global-default-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wp-global-default-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent, #38bdf8);
+  letter-spacing: 0.02em;
+}
+
+.wp-global-default-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wp-reset-default-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.16s ease;
+}
+
+.wp-reset-default-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.wp-force-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.72);
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+}
+
+.wp-force-checkbox input {
+  accent-color: var(--accent, #38bdf8);
+  cursor: pointer;
+}
+
+.wp-section-heading {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.wp-inline-action {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+}
+
+.wp-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wp-default-indicator {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(7, 13, 24, 0.84);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: var(--accent, #38bdf8);
+  font-size: 10px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.wp-selected-scrim {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 16, 28, 0.28);
+  z-index: 3;
+}
+
+.wp-selected-check {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent, #38bdf8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.wp-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+.wp-card-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.wp-card-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.wp-set-default-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.wp-set-default-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #ffffff;
+}
+
+.wp-set-default-btn.is-default {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: var(--accent, #38bdf8);
+  cursor: default;
+}
+
+.wp-delete-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 80, 80, 0.12);
+  border: 1px solid rgba(255, 80, 80, 0.22);
+  color: #ff6b6b;
+}
+
+.wp-delete-btn:hover {
+  background: rgba(255, 80, 80, 0.25);
+}
+
+.wp-upload-success-banner {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.wp-pill-cta {
+  font-size: 12px;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #06131f;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.wp-pill-secondary {
+  font-size: 12px;
+  padding: 6px 14px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  border-radius: 999px;
+}
+
+.wp-url-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #fff;
+  font-size: 12.5px;
+}
+
+.wp-url-submit-btn {
+  background: var(--accent);
+  color: #06131f;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+/* ─── Mobile Polish (<= 768px) — Zero Overflow, Full Feature Access ───────── */
+@media (max-width: 768px) {
+  .topbar {
+    height: 56px;
+    min-height: 56px;
+    padding: 0 14px;
+    gap: 8px;
+  }
+
+  .topbar-logo {
+    font-size: 0.92rem;
+    letter-spacing: 0.14em;
+  }
+
+  .topbar-cmd-btn,
+  .topbar-rooms-btn {
+    display: none !important;
+  }
+
+  .topbar-mobile-icon-btn {
+    display: inline-flex !important;
+  }
+
+  .topbar-signin-btn {
+    height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+  }
+
+  .floating-controls {
+    display: none !important;
+  }
+
+  .combined-focus-pill {
+    border-radius: 18px;
+    padding: 8px 12px;
+    gap: 6px 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .focus-pill-divider {
+    display: none;
+  }
+
+  .combined-focus-pill .session-counter {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .combined-focus-pill .session-pips {
+    display: none;
+  }
+
+  .flocus-timer-digits {
+    font-size: clamp(4.2rem, 21vw, 5.8rem) !important;
+  }
+
+  .flocus-controls {
+    gap: 10px;
+  }
+
+  .flocus-ctrl-btn--primary {
+    min-width: 136px;
+    height: 44px !important;
+    padding: 0 18px !important;
+  }
+
+  .keyboard-hints {
+    display: none;
+  }
+
+  .motivational-quote {
+    width: 100%;
+    padding: 10px 14px;
+  }
+}
+
+/* Fullscreen mode hides topbar too for true distraction-free focus */
+:fullscreen .topbar,
+:-webkit-full-screen .topbar,
+[data-fullscreen="true"] .topbar,
+body.is-fullscreen .topbar {
+  opacity: 0;
+  pointer-events: none;
+}

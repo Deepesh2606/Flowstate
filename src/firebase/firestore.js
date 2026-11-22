@@ -55,14 +55,18 @@ export const subscribeGlobalCurated = (callback) => {
     ref,
     (snap) => {
       if (snap.exists()) {
-        callback(snap.data().curated || null, snap.data().defaultWallpaper || null);
+        const data = snap.data();
+        callback(data.curated || null, data.defaultWallpaper || null, {
+          updatedAt: data.defaultWallpaperUpdatedAt || 0,
+          forceForExisting: Boolean(data.forceDefaultForExisting),
+        });
       } else {
-        callback(null, null);
+        callback(null, null, { updatedAt: 0, forceForExisting: false });
       }
     },
     (err) => {
       console.warn('Firestore subscribeGlobalCurated error:', err);
-      callback(null, null);
+      callback(null, null, { updatedAt: 0, forceForExisting: false });
     }
   );
 };
@@ -92,9 +96,17 @@ export const seedGlobalCurated = async (presets) => {
   await setDoc(ref, { curated: presets }, { merge: true });
 };
 
-export const setGlobalDefault = async (url) => {
+export const setGlobalDefault = async (url, options = {}) => {
   const ref = doc(db, 'appData', 'wallpapers');
-  await setDoc(ref, { defaultWallpaper: url }, { merge: true });
+  await setDoc(
+    ref,
+    {
+      defaultWallpaper: url,
+      defaultWallpaperUpdatedAt: Date.now(),
+      forceDefaultForExisting: Boolean(options.forceForExisting),
+    },
+    { merge: true }
+  );
 };
 
 // ─── Sessions ─────────────────────────────────────────────────────────────────

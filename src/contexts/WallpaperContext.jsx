@@ -1,7 +1,23 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
-import { saveSettings, subscribeSettings, subscribeGlobalCurated, addGlobalCurated, seedGlobalCurated, removeGlobalCurated, setGlobalDefault } from '../firebase/firestore';
+import { isFirebaseConfigured } from '../firebase/config';
+import {
+  saveSettings,
+  subscribeSettings,
+  subscribeGlobalCurated,
+  addGlobalCurated,
+  removeGlobalCurated,
+  setGlobalDefault,
+} from '../firebase/firestore';
 import { isVideoUrl, getOptimizedWallpaperUrl } from '../utils/imageUtils';
+import {
+  FALLBACK_WALLPAPER,
+  BUILTIN_WALLPAPERS,
+  normalizeWallpaperUrl,
+  isValidWallpaper,
+  canManageGlobalWallpaper,
+  resolveActiveWallpaper,
+} from '../utils/wallpaperDefaults';
 
 const WallpaperContext = createContext(null);
 
@@ -12,49 +28,87 @@ export const useWallpaper = () => {
 };
 
 const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
+const PERSONAL_SELECTED_KEY = 'flowstate_wallpaper_personal_selected';
+const PERSONAL_SELECTED_AT_KEY = 'flowstate_wallpaper_personal_selected_at';
+const GLOBAL_DEFAULT_STORAGE_KEY = 'flowstate_global_default_wallpaper';
+const GLOBAL_DEFAULT_META_KEY = 'flowstate_global_default_meta';
 const CUSTOM_WALLPAPERS_STORAGE_KEY = 'flowstate_custom_wallpapers';
 
-const isUserAddedWallpaper = (wp) => {
-  if (!wp || !wp.url) return false;
-  if (wp.url.includes('assets.mixkit.co') || wp.url.includes('images.unsplash.com')) return false;
-  return true;
+const readJsonStorage = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
 };
 
 export const WallpaperProvider = ({ children }) => {
   const { currentUser } = useAuth();
-  const [customWallpapers, setCustomWallpapers] = useState(() => {
+
+  const [customWallpapers, setCustomWallpapers] = useState(() =>
+    readJsonStorage(CUSTOM_WALLPAPERS_STORAGE_KEY, [])
+  );
+
+  const [globalDefault, setGlobalDefaultState] = useState(() => {
     try {
-      const saved = localStorage.getItem(CUSTOM_WALLPAPERS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      return normalizeWallpaperUrl(localStorage.getItem(GLOBAL_DEFAULT_STORAGE_KEY)) || FALLBACK_WALLPAPER;
     } catch {
-      return [];
+      return FALLBACK_WALLPAPER;
     }
   });
 
-  const [wallpaper, setWallpaperState] = useState(() => {
+  const [globalDefaultMeta, setGlobalDefaultMeta] = useState(() =>
+    readJsonStorage(GLOBAL_DEFAULT_META_KEY, { updatedAt: 0, forceForExisting: false })
+  );
+
+  const [personalWallpaper, setPersonalWallpaper] = useState(() => {
     try {
-      const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
-      if (cached && cached !== 'null' && cached !== 'undefined') {
-        if (!cached.includes('assets.mixkit.co') && !cached.includes('images.unsplash.com')) {
-          return cached === '/defaultpreset.png' ? '/defaultpreset.jpg' : cached;
-        }
-      }
-      return '/defaultpreset.jpg';
+      const isPersonal = localStorage.getItem(PERSONAL_SELECTED_KEY) === 'true';
+      if (!isPersonal) return null;
+      return normalizeWallpaperUrl(localStorage.getItem(WALLPAPER_STORAGE_KEY));
     } catch {
-      return '/defaultpreset.jpg';
+      return null;
+    }
+  });
+
+  const [personalSelectedAt, setPersonalSelectedAt] = useState(() => {
+    try {
+      return Number(localStorage.getItem(PERSONAL_SELECTED_AT_KEY)) || 0;
+    } catch {
+      return 0;
     }
   });
 
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
   const [globalCurated, setGlobalCurated] = useState([]);
-  const [globalDefault, setGlobalDefaultState] = useState(null);
 
-  // Preload the active wallpaper immediately on mount so it renders with 0 delay
+  const canSetGlobalDefault = useMemo(
+    () => canManageGlobalWallpaper(currentUser, isFirebaseConfigured),
+    [currentUser]
+  );
+
+  const wallpaper = useMemo(
+    () =>
+      resolveActiveWallpaper({
+        userWallpaper: personalWallpaper,
+        hasPersonalSelection: Boolean(personalWallpaper),
+        userSelectedAt: personalSelectedAt,
+        globalDefault,
+        globalDefaultUpdatedAt: globalDefaultMeta?.updatedAt || 0,
+        forceForExisting: Boolean(globalDefaultMeta?.forceForExisting),
+        fallback: FALLBACK_WALLPAPER,
+      }),
+    [personalWallpaper, personalSelectedAt, globalDefault, globalDefaultMeta]
+  );
+
+  const isUsingSiteDefault = !personalWallpaper || wallpaper === globalDefault;
+
+  // Preload the active wallpaper immediately on mount/change so it renders cleanly
   useEffect(() => {
     try {
-      const currentWp = wallpaper || localStorage.getItem(WALLPAPER_STORAGE_KEY) || '/defaultpreset.jpg';
-      const optUrl = getOptimizedWallpaperUrl(currentWp);
+      const optUrl = getOptimizedWallpaperUrl(wallpaper || FALLBACK_WALLPAPER);
       if (optUrl && !isVideoUrl(optUrl)) {
         const img = new window.Image();
         img.src = optUrl;
@@ -64,29 +118,36 @@ export const WallpaperProvider = ({ children }) => {
     }
   }, [wallpaper]);
 
-  // Subscribe to global curated wallpapers and fetch Cloudinary wallpaper immediately on entry
+  // Subscribe to global curated wallpapers and site-wide default wallpaper from Firestore
   useEffect(() => {
-    const unsubGlobal = subscribeGlobalCurated((curatedList, defaultWallpaperUrl) => {
-      const validCurated = (curatedList || []).filter(isUserAddedWallpaper);
+    if (!isFirebaseConfigured) return undefined;
+
+    const unsubGlobal = subscribeGlobalCurated((curatedList, defaultWallpaperUrl, meta) => {
+      const validCurated = (curatedList || []).filter(isValidWallpaper);
       setGlobalCurated(validCurated);
 
-      const validDefault = defaultWallpaperUrl && isUserAddedWallpaper({ url: defaultWallpaperUrl })
-        ? defaultWallpaperUrl
-        : (validCurated[0]?.url || null);
-
-      if (validDefault) {
-        setGlobalDefaultState(validDefault);
-        const cached = localStorage.getItem(WALLPAPER_STORAGE_KEY);
-        if (!cached) {
-          setWallpaperState(validDefault);
-          try { localStorage.setItem(WALLPAPER_STORAGE_KEY, validDefault); } catch {}
+      const cleanDefault = normalizeWallpaperUrl(defaultWallpaperUrl);
+      if (cleanDefault) {
+        setGlobalDefaultState(cleanDefault);
+        const nextMeta = {
+          updatedAt: meta?.updatedAt || 0,
+          forceForExisting: Boolean(meta?.forceForExisting),
+        };
+        setGlobalDefaultMeta(nextMeta);
+        try {
+          localStorage.setItem(GLOBAL_DEFAULT_STORAGE_KEY, cleanDefault);
+          localStorage.setItem(GLOBAL_DEFAULT_META_KEY, JSON.stringify(nextMeta));
+          if (localStorage.getItem(PERSONAL_SELECTED_KEY) !== 'true') {
+            localStorage.setItem(WALLPAPER_STORAGE_KEY, cleanDefault);
+          }
+        } catch {
+          // ignore
         }
       }
 
-      // Preload curated thumbnails during idle time so picker opens instantly
       if (typeof window !== 'undefined') {
         const preloadIdle = () => {
-          validCurated.slice(0, 10).forEach(wp => {
+          validCurated.slice(0, 10).forEach((wp) => {
             if (wp.url && !isVideoUrl(wp.url)) {
               const img = new Image();
               img.src = getOptimizedWallpaperUrl(wp.url);
@@ -100,59 +161,69 @@ export const WallpaperProvider = ({ children }) => {
         }
       }
     });
+
     return () => unsubGlobal();
   }, []);
 
-  // Subscribe to current user settings
+  // Subscribe to current user personal settings
   useEffect(() => {
-    if (!currentUser) return;
-    
-    // Optimistically load from localStorage to prevent delayed UI changes on login
+    if (!currentUser) return undefined;
+
     try {
-      const cachedWallpaper = localStorage.getItem(`wallpaper_${currentUser.uid}`);
-      if (cachedWallpaper && cachedWallpaper !== 'null' && cachedWallpaper !== 'undefined') {
-        if (!cachedWallpaper.includes('assets.mixkit.co') && !cachedWallpaper.includes('images.unsplash.com')) {
-          setWallpaperState(cachedWallpaper);
-        }
+      const cachedWallpaper = normalizeWallpaperUrl(localStorage.getItem(`wallpaper_${currentUser.uid}`));
+      if (cachedWallpaper) {
+        setPersonalWallpaper(cachedWallpaper);
       }
+      const cachedCustom = readJsonStorage(`custom_wallpapers_${currentUser.uid}`, null);
+      if (cachedCustom) setCustomWallpapers(cachedCustom);
 
-      const cachedCustom = localStorage.getItem(`custom_wallpapers_${currentUser.uid}`);
-      if (cachedCustom) {
-        const parsed = JSON.parse(cachedCustom);
-        setCustomWallpapers(parsed);
-      }
-
-      const cachedHidden = localStorage.getItem(`hidden_curated_${currentUser.uid}`);
-      if (cachedHidden) setHiddenCurated(JSON.parse(cachedHidden));
-    } catch (err) {
-      // ignore parse errors
+      const cachedHidden = readJsonStorage(`hidden_curated_${currentUser.uid}`, null);
+      if (cachedHidden) setHiddenCurated(cachedHidden);
+    } catch {
+      // ignore
     }
 
+    if (!isFirebaseConfigured) return undefined;
+
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
-      if (settings?.wallpaper) {
-        if (!settings.wallpaper.includes('assets.mixkit.co') && !settings.wallpaper.includes('images.unsplash.com')) {
-          setWallpaperState(settings.wallpaper);
-          try {
-            localStorage.setItem(WALLPAPER_STORAGE_KEY, settings.wallpaper);
-            localStorage.setItem(`wallpaper_${currentUser.uid}`, settings.wallpaper);
-          } catch {
-            // ignore
+      if (settings && Object.prototype.hasOwnProperty.call(settings, 'wallpaper')) {
+        const cleanUserWp = normalizeWallpaperUrl(settings.wallpaper);
+        setPersonalWallpaper(cleanUserWp);
+        if (settings.wallpaperSelectedAt) {
+          setPersonalSelectedAt(Number(settings.wallpaperSelectedAt) || 0);
+        }
+        try {
+          if (cleanUserWp) {
+            localStorage.setItem(WALLPAPER_STORAGE_KEY, cleanUserWp);
+            localStorage.setItem(PERSONAL_SELECTED_KEY, 'true');
+            localStorage.setItem(`wallpaper_${currentUser.uid}`, cleanUserWp);
+          } else {
+            localStorage.removeItem(PERSONAL_SELECTED_KEY);
+            localStorage.removeItem(`wallpaper_${currentUser.uid}`);
           }
+        } catch {
+          // ignore
         }
       }
+
       if (settings?.customWallpapers) {
-        const valid = settings.customWallpapers.filter(url => !url.includes('assets.mixkit.co') && !url.includes('images.unsplash.com'));
+        const valid = settings.customWallpapers.map(normalizeWallpaperUrl).filter(Boolean);
         setCustomWallpapers(valid);
         try {
           localStorage.setItem(CUSTOM_WALLPAPERS_STORAGE_KEY, JSON.stringify(valid));
           localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(valid));
-        } catch {}
+        } catch {
+          // ignore
+        }
       }
+
       if (settings?.hiddenCurated) {
         setHiddenCurated(settings.hiddenCurated);
         try {
           localStorage.setItem(`hidden_curated_${currentUser.uid}`, JSON.stringify(settings.hiddenCurated));
-        } catch {}
+        } catch {
+          // ignore
+        }
       }
     });
 
@@ -161,37 +232,57 @@ export const WallpaperProvider = ({ children }) => {
 
   const setWallpaper = useCallback(
     async (url) => {
-      setWallpaperState(url);
+      const clean = normalizeWallpaperUrl(url);
+      const now = Date.now();
+      setPersonalWallpaper(clean);
+      setPersonalSelectedAt(clean ? now : 0);
       setShowPicker(false);
+
       try {
-        if (url) {
-          localStorage.setItem(WALLPAPER_STORAGE_KEY, url);
-          if (currentUser) localStorage.setItem(`wallpaper_${currentUser.uid}`, url);
+        if (clean) {
+          localStorage.setItem(WALLPAPER_STORAGE_KEY, clean);
+          localStorage.setItem(PERSONAL_SELECTED_KEY, 'true');
+          localStorage.setItem(PERSONAL_SELECTED_AT_KEY, String(now));
+          if (currentUser) localStorage.setItem(`wallpaper_${currentUser.uid}`, clean);
         } else {
-          localStorage.removeItem(WALLPAPER_STORAGE_KEY);
+          localStorage.removeItem(PERSONAL_SELECTED_KEY);
+          localStorage.removeItem(PERSONAL_SELECTED_AT_KEY);
+          localStorage.setItem(WALLPAPER_STORAGE_KEY, globalDefault || FALLBACK_WALLPAPER);
           if (currentUser) localStorage.removeItem(`wallpaper_${currentUser.uid}`);
         }
       } catch {
         // ignore
       }
-      if (currentUser) {
-        await saveSettings(currentUser.uid, { wallpaper: url });
+
+      if (currentUser && isFirebaseConfigured) {
+        await saveSettings(currentUser.uid, {
+          wallpaper: clean,
+          wallpaperSelectedAt: clean ? now : 0,
+        });
       }
     },
-    [currentUser]
+    [currentUser, globalDefault]
   );
+
+  const resetToGlobalDefault = useCallback(async () => {
+    await setWallpaper(null);
+  }, [setWallpaper]);
 
   const addCustomWallpaper = useCallback(
     async (url) => {
-      const updated = [url, ...customWallpapers.filter(w => w !== url)];
+      const clean = normalizeWallpaperUrl(url);
+      if (!clean) return;
+      const updated = [clean, ...customWallpapers.filter((w) => w !== clean)];
       setCustomWallpapers(updated);
       try {
         localStorage.setItem(CUSTOM_WALLPAPERS_STORAGE_KEY, JSON.stringify(updated));
         if (currentUser) {
           localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(updated));
         }
-      } catch {}
-      if (currentUser) {
+      } catch {
+        // ignore
+      }
+      if (currentUser && isFirebaseConfigured) {
         await saveSettings(currentUser.uid, { customWallpapers: updated });
       }
     },
@@ -207,11 +298,12 @@ export const WallpaperProvider = ({ children }) => {
         if (currentUser) {
           localStorage.setItem(`custom_wallpapers_${currentUser.uid}`, JSON.stringify(updated));
         }
-      } catch {}
-      if (currentUser) {
+      } catch {
+        // ignore
+      }
+      if (currentUser && isFirebaseConfigured) {
         await saveSettings(currentUser.uid, { customWallpapers: updated });
       }
-      // If the removed wallpaper is the active one, revert to default
       if (wallpaper === url) {
         await setWallpaper(null);
       }
@@ -226,8 +318,12 @@ export const WallpaperProvider = ({ children }) => {
       if (currentUser) {
         try {
           localStorage.setItem(`hidden_curated_${currentUser.uid}`, JSON.stringify(updated));
-        } catch {}
-        await saveSettings(currentUser.uid, { hiddenCurated: updated });
+        } catch {
+          // ignore
+        }
+        if (isFirebaseConfigured) {
+          await saveSettings(currentUser.uid, { hiddenCurated: updated });
+        }
       }
     },
     [currentUser, hiddenCurated]
@@ -235,40 +331,86 @@ export const WallpaperProvider = ({ children }) => {
 
   const uploadToGlobalCurated = useCallback(
     async (url, label = 'Curated') => {
-      if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
-        const id = `user-curated-${Date.now()}`;
-        const finalLabel = label?.trim() || 'Curated';
-        await addGlobalCurated({ id, label: finalLabel, url });
+      if (!canSetGlobalDefault) return;
+      const clean = normalizeWallpaperUrl(url);
+      if (!clean) return;
+      const id = `user-curated-${Date.now()}`;
+      const finalLabel = label?.trim() || 'Curated';
+      if (isFirebaseConfigured) {
+        await addGlobalCurated({ id, label: finalLabel, url: clean });
+      } else {
+        setGlobalCurated((prev) => [{ id, label: finalLabel, url: clean }, ...prev]);
       }
     },
-    [currentUser]
+    [canSetGlobalDefault]
   );
 
   const deleteGlobalCurated = useCallback(
     async (id) => {
-      if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+      if (!canSetGlobalDefault) return;
+      if (isFirebaseConfigured) {
         await removeGlobalCurated(id);
+      } else {
+        setGlobalCurated((prev) => prev.filter((item) => item.id !== id));
       }
     },
-    [currentUser]
+    [canSetGlobalDefault]
   );
 
   const setAsGlobalDefault = useCallback(
-    async (url) => {
-      if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
-        await setGlobalDefault(url);
+    async (url, options = {}) => {
+      if (!canSetGlobalDefault) {
+        throw new Error('Only the site admin can set the default wallpaper for everyone.');
+      }
+      const clean = normalizeWallpaperUrl(url);
+      if (!clean) {
+        throw new Error('Please choose a valid wallpaper URL.');
+      }
+
+      const now = Date.now();
+      const nextMeta = {
+        updatedAt: now,
+        forceForExisting: Boolean(options.forceForExisting),
+      };
+
+      // Update immediately for instant feedback
+      setGlobalDefaultState(clean);
+      setGlobalDefaultMeta(nextMeta);
+      // Also switch the admin's own view to follow the new site default
+      setPersonalWallpaper(null);
+      setPersonalSelectedAt(0);
+
+      try {
+        localStorage.setItem(GLOBAL_DEFAULT_STORAGE_KEY, clean);
+        localStorage.setItem(GLOBAL_DEFAULT_META_KEY, JSON.stringify(nextMeta));
+        localStorage.setItem(WALLPAPER_STORAGE_KEY, clean);
+        localStorage.removeItem(PERSONAL_SELECTED_KEY);
+        localStorage.removeItem(PERSONAL_SELECTED_AT_KEY);
+        if (currentUser) localStorage.removeItem(`wallpaper_${currentUser.uid}`);
+      } catch {
+        // ignore
+      }
+
+      if (isFirebaseConfigured) {
+        await setGlobalDefault(clean, options);
+        if (currentUser) {
+          await saveSettings(currentUser.uid, { wallpaper: null, wallpaperSelectedAt: 0 });
+        }
       }
     },
-    [currentUser]
+    [canSetGlobalDefault, currentUser]
   );
 
   return (
-    <WallpaperContext.Provider 
-      value={{ 
-        wallpaper, 
-        setWallpaper, 
-        customWallpapers, 
-        addCustomWallpaper, 
+    <WallpaperContext.Provider
+      value={{
+        wallpaper,
+        setWallpaper,
+        resetToGlobalDefault,
+        isUsingSiteDefault,
+        builtinWallpapers: BUILTIN_WALLPAPERS,
+        customWallpapers,
+        addCustomWallpaper,
         removeCustomWallpaper,
         hiddenCurated,
         hideCuratedWallpaper,
@@ -276,10 +418,13 @@ export const WallpaperProvider = ({ children }) => {
         setShowPicker,
         globalCurated,
         globalDefault,
+        globalDefaultMeta,
+        canSetGlobalDefault,
+        isFirebaseConfigured,
         uploadToGlobalCurated,
         deleteGlobalCurated,
         setAsGlobalDefault,
-        isVideoUrl
+        isVideoUrl,
       }}
     >
       {children}

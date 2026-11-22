@@ -84,7 +84,13 @@ const Toggle = ({ id, checked, onChange, label, sub }) => (
 
 const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal }) => {
   const { toast } = useToast();
-  const { wallpaper } = useWallpaper();
+  const {
+    wallpaper,
+    globalDefault,
+    setAsGlobalDefault,
+    canSetGlobalDefault,
+    setShowPicker,
+  } = useWallpaper();
   const { currentUser, signOut, openAuthModal } = useAuth();
   const d = settings?.durations || {};
 
@@ -484,13 +490,15 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
     { id: 'legal',     label: 'Legal & Policies', icon: IconShield },
   ];
 
-  if (currentUser?.email === 'deepeshsingh2606@gmail.com') {
+  if (canSetGlobalDefault) {
     NAV_ITEMS.push({ id: 'admin', label: 'Admin Panel', icon: IconShield });
   }
 
   // Admin Tab State
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminManualUid, setAdminManualUid] = useState('');
+  const [adminDefaultWpUrl, setAdminDefaultWpUrl] = useState('');
+  const [adminForceDefault, setAdminForceDefault] = useState(true);
 
   useEffect(() => {
     if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
@@ -1744,15 +1752,87 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
             </div>
           )}
           {/* ════════ 9. ADMIN PANEL ════════ */}
-          {activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com' && (
+          {activeTab === 'admin' && canSetGlobalDefault && (
             <div className="settings-tab-section">
               <div className="settings-card-banner" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
                 <div className="settings-card-banner-header">
-                  <span className="settings-card-banner-title" style={{ color: '#fbbf24' }}>👑 Super Admin Panel</span>
+                  <span className="settings-card-banner-title" style={{ color: '#fbbf24' }}>Admin Controls</span>
                 </div>
                 <p className="settings-card-banner-sub">
-                  Manage users and grant PRO status manually.
+                  Set the site-wide default wallpaper for all visitors and manage PRO access.
                 </p>
+              </div>
+
+              {/* Site-Wide Default Wallpaper Control */}
+              <div className="settings-section-block">
+                <div className="settings-section-header-row">
+                  <div className="settings-section-header-title">Default Wallpaper for Everyone</div>
+                </div>
+                <p className="settings-section-subtitle">
+                  Choose the background every visitor sees by default when opening Flowstate.
+                </p>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }}>
+                  <img
+                    src={globalDefault || '/defaultpreset.jpg'}
+                    alt="Current default wallpaper"
+                    referrerPolicy="no-referrer"
+                    style={{ width: '72px', height: '44px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,0.12)' }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Current Site Default</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {globalDefault || '/defaultpreset.jpg'}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ padding: '7px 12px', fontSize: '12px', borderRadius: '8px', whiteSpace: 'nowrap' }}
+                    onClick={() => {
+                      onClose();
+                      setShowPicker(true);
+                    }}
+                  >
+                    Open Gallery
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <input
+                    type="text"
+                    className="settings-input"
+                    placeholder="Paste image/video URL or /defaultpreset.jpg"
+                    value={adminDefaultWpUrl}
+                    onChange={(e) => setAdminDefaultWpUrl(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={!adminDefaultWpUrl.trim()}
+                    onClick={async () => {
+                      try {
+                        await setAsGlobalDefault(adminDefaultWpUrl.trim(), { forceForExisting: adminForceDefault });
+                        toast('Default wallpaper updated for everyone!', 'success', 3000);
+                        setAdminDefaultWpUrl('');
+                      } catch (err) {
+                        toast(err?.message || 'Could not update default wallpaper.', 'error', 3000);
+                      }
+                    }}
+                  >
+                    Set Default
+                  </button>
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminForceDefault}
+                    onChange={(e) => setAdminForceDefault(e.target.checked)}
+                  />
+                  <span>Also update existing users who have not picked a newer wallpaper</span>
+                </label>
               </div>
 
               <div className="settings-section-block">

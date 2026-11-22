@@ -397,13 +397,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       })()}
 
       {/* Centered Focus Topic Badge & Session Counter (Combined & Above Clock) */}
-      <div className="timer-focus-center-container combined-focus-pill" style={{ 
-        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', 
-        gap: '8px', background: 'rgba(10, 14, 24, 0.65)', border: '1px solid rgba(255, 255, 255, 0.1)', 
-        borderRadius: '100px', padding: '4px 12px', width: 'max-content', margin: '0 auto 24px auto',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center' }} className="focus-pill-left">
+      <div className="timer-focus-center-container combined-focus-pill">
+        <div className="focus-pill-left">
           <SubjectSelector
             subject={subject}
             setSubject={setSubject}
@@ -415,8 +410,8 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
             setIsEditing={setIsEditingSubject}
           />
         </div>
-        {subject && <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', margin: '0 4px' }} />}
-        <div style={{ display: 'flex', alignItems: 'center' }} className="focus-pill-right">
+        <div className="focus-pill-divider" aria-hidden="true" />
+        <div className="focus-pill-right">
           <SessionCounter
             count={sessionCount}
             dailyGoal={settings?.dailyGoal || 8}
@@ -443,65 +438,71 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
       {/* Ghost Pacer: Race Against Yesterday's You */}
       {settings?.showGhostPacer && <GhostPacer />}
 
-      {/* Controls */}
+      {/* Controls — One clear primary action + uniform secondary utilities */}
       <div className="flocus-controls">
         <button
-          className="flocus-ctrl-btn"
+          type="button"
+          className={`flocus-ctrl-btn flocus-ctrl-btn--primary ${isRunning ? 'is-running' : ''}`}
           onClick={isRunning ? handlePause : handlePlay}
-          aria-label={isRunning ? 'Pause' : 'Play'}
-          title={isRunning ? 'Pause (Space)' : 'Play (Space)'}
+          aria-label={isRunning ? 'Pause' : 'Start Focus'}
+          title={isRunning ? 'Pause (Space)' : 'Start (Space)'}
         >
-          {isRunning ? <IconPause size={20} /> : <IconPlay size={20} />}
+          {isRunning ? <IconPause size={18} /> : <IconPlay size={18} />}
+          <span>{isRunning ? 'Pause' : mode === 'pomodoro' ? 'Start Focus' : mode === 'stopwatch' ? 'Start' : 'Start Break'}</span>
         </button>
-        {!isFullscreen && (
-          <>
-            <button className="flocus-ctrl-btn" onClick={handleResetClick} aria-label="Reset" title="Reset (R)">
-              <IconRotateCcw size={18} />
-            </button>
-            {mode === 'stopwatch' && isRunning && (
-              <button
-                className="flocus-ctrl-btn"
-                onClick={handleLap}
-                aria-label="Lap"
-                title="Record lap time"
-                style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
-              >
-                LAP
+
+        <div className="flocus-secondary-controls">
+          {!isFullscreen && (
+            <>
+              <button type="button" className="flocus-ctrl-btn" onClick={handleResetClick} aria-label="Reset" title="Reset (R)">
+                <IconRotateCcw size={17} />
               </button>
-            )}
-            {mode !== 'stopwatch' && (
-              <button
-                className="flocus-ctrl-btn"
-                onClick={handleSkipClick}
-                aria-label="Skip session"
-                title="Skip (S)"
-              >
-                <IconSkipForward size={18} />
-              </button>
-            )}
-          </>
-        )}
-        <button
-          className="flocus-ctrl-btn"
-          onClick={toggleFullscreen}
-          aria-label="Toggle Fullscreen"
-          title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
-          style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          {isFullscreen ? <IconMinimize size={20} /> : <IconMaximize size={20} />}
-        </button>
-        {!isFullscreen && (
+              {mode === 'stopwatch' && isRunning && (
+                <button
+                  type="button"
+                  className="flocus-ctrl-btn flocus-ctrl-btn--lap"
+                  onClick={handleLap}
+                  aria-label="Lap"
+                  title="Record lap time"
+                >
+                  LAP
+                </button>
+              )}
+              {mode !== 'stopwatch' && (
+                <button
+                  type="button"
+                  className="flocus-ctrl-btn"
+                  onClick={handleSkipClick}
+                  aria-label="Skip session"
+                  title="Skip (S)"
+                >
+                  <IconSkipForward size={17} />
+                </button>
+              )}
+            </>
+          )}
           <button
-            className={`flocus-ctrl-btn ${isPipActive ? 'active' : ''}`}
-            onClick={togglePip}
-            aria-label="Picture-in-Picture"
-            title="Picture-in-Picture (floating mini timer)"
-            style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            id="timer-pip-btn"
+            type="button"
+            className="flocus-ctrl-btn"
+            onClick={toggleFullscreen}
+            aria-label="Toggle Fullscreen"
+            title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
           >
-            <IconPip size={18} />
+            {isFullscreen ? <IconMinimize size={17} /> : <IconMaximize size={17} />}
           </button>
-        )}
+          {!isFullscreen && (
+            <button
+              type="button"
+              className={`flocus-ctrl-btn ${isPipActive ? 'active' : ''}`}
+              onClick={togglePip}
+              aria-label="Picture-in-Picture"
+              title="Picture-in-Picture (floating mini timer)"
+              id="timer-pip-btn"
+            >
+              <IconPip size={17} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Keyboard shortcut hint */}
@@ -510,7 +511,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         <span>R <span className="keyboard-hint-sep">·</span> reset</span>
         {mode !== 'stopwatch' && <span>S <span className="keyboard-hint-sep">·</span> skip</span>}
         <span>F <span className="keyboard-hint-sep">·</span> fullscreen</span>
-        {mode !== 'pomodoro' && <span>T <span className="keyboard-hint-sep">·</span> timer</span>}
+        <span>⌘K <span className="keyboard-hint-sep">·</span> jump</span>
       </div>
 
       {/* Motivational Quote */}
