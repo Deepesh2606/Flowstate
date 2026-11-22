@@ -136,8 +136,9 @@ export const getWallpaperContrast = (imageUrl) => {
         const totalAvgLuma = totalCount > 0 ? totalLumaSum / totalCount : 128;
 
         // Weight center clock area 75%, overall image 25%
+        // Account for the 45% dark scrim overlay so mid-tone scenic wallpapers keep crisp white text
         const weightedLuma = centerAvgLuma * 0.75 + totalAvgLuma * 0.25;
-        const isLight = weightedLuma > 138;
+        const isLight = weightedLuma > 190;
 
         let color, shadow;
         if (isLight) {

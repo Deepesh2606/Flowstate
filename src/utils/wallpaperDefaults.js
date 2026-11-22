@@ -9,8 +9,8 @@ export const BUILTIN_WALLPAPERS = [
     isBuiltin: true,
   },
   {
-    id: 'builtin-midnight-silk',
-    label: 'Midnight Silk',
+    id: 'builtin-pastoral-meadow',
+    label: 'Pastoral Meadow',
     url: '/clock-presets-bg.jpg',
     isBuiltin: true,
   },

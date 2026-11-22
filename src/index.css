@@ -12928,6 +12928,32 @@ select:focus-visible {
 }
 
 /* ─── Wallpaper Gallery & Set Default for Everyone UI ─────────────────────── */
+.drawer-overlay {
+  z-index: 145;
+}
+
+.wallpaper-drawer {
+  width: 400px;
+  max-width: 94vw;
+  z-index: 150;
+  overflow-x: hidden;
+}
+
+.wallpaper-drawer-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  min-width: 0;
+  padding-right: 2px;
+}
+
+.wallpaper-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
 .wp-global-default-card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -12936,12 +12962,15 @@ select:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
+  min-width: 0;
 }
 
 .wp-global-default-top {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .wp-global-default-thumb {
@@ -13026,6 +13055,8 @@ select:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  width: 100%;
 }
 
 .wp-default-indicator {
@@ -13069,40 +13100,41 @@ select:focus-visible {
 
 .wp-card-footer {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 6px;
   padding: 0 2px;
+  min-width: 0;
 }
 
 .wp-card-label {
   font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
 }
 
 .wp-card-actions {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 6px;
+  width: 100%;
 }
 
 .wp-set-default-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 7px;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
   transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
@@ -13215,6 +13247,11 @@ select:focus-visible {
 
   .floating-controls {
     display: none !important;
+  }
+
+  .bottom-left-dock {
+    bottom: calc(var(--tab-height) + env(safe-area-inset-bottom, 0px) + 12px) !important;
+    left: 14px !important;
   }
 
   .combined-focus-pill {
