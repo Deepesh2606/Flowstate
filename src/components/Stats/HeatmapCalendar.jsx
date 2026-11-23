@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import {
   HEATMAP_RANGES,
   HEATMAP_THEMES,
@@ -10,6 +10,7 @@ import {
   formatCalendarDate,
   getIntensityTier,
   generateSampleDeepWorkHistory,
+  computeTooltipPosition,
 } from '../../utils/heatmapUtils';
 
 const WEEKDAY_LABELS = [
@@ -30,6 +31,7 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
   const [hoveredDay, setHoveredDay] = useState(null);
   const panelRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const tooltipRef = useRef(null);
 
   const activeRange = useMemo(
     () => HEATMAP_RANGES.find((r) => r.id === rangeId) || HEATMAP_RANGES[0],
@@ -85,22 +87,59 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
     const panelEl = panelRef.current;
     if (!panelEl) return;
     const panelRect = panelEl.getBoundingClientRect();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const tooltipHalfW = 115;
-    const relLeft = rect.left - panelRect.left + rect.width / 2;
-    const clampedLeft = Math.max(
-      tooltipHalfW,
-      Math.min(panelRect.width - tooltipHalfW, relLeft)
-    );
-    const relTop = rect.top - panelRect.top;
-    const showBelow = relTop < 72;
+    const cellRect = e.currentTarget.getBoundingClientRect();
+    const hasSubjects = day.subjects && day.subjects.length > 0;
+    const measuredW = tooltipRef.current?.offsetWidth || 260;
+    const measuredH = tooltipRef.current?.offsetHeight || (hasSubjects ? 84 : 62);
+    const pos = computeTooltipPosition({
+      cellRect,
+      panelRect,
+      tooltipWidth: measuredW,
+      tooltipHeight: measuredH,
+      gap: 10,
+      edgePadding: 8,
+    });
     setHoveredDay({
       day,
-      left: clampedLeft,
-      top: showBelow ? rect.bottom - panelRect.top + 8 : relTop - 8,
-      showBelow,
+      cellRect: {
+        left: cellRect.left,
+        top: cellRect.top,
+        bottom: cellRect.bottom,
+        width: cellRect.width,
+        height: cellRect.height,
+      },
+      ...pos,
     });
   };
+
+  // Refine tooltip clamping synchronously before paint using its true rendered width & height
+  useLayoutEffect(() => {
+    if (!hoveredDay?.cellRect || !panelRef.current || !tooltipRef.current) return;
+    const panelRect = panelRef.current.getBoundingClientRect();
+    const actualWidth = tooltipRef.current.offsetWidth;
+    const actualHeight = tooltipRef.current.offsetHeight;
+    if (!actualWidth || !actualHeight) return;
+
+    const refined = computeTooltipPosition({
+      cellRect: hoveredDay.cellRect,
+      panelRect,
+      tooltipWidth: actualWidth,
+      tooltipHeight: actualHeight,
+      gap: 10,
+      edgePadding: 8,
+    });
+
+    if (
+      refined.left !== hoveredDay.left ||
+      refined.top !== hoveredDay.top ||
+      refined.placement !== hoveredDay.placement ||
+      refined.arrowOffset !== hoveredDay.arrowOffset
+    ) {
+      setHoveredDay((prev) => (prev ? { ...prev, ...refined } : null));
+    }
+  }, [hoveredDay]);
+
+  const dismissTooltip = () => setHoveredDay(null);
 
   const selectedTier = resolvedSelectedDay ? getIntensityTier(resolvedSelectedDay.seconds) : INTENSITY_TIERS[0];
 
@@ -221,7 +260,11 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
       )}
 
       {/* Heatmap Matrix */}
-      <div className="heatmap-scroll-area" ref={scrollContainerRef}>
+      <div
+        className="heatmap-scroll-area"
+        ref={scrollContainerRef}
+        onScroll={dismissTooltip}
+      >
         <div className="heatmap-matrix">
           {/* Month labels aligned to exact week columns */}
           <div className="heatmap-months-row" aria-hidden="true">
@@ -257,6 +300,7 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
               role="grid"
               aria-label={`Daily focus intensity for ${activeRange.fullLabel}`}
               data-testid="heatmap-cells-grid"
+              onMouseLeave={dismissTooltip}
             >
               {weeks.map((week, wi) => (
                 <div key={wi} className="heatmap-week-column" role="row">
@@ -265,8 +309,9 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
                       return <span key={di} className="heatmap-cell-slot is-padding" aria-hidden="true" />;
                     }
                     const isSelected = resolvedSelectedDay?.date === day.date;
+                    const isHovered = hoveredDay?.day?.date === day.date;
                     const tier = getIntensityTier(day.seconds);
-                    const ariaLabel = `${formatCalendarDate(day.date, { long: true })}: ${formatFocusDuration(day.seconds)} focused (${tier.label})${
+                    const ariaLabel = `${formatCalendarDate(day.date, { long: true })}: ${formatFocusDuration(day.seconds)} deep work (${tier.label})${
                       day.sessionsCount > 0 ? `, ${day.sessionsCount} ${day.sessionsCount === 1 ? 'session' : 'sessions'}` : ''
                     }`;
 
@@ -277,11 +322,11 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
                         className={`heatmap-cell-btn intensity-${day.intensity}${day.isToday ? ' is-today' : ''}${isSelected ? ' is-selected' : ''}`}
                         onClick={() => setSelectedDate(day.date)}
                         onMouseEnter={(e) => handleCellEnter(e, day)}
-                        onMouseLeave={() => setHoveredDay(null)}
                         onFocus={(e) => handleCellEnter(e, day)}
-                        onBlur={() => setHoveredDay(null)}
+                        onBlur={dismissTooltip}
                         aria-label={ariaLabel}
                         aria-pressed={isSelected}
+                        aria-describedby={isHovered ? 'heatmap-active-tooltip' : undefined}
                         data-date={day.date}
                         data-intensity={day.intensity}
                       />
@@ -353,18 +398,36 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
         </div>
       </div>
 
-      {/* Floating Viewport-Clamped Tooltip */}
+      {/* Floating Panel-Clamped Hover Tooltip */}
       {hoveredDay && (
         <div
-          className={`heatmap-floating-tooltip ${hoveredDay.showBelow ? 'below' : 'above'}`}
-          style={{ left: `${hoveredDay.left}px`, top: `${hoveredDay.top}px` }}
+          ref={tooltipRef}
+          id="heatmap-active-tooltip"
+          className={`heatmap-floating-tooltip ${hoveredDay.placement === 'below' ? 'below' : 'above'}`}
+          style={{
+            left: `${hoveredDay.left}px`,
+            top: `${hoveredDay.top}px`,
+            '--hm-arrow-offset': `${hoveredDay.arrowOffset}px`,
+          }}
           role="tooltip"
+          data-testid="heatmap-hover-tooltip"
         >
-          <div className="heatmap-tooltip-date">
-            {formatCalendarDate(hoveredDay.day.date, { long: true })}
+          <div className="heatmap-tooltip-header">
+            <span
+              className={`heatmap-inspector-swatch intensity-${hoveredDay.day.intensity}`}
+              aria-hidden="true"
+            />
+            <span className="heatmap-tooltip-date">
+              {formatCalendarDate(hoveredDay.day.date, { long: true })}
+              {hoveredDay.day.date === todayKey ? ' · Today' : ''}
+            </span>
           </div>
           <div className="heatmap-tooltip-meta">
-            <strong className="tabular-nums">{formatFocusDuration(hoveredDay.day.seconds)}</strong>
+            <strong className="tabular-nums">
+              {hoveredDay.day.seconds > 0
+                ? `${formatFocusDuration(hoveredDay.day.seconds)} deep work`
+                : 'No deep work logged'}
+            </strong>
             <span aria-hidden="true">·</span>
             <span>{getIntensityTier(hoveredDay.day.seconds).label}</span>
             {hoveredDay.day.sessionsCount > 0 && (
@@ -376,6 +439,22 @@ const HeatmapCalendar = ({ monthlyData = {}, sessions = [] }) => {
               </>
             )}
           </div>
+          {hoveredDay.day.subjects?.length > 0 && (
+            <div className="heatmap-tooltip-subjects">
+              {hoveredDay.day.subjects.slice(0, 2).map((subj, idx) => (
+                <React.Fragment key={subj.name}>
+                  {idx > 0 && <span aria-hidden="true">·</span>}
+                  <span>
+                    {subj.name}{' '}
+                    <span className="tabular-nums" style={{ opacity: 0.72 }}>
+                      {formatFocusDuration(subj.seconds)}
+                    </span>
+                  </span>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+          <span className="heatmap-tooltip-caret" aria-hidden="true" />
         </div>
       )}
     </section>

@@ -335,3 +335,44 @@ export const generateSampleDeepWorkHistory = (endDate = new Date(), totalDays = 
 
   return map;
 };
+
+/**
+ * Computes panel-relative coordinates and pointer arrow offset for a heatmap cell tooltip.
+ * Keeps the tooltip strictly inside the panel's horizontal bounds while keeping the caret
+ * aimed directly at the hovered cell.
+ */
+export const computeTooltipPosition = ({
+  cellRect,
+  panelRect,
+  tooltipWidth = 232,
+  tooltipHeight = 68,
+  gap = 10,
+  edgePadding = 8,
+}) => {
+  if (!cellRect || !panelRect) {
+    return { left: 0, top: 0, placement: 'above', arrowOffset: 0 };
+  }
+
+  const halfW = tooltipWidth / 2;
+  const cellCenterX = cellRect.left - panelRect.left + cellRect.width / 2;
+  const minLeft = Math.min(panelRect.width / 2, halfW + edgePadding);
+  const maxLeft = Math.max(panelRect.width / 2, panelRect.width - halfW - edgePadding);
+  const clampedLeft = Math.max(minLeft, Math.min(maxLeft, cellCenterX));
+
+  const maxArrowShift = Math.max(0, halfW - 14);
+  const rawArrowOffset = cellCenterX - clampedLeft;
+  const arrowOffset = Math.max(-maxArrowShift, Math.min(maxArrowShift, rawArrowOffset));
+
+  const cellTopRel = cellRect.top - panelRect.top;
+  const cellBottomRel = cellRect.bottom - panelRect.top;
+  const placement = cellTopRel < tooltipHeight + gap + 6 ? 'below' : 'above';
+  const top = placement === 'below' ? cellBottomRel + gap : cellTopRel - gap;
+
+  return {
+    left: Math.round(clampedLeft),
+    top: Math.round(top),
+    placement,
+    arrowOffset: Math.round(arrowOffset),
+  };
+};
+

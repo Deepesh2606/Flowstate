@@ -8,6 +8,7 @@ import {
   buildHeatmapGrid,
   computeHeatmapSummary,
   generateSampleDeepWorkHistory,
+  computeTooltipPosition,
 } from './heatmapUtils';
 
 test('getIntensityLevel maps focus seconds to the 5-tier scale accurately', () => {
@@ -108,3 +109,48 @@ test('generateSampleDeepWorkHistory is deterministic and populates recent streak
   const todayKey = toLocalDateKey(endDate);
   assert.ok(sampleA[todayKey]?.seconds > 0);
 });
+
+test('computeTooltipPosition centers tooltip above cell with zero arrow offset when unobstructed', () => {
+  const panelRect = { left: 100, top: 200, width: 800, height: 320 };
+  const cellRect = { left: 494, top: 350, bottom: 364, width: 12, height: 14 };
+
+  const pos = computeTooltipPosition({ cellRect, panelRect, tooltipWidth: 220, tooltipHeight: 70, gap: 10 });
+  assert.equal(pos.left, 400);
+  assert.equal(pos.top, 140);
+  assert.equal(pos.placement, 'above');
+  assert.equal(pos.arrowOffset, 0);
+});
+
+test('computeTooltipPosition clamps near left/right panel edges and flips below near top edge', () => {
+  const panelRect = { left: 100, top: 200, width: 600, height: 300 };
+
+  // Far-left cell near top edge
+  const leftTopCell = { left: 112, top: 230, bottom: 244, width: 12, height: 14 };
+  const leftPos = computeTooltipPosition({
+    cellRect: leftTopCell,
+    panelRect,
+    tooltipWidth: 220,
+    tooltipHeight: 70,
+    gap: 10,
+    edgePadding: 8,
+  });
+  assert.equal(leftPos.left, 118); // halfW (110) + edgePadding (8)
+  assert.equal(leftPos.placement, 'below');
+  assert.equal(leftPos.top, 54); // (244 - 200) + 10
+  assert.ok(leftPos.arrowOffset < 0, 'arrow should shift left toward far-left cell');
+
+  // Far-right cell in lower half
+  const rightCell = { left: 680, top: 380, bottom: 394, width: 12, height: 14 };
+  const rightPos = computeTooltipPosition({
+    cellRect: rightCell,
+    panelRect,
+    tooltipWidth: 220,
+    tooltipHeight: 70,
+    gap: 10,
+    edgePadding: 8,
+  });
+  assert.equal(rightPos.left, 482); // 600 - 110 - 8
+  assert.equal(rightPos.placement, 'above');
+  assert.ok(rightPos.arrowOffset > 0, 'arrow should shift right toward far-right cell');
+});
+
