@@ -3,7 +3,7 @@ import { useWallpaper } from '../contexts/WallpaperContext';
 import { useToast } from './Toast/ToastProvider';
 import { uploadWallpaper } from '../cloudinary';
 import { IconImage, IconCheck, IconTrash, IconStar, IconLock } from './Icons';
-import { isVideoUrl } from '../utils/imageUtils';
+import { isVideoUrl, getCloudinaryThumbnailUrl } from '../utils/imageUtils';
 import { useSettings } from '../hooks/useSettings';
 import ProUpgradeModal from './Settings/ProUpgradeModal';
 
@@ -18,16 +18,41 @@ const preloadImage = (url) => {
   });
 };
 
-const toThumbUrl = (url) => {
-  if (!url) return '/defaultpreset.jpg';
-  if (url === '/defaultpreset.png') return '/defaultpreset.jpg';
-  if (!url.includes('cloudinary.com')) return url;
-  const imgUrl = url.replace(/\.(mp4|webm|mov)$/i, '.jpg');
-  return imgUrl.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto:eco,w_400,c_fill,g_auto/');
-};
+const toThumbUrl = (url) => getCloudinaryThumbnailUrl(url, 400);
 
 const WallpaperMediaItem = ({ isVid, url, thumbUrl, alt }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgSrc, setImgSrc] = useState(thumbUrl);
+  const [useVideoFallback, setUseVideoFallback] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  React.useEffect(() => {
+    setImgSrc(thumbUrl);
+    setUseVideoFallback(false);
+    setFailed(false);
+  }, [thumbUrl, url]);
+
+  const handleImgError = () => {
+    if (isVid) {
+      setUseVideoFallback(true);
+      return;
+    }
+    // If optimized Cloudinary thumbnail failed, retry the original raw URL before showing fallback
+    if (imgSrc !== url && url) {
+      setImgSrc(url);
+      return;
+    }
+    setFailed(true);
+  };
+
+  if (failed) {
+    return (
+      <div className="wp-thumb-fallback" aria-label={alt}>
+        <IconImage size={18} color="rgba(255,255,255,0.45)" />
+        <span>{alt}</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -35,22 +60,25 @@ const WallpaperMediaItem = ({ isVid, url, thumbUrl, alt }) => {
       onMouseEnter={() => isVid && setIsHovered(true)}
       onMouseLeave={() => isVid && setIsHovered(false)}
     >
-      {isVid && isHovered ? (
+      {isVid && (isHovered || useVideoFallback) ? (
         <video
           src={url}
           className="wallpaper-thumb-media"
           muted
-          autoPlay
-          loop
+          autoPlay={isHovered}
+          loop={isHovered}
+          preload="metadata"
           playsInline
+          onError={() => setFailed(true)}
         />
       ) : (
         <img
           className="wallpaper-thumb-media"
-          src={thumbUrl}
+          src={imgSrc}
           loading="lazy"
           referrerPolicy="no-referrer"
           alt={alt}
+          onError={handleImgError}
         />
       )}
     </div>
@@ -427,7 +455,7 @@ const WallpaperPicker = () => {
               )}
 
               {/* Global Curated Presets */}
-              {globalCurated && globalCurated.length > 0 && (
+              {globalCurated && globalCurated.length > 0 ? (
                 <div>
                   <h3 className="wp-section-heading">Curated Presets</h3>
                   <div className="wallpaper-grid">
@@ -448,6 +476,15 @@ const WallpaperPicker = () => {
                       })}
                   </div>
                 </div>
+              ) : (
+                !isFirebaseConfigured && (
+                  <div className="wp-cloud-notice">
+                    <div className="wp-cloud-notice-title">Preview Mode — Vercel Env Vars Not Loaded Here</div>
+                    <p className="wp-cloud-notice-desc">
+                      Your saved Cloudinary curated wallpapers sync from Firebase using your Vercel environment variables (<code>VITE_FIREBASE_*</code> &amp; <code>VITE_CLOUDINARY_*</code>). They will load automatically once deployed to Vercel, or add them to <code>.env.local</code> for local testing.
+                    </p>
+                  </div>
+                )
               )}
             </div>
           )}

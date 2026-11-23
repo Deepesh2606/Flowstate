@@ -13,8 +13,59 @@ export const isVideoUrl = (url) => {
 };
 
 /**
+ * Checks whether a single Cloudinary path segment is an existing transformation list
+ * (e.g. "f_auto,q_auto:good,w_1600,c_limit") rather than a version ("v1712345678")
+ * or a folder name (e.g. "flowstate" or "samples").
+ */
+const isCloudinaryTransformSegment = (segment) => {
+  if (!segment) return false;
+  // Version segment like v1712345678 is never a transformation
+  if (/^v\d+$/.test(segment)) return false;
+  // Cloudinary transformation tokens follow <1-3 lowercase letters>_<value> separated by commas
+  const tokens = segment.split(',');
+  return tokens.length > 0 && tokens.every((tok) => /^[a-z]{1,3}_[^/]+$/.test(tok));
+};
+
+/**
+ * Safely injects or replaces Cloudinary transformation segment(s) right after /upload/
+ * without stripping version segments (v12345) or folder names (flowstate/wallpapers/...).
+ */
+export const applyCloudinaryTransform = (url, transformStr, { replaceExisting = false } = {}) => {
+  if (!url || typeof url !== 'string') return url;
+  if (!url.includes('cloudinary.com') || !url.includes('/upload/')) return url;
+
+  const uploadMarker = '/upload/';
+  const uploadIdx = url.indexOf(uploadMarker);
+  const prefix = url.slice(0, uploadIdx + uploadMarker.length);
+  const rest = url.slice(uploadIdx + uploadMarker.length);
+  const segments = rest.split('/');
+
+  if (segments.length <= 1) {
+    return `${prefix}${transformStr}/${rest}`;
+  }
+
+  let firstNonTransformIdx = 0;
+  while (
+    firstNonTransformIdx < segments.length - 1 &&
+    isCloudinaryTransformSegment(segments[firstNonTransformIdx])
+  ) {
+    firstNonTransformIdx += 1;
+  }
+
+  if (firstNonTransformIdx > 0) {
+    if (!replaceExisting) {
+      return url;
+    }
+    return `${prefix}${transformStr}/${segments.slice(firstNonTransformIdx).join('/')}`;
+  }
+
+  // First segment is a version (v12345) or folder (flowstate) — preserve it intact!
+  return `${prefix}${transformStr}/${rest}`;
+};
+
+/**
  * Optimizes a wallpaper URL for fast loading and low bandwidth.
- * Injects Cloudinary f_auto,q_auto,w_1920 transformations and falls back to lightweight formats.
+ * Safely injects Cloudinary f_auto,q_auto transformations without corrupting folder paths.
  */
 export const getOptimizedWallpaperUrl = (url) => {
   if (!url || typeof url !== 'string') return url;
@@ -22,20 +73,41 @@ export const getOptimizedWallpaperUrl = (url) => {
 
   if (url.includes('cloudinary.com') && url.includes('/upload/')) {
     if (isVideoUrl(url)) {
-      if (!url.includes('f_auto') && !url.includes('q_auto')) {
-        return url.replace('/upload/', '/upload/f_auto,q_auto/');
-      }
-      return url;
+      if (url.includes('f_auto') || url.includes('q_auto')) return url;
+      return applyCloudinaryTransform(url, 'f_auto,q_auto', { replaceExisting: false });
     }
-    if (!url.includes('f_auto')) {
-      return url.replace(/\/upload\/(?:[a-zA-Z0-9_,:]+\/)?/, (match) => {
-        if (match.includes('f_auto')) return match;
-        return '/upload/f_auto,q_auto:good,w_1920,c_limit/';
-      });
-    }
+    if (url.includes('f_auto')) return url;
+    return applyCloudinaryTransform(url, 'f_auto,q_auto:good,w_1920,c_limit', { replaceExisting: false });
   }
   return url;
 };
+
+/**
+ * Builds a lightweight 400px thumbnail URL for Cloudinary images and videos
+ * while strictly preserving version and folder path segments.
+ */
+export const getCloudinaryThumbnailUrl = (url, width = 400) => {
+  if (!url || typeof url !== 'string') return '/defaultpreset.jpg';
+  if (url === '/defaultpreset.png') return '/defaultpreset.jpg';
+  if (!url.includes('cloudinary.com') || !url.includes('/upload/')) return url;
+
+  const isVid = isVideoUrl(url);
+  let targetUrl = url;
+  if (isVid) {
+    // Request a first-frame JPEG poster from Cloudinary video delivery (omit g_auto which can 400 on video)
+    targetUrl = targetUrl.replace(/\.(mp4|webm|mov|ogg)(\?.*)?$/i, '.jpg$2');
+    if (!/\.(jpg|jpeg|png|webp)(\?.*)?$/i.test(targetUrl)) {
+      targetUrl = `${targetUrl}.jpg`;
+    }
+  }
+
+  const transform = isVid
+    ? `so_0,f_auto,q_auto:eco,w_${width},c_fill`
+    : `f_auto,q_auto:eco,w_${width},c_fill,g_auto`;
+
+  return applyCloudinaryTransform(targetUrl, transform, { replaceExisting: true });
+};
+
 
 
 const contrastCache = new Map();

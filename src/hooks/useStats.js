@@ -121,16 +121,18 @@ export const useStats = () => {
 
   const { current: currentStreak, longest: longestStreak } = calculateStreaks();
 
-  // Monthly data (last 90 days for heatmap)
+  // Daily focus map (last 365 days for Deep Work Heatmap across 3M / 6M / 1Y views)
   const monthlyData = (() => {
     const result = {};
-    for (let i = 89; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().split('T')[0];
-      result[key] = 0;
+    const now = new Date();
+    for (let i = 364; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      result[`${y}-${m}-${day}`] = 0;
     }
-    sessions.forEach(s => {
+    sessions.forEach((s) => {
       if (s.date && result[s.date] !== undefined) {
         result[s.date] += s.duration || 0;
       }

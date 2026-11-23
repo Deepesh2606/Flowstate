@@ -94,39 +94,63 @@ const AppShell = () => {
     };
 
     if (isVideoUrl(nextWallpaper)) {
-      const video = document.createElement('video');
-      video.preload = 'auto';
-      video.muted = true;
-      video.playsInline = true;
-      video.addEventListener('loadeddata', applyWhenReady, { once: true });
-      video.addEventListener('error', () => {
-        if (!cancelled) {
+      let activeVideo = null;
+      const loadVideo = (targetUrl, canRetryRaw) => {
+        const video = document.createElement('video');
+        activeVideo = video;
+        video.preload = 'auto';
+        video.muted = true;
+        video.playsInline = true;
+        video.addEventListener('loadeddata', () => {
+          if (cancelled) return;
+          setRenderedWallpaper(targetUrl);
           setIsWallpaperLoading(false);
-          if (nextWallpaper !== WALLPAPER_FALLBACK) setRenderedWallpaper(WALLPAPER_FALLBACK);
-        }
-      }, { once: true });
-      video.src = nextWallpaper;
-      video.load();
+        }, { once: true });
+        video.addEventListener('error', () => {
+          if (cancelled) return;
+          if (canRetryRaw && rawWallpaper && rawWallpaper !== targetUrl) {
+            loadVideo(rawWallpaper, false);
+            return;
+          }
+          setIsWallpaperLoading(false);
+          if (targetUrl !== WALLPAPER_FALLBACK) setRenderedWallpaper(WALLPAPER_FALLBACK);
+        }, { once: true });
+        video.src = targetUrl;
+        video.load();
+      };
+
+      loadVideo(nextWallpaper, nextWallpaper !== rawWallpaper);
       return () => {
         cancelled = true;
-        video.removeAttribute('src');
-        video.load();
+        if (activeVideo) {
+          activeVideo.removeAttribute('src');
+          activeVideo.load();
+        }
       };
     }
 
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = applyWhenReady;
-    image.onerror = () => {
-      if (!cancelled) {
+    const loadImage = (targetUrl, canRetryRaw) => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => {
+        if (cancelled) return;
+        setRenderedWallpaper(targetUrl);
         setIsWallpaperLoading(false);
-        if (nextWallpaper !== WALLPAPER_FALLBACK) setRenderedWallpaper(WALLPAPER_FALLBACK);
-      }
+      };
+      image.onerror = () => {
+        if (cancelled) return;
+        if (canRetryRaw && rawWallpaper && rawWallpaper !== targetUrl) {
+          loadImage(rawWallpaper, false);
+          return;
+        }
+        setIsWallpaperLoading(false);
+        if (targetUrl !== WALLPAPER_FALLBACK) setRenderedWallpaper(WALLPAPER_FALLBACK);
+      };
+      image.src = targetUrl;
+      return image;
     };
-    image.src = nextWallpaper;
-    if (image.decode) {
-      image.decode().then(applyWhenReady).catch(applyWhenReady);
-    }
+
+    const image = loadImage(nextWallpaper, nextWallpaper !== rawWallpaper);
     return () => {
       cancelled = true;
       image.onload = null;

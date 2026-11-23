@@ -239,30 +239,21 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
     );
   }
 
-  if (!currentUser) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {renderSubNav()}
-        <div className="auth-tab-gate">
-          <div className="auth-tab-card">
-            <div className="auth-tab-icon"><IconStats size={36} color="var(--accent)" /></div>
-            <h2 className="auth-tab-title">Focus Analytics & Streaks</h2>
-            <p className="auth-tab-desc">Sign in with Google to record your study time, monitor weekly charts, track streaks, and unlock your focus heatmap.</p>
-            <div style={{ marginTop: '24px' }}>
-              <GoogleSignInButton size="lg" label="Continue with Google" />
-            </div>
-          </div>
-        </div>
-        <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
-      </div>
-    );
-  }
-
   if (loading) return <div className="spinner" />;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {renderSubNav()}
+
+      {!currentUser && (
+        <div className="stats-guest-sync-bar">
+          <div className="stats-guest-sync-copy">
+            <strong>Local Analytics Mode</strong>
+            <span>Sessions save on this device. Sign in to sync your deep work history across devices.</span>
+          </div>
+          <GoogleSignInButton size="sm" label="Sign in to Sync" />
+        </div>
+      )}
 
       {/* Level & XP Bar */}
       <LevelBar totalFocusTime={totalFocusTime} />
@@ -312,6 +303,11 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
         </div>
       </div>
 
+      {/* Deep Work History Heatmap (primary visual focal anchor) */}
+      <div className="glass-card heatmap-host-card">
+        <HeatmapCalendar monthlyData={monthlyData} sessions={sessions} />
+      </div>
+
       {/* Action buttons */}
       <div className="stats-actions-row">
         <button
@@ -349,14 +345,6 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
 
       {showDetails && (
         <>
-          {/* Activity Heatmap */}
-          <div className="glass-card">
-            <div className="section-header">
-              <span className="section-title">Activity Heatmap</span>
-              <span className="section-sub">Last 90 days</span>
-            </div>
-            <HeatmapCalendar monthlyData={monthlyData} />
-          </div>
 
           {/* Unlockable Badges */}
           <UnlockableBadges currentStreak={currentStreak} totalSessions={totalSessions} totalFocusTime={totalFocusTime} />

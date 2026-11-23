@@ -32,7 +32,25 @@ const PERSONAL_SELECTED_KEY = 'flowstate_wallpaper_personal_selected';
 const PERSONAL_SELECTED_AT_KEY = 'flowstate_wallpaper_personal_selected_at';
 const GLOBAL_DEFAULT_STORAGE_KEY = 'flowstate_global_default_wallpaper';
 const GLOBAL_DEFAULT_META_KEY = 'flowstate_global_default_meta';
+const GLOBAL_CURATED_CACHE_KEY = 'flowstate_global_curated_cache';
 const CUSTOM_WALLPAPERS_STORAGE_KEY = 'flowstate_custom_wallpapers';
+
+const normalizeCuratedEntry = (item, idx) => {
+  if (!item) return null;
+  if (typeof item === 'string') {
+    const clean = normalizeWallpaperUrl(item);
+    return clean ? { id: `curated-${idx}`, label: `Preset ${idx + 1}`, url: clean } : null;
+  }
+  const rawUrl = item.url || item.secure_url || item.src || item.imageUrl;
+  const clean = normalizeWallpaperUrl(rawUrl);
+  if (!clean) return null;
+  return {
+    ...item,
+    id: item.id || `curated-${idx}-${clean.slice(-12)}`,
+    label: item.label || item.name || item.title || 'Curated Preset',
+    url: clean,
+  };
+};
 
 const readJsonStorage = (key, fallback) => {
   try {
@@ -82,7 +100,9 @@ export const WallpaperProvider = ({ children }) => {
 
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
-  const [globalCurated, setGlobalCurated] = useState([]);
+  const [globalCurated, setGlobalCurated] = useState(() =>
+    isFirebaseConfigured ? readJsonStorage(GLOBAL_CURATED_CACHE_KEY, []) : []
+  );
 
   const canSetGlobalDefault = useMemo(
     () => canManageGlobalWallpaper(currentUser, isFirebaseConfigured),
@@ -123,8 +143,15 @@ export const WallpaperProvider = ({ children }) => {
     if (!isFirebaseConfigured) return undefined;
 
     const unsubGlobal = subscribeGlobalCurated((curatedList, defaultWallpaperUrl, meta) => {
-      const validCurated = (curatedList || []).filter(isValidWallpaper);
+      const validCurated = (curatedList || [])
+        .map((item, idx) => normalizeCuratedEntry(item, idx))
+        .filter((item) => item && isValidWallpaper(item));
       setGlobalCurated(validCurated);
+      try {
+        localStorage.setItem(GLOBAL_CURATED_CACHE_KEY, JSON.stringify(validCurated));
+      } catch {
+        // ignore
+      }
 
       const cleanDefault = normalizeWallpaperUrl(defaultWallpaperUrl);
       if (cleanDefault) {
