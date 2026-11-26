@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS = {
   clockTimerStyle: 'default-bold',
   targets: [],
   exams: [],
+  dailyGoalMinutes: 120,
 };
 
 const SETTINGS_STORAGE_KEY = 'flowstate_settings_cache';
@@ -87,6 +88,10 @@ export const useSettings = () => {
           clockTimerStyle: data.clockTimerStyle || DEFAULT_SETTINGS.clockTimerStyle,
           clockColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.clockColor,
           textColor: data.clockColor || data.textColor || DEFAULT_SETTINGS.textColor,
+          dailyGoalMinutes:
+            Number.isFinite(Number(data.dailyGoalMinutes)) && Number(data.dailyGoalMinutes) > 0
+              ? Number(data.dailyGoalMinutes)
+              : DEFAULT_SETTINGS.dailyGoalMinutes,
           durations: {
             ...DEFAULT_SETTINGS.durations,
             ...(data.durations || {}),

@@ -1,30 +1,200 @@
-import React, { useState, useEffect } from 'react';
-import { IconX } from '../Icons';
-import { subscribeLiveRooms } from '../../firebase/firestore';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { IconX, IconPlay, IconPause, IconRotateCcw } from '../Icons';
 
 const REACTIONS = ['🔥', '☕', '✨', '🧠', '👏', '🎯'];
 
+const formatCountdown = (seconds) => {
+  const safe = Math.max(0, Math.floor(Number(seconds) || 0));
+  const m = String(Math.floor(safe / 60)).padStart(2, '0');
+  const s = String(safe % 60).padStart(2, '0');
+  return `${m}:${s}`;
+};
+
+const computeDisplayRemaining = (timer) => {
+  if (!timer) return 0;
+  if (timer.isRunning && timer.endsAt) {
+    return Math.max(0, Math.ceil((timer.endsAt - Date.now()) / 1000));
+  }
+  return Math.max(0, Math.floor(Number(timer.remainingSec) || 0));
+};
+
 const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
   const [rooms, setRooms] = useState([]);
-  const [selectedRoomId, setSelectedRoomId] = useState(null);
-  const [customRoomCode, setCustomRoomCode] = useState('');
+  const [activeRoom, setActiveRoom] = useState(null);
+  const [myMemberId, setMyMemberId] = useState(null);
+  const [connectionState, setConnectionState] = useState('connecting'); // 'connecting' | 'connected' | 'reconnecting'
+  const [roomError, setRoomError] = useState('');
+
   const [groupName, setGroupName] = useState('');
-  const [joinedCustom, setJoinedCustom] = useState(false);
+  const [customRoomCode, setCustomRoomCode] = useState('');
+  const [myTopic, setMyTopic] = useState(() => localStorage.getItem('flowstate_room_topic') || 'Deep Work');
+  const [chatText, setChatText] = useState('');
   const [synced, setSynced] = useState(false);
-  const [reactionsList, setReactionsList] = useState([]);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [reactionsList, setReactionsList] = useState([]);
+  const [tickNow, setTickNow] = useState(() => Date.now());
 
+  const wsRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const chatEndRef = useRef(null);
+  const activeRoomIdRef = useRef(null);
+  const hasAutoJoinedRef = useRef(false);
+
+  const displayName = currentUser?.displayName || 'Guest Scholar';
+  const photoURL = currentUser?.photoURL || '';
+
+  const sendWs = useCallback((payload) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(payload));
+      return true;
+    }
+    return false;
+  }, []);
+
+  const joinRoomById = useCallback(
+    (roomIdOrCode) => {
+      setRoomError('');
+      sendWs({
+        type: 'room:join',
+        roomId: roomIdOrCode,
+        code: roomIdOrCode,
+        displayName,
+        photoURL,
+        avatar: '⭐',
+        topic: myTopic.trim() || 'Deep Work',
+      });
+    },
+    [sendWs, displayName, photoURL, myTopic]
+  );
+
+  // Connect to authoritative /ws/rooms WebSocket server
   useEffect(() => {
-    const unsub = subscribeLiveRooms((data) => {
-      setRooms(data || []);
-      if (data?.length > 0 && !selectedRoomId) {
-        setSelectedRoomId(data[0].id);
-      }
-    });
-    return () => unsub();
-  }, [selectedRoomId]);
+    let closedByUser = false;
 
-  const activeRoom = rooms.find((r) => r.id === selectedRoomId) || rooms[0] || null;
+    const connect = () => {
+      setConnectionState((prev) => (prev === 'connected' ? 'connected' : 'connecting'));
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${protocol}//${window.location.host}/ws/rooms`);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setConnectionState('connected');
+        setRoomError('');
+      };
+
+      ws.onmessage = (event) => {
+        let msg;
+        try {
+          msg = JSON.parse(event.data);
+        } catch {
+          return;
+        }
+
+        if (msg.type === 'connected') {
+          setMyMemberId(msg.memberId || null);
+          const list = Array.isArray(msg.rooms) ? msg.rooms : [];
+          setRooms(list);
+
+          const targetId = activeRoomIdRef.current || list[0]?.id;
+          if (targetId && (!hasAutoJoinedRef.current || activeRoomIdRef.current)) {
+            hasAutoJoinedRef.current = true;
+            ws.send(
+              JSON.stringify({
+                type: 'room:join',
+                roomId: targetId,
+                displayName,
+                photoURL,
+                avatar: '⭐',
+                topic: (localStorage.getItem('flowstate_room_topic') || 'Deep Work').trim(),
+              })
+            );
+          }
+          return;
+        }
+
+        if (msg.type === 'rooms:list') {
+          setRooms(Array.isArray(msg.rooms) ? msg.rooms : []);
+          return;
+        }
+
+        if (msg.type === 'room:state' && msg.room) {
+          setActiveRoom(msg.room);
+          activeRoomIdRef.current = msg.room.id;
+          setRoomError('');
+          return;
+        }
+
+        if (msg.type === 'room:message' && msg.message) {
+          setActiveRoom((prev) => {
+            if (!prev) return prev;
+            const exists = prev.messages?.some((m) => m.id === msg.message.id);
+            if (exists) return prev;
+            return {
+              ...prev,
+              messages: [...(prev.messages || []), msg.message].slice(-40),
+            };
+          });
+          return;
+        }
+
+        if (msg.type === 'room:reaction' && msg.emoji) {
+          const rxId = msg.id || `${Date.now()}_${Math.random()}`;
+          setReactionsList((prev) => [
+            ...prev,
+            { id: rxId, emoji: msg.emoji, x: Math.random() * 64 + 18 },
+          ]);
+          setTimeout(() => {
+            setReactionsList((prev) => prev.filter((r) => r.id !== rxId));
+          }, 2100);
+          return;
+        }
+
+        if (msg.type === 'room:error') {
+          setRoomError(msg.message || 'Unable to join room.');
+        }
+      };
+
+      ws.onclose = () => {
+        if (closedByUser) return;
+        setConnectionState('reconnecting');
+        reconnectTimerRef.current = setTimeout(connect, 2000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    };
+
+    connect();
+
+    return () => {
+      closedByUser = true;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      if (wsRef.current) {
+        try {
+          if (wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({ type: 'room:leave' }));
+          }
+          wsRef.current.close();
+        } catch {
+          // ignore
+        }
+        wsRef.current = null;
+      }
+    };
+  }, [displayName, photoURL]);
+
+  // Live 1-second local countdown tick for active room timer
+  useEffect(() => {
+    if (!activeRoom?.timer?.isRunning) return undefined;
+    const id = setInterval(() => setTickNow(Date.now()), 500);
+    return () => clearInterval(id);
+  }, [activeRoom?.timer?.isRunning]);
+
+  // Auto-scroll check-in chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activeRoom?.messages?.length]);
 
   // Esc key closes modal
   useEffect(() => {
@@ -35,48 +205,90 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Handle send reaction burst
   const handleReaction = (emoji) => {
-    const id = Date.now() + Math.random();
-    setReactionsList((prev) => [...prev, { id, emoji, x: Math.random() * 60 + 20 }]);
-    setTimeout(() => {
-      setReactionsList((prev) => prev.filter((r) => r.id !== id));
-    }, 2000);
-  };
-
-  const handleJoinCustom = (e) => {
-    e.preventDefault();
-    if (!customRoomCode.trim()) return;
-    setJoinedCustom(true);
+    sendWs({ type: 'room:reaction', emoji });
   };
 
   const handleCreateGroup = (e) => {
     e.preventDefault();
-    const name = groupName.trim();
-    if (!name) return;
-    const code = `${name.replace(/[^a-z0-9]/gi, '').slice(0, 6).toUpperCase() || 'FOCUS'}-${Math.floor(100 + Math.random() * 900)}`;
-    setCustomRoomCode(code);
-    setJoinedCustom(true);
+    const trimmed = groupName.trim();
+    if (!trimmed) {
+      setRoomError('Enter a name to create a private room.');
+      return;
+    }
+    setRoomError('');
+    sendWs({
+      type: 'room:create',
+      name: trimmed,
+      focusMinutes: 45,
+      breakMinutes: 10,
+      displayName,
+      photoURL,
+      avatar: '⭐',
+      topic: myTopic.trim() || 'Deep Work',
+    });
     setGroupName('');
   };
 
-  const handleSyncClick = () => {
-    setSynced(true);
-    if (onSyncTimer && activeRoom) onSyncTimer(activeRoom);
-    setTimeout(() => setSynced(false), 2500);
+  const handleJoinCustom = (e) => {
+    e.preventDefault();
+    const code = customRoomCode.trim().toUpperCase();
+    if (!code) {
+      setRoomError('Enter an invite code to join a private room.');
+      return;
+    }
+    joinRoomById(code);
+    setCustomRoomCode('');
   };
 
+  const handleTopicSubmit = (e) => {
+    e.preventDefault();
+    const clean = myTopic.trim() || 'Deep Work';
+    try {
+      localStorage.setItem('flowstate_room_topic', clean);
+    } catch {
+      // ignore
+    }
+    sendWs({ type: 'member:status', topic: clean });
+  };
+
+  const handleSendChat = (e) => {
+    e.preventDefault();
+    const trimmed = chatText.trim();
+    if (!trimmed) return;
+    if (sendWs({ type: 'room:message', text: trimmed })) {
+      setChatText('');
+    }
+  };
+
+  const handleSyncClick = () => {
+    if (!activeRoom || !onSyncTimer) return;
+    const liveRemaining = computeDisplayRemaining(activeRoom.timer);
+    setSynced(true);
+    onSyncTimer({
+      roomName: activeRoom.name,
+      focusMinutes: activeRoom.timer?.focusMinutes || activeRoom.focusMinutes || 45,
+      breakMinutes: activeRoom.timer?.breakMinutes || activeRoom.breakMinutes || 10,
+      phase: activeRoom.timer?.phase || 'focus',
+      remainingSec: liveRemaining,
+      isRunning: Boolean(activeRoom.timer?.isRunning),
+    });
+    setTimeout(() => setSynced(false), 2000);
+  };
+
+  // Use tickNow so countdown re-renders smoothly while running
+  void tickNow;
+  const remainingSec = computeDisplayRemaining(activeRoom?.timer);
+  const timerRunning = Boolean(activeRoom?.timer?.isRunning);
+  const timerPhase = activeRoom?.timer?.phase || 'focus';
+
   return (
-    <div className="rooms-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="rooms-modal-card" onClick={(e) => e.stopPropagation()}>
+    <div className="rooms-modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Live Study Rooms">
+      <div className="rooms-modal-card" onClick={(e) => e.stopPropagation()} data-testid="live-rooms-modal">
         {/* Floating live reactions display */}
         <div className="rooms-floating-reactions-stage" aria-hidden="true">
           {reactionsList.map((r) => (
-            <span
-              key={r.id}
-              className="rooms-floating-reaction"
-              style={{ left: `${r.x}%` }}
-            >
+            <span key={r.id} className="rooms-floating-reaction" style={{ left: `${r.x}%` }}>
               {r.emoji}
             </span>
           ))}
@@ -85,12 +297,15 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
         {/* Modal Header */}
         <div className="rooms-modal-header">
           <div className="rooms-header-left">
-            <div className="rooms-header-badge">
-              <span className="rooms-pulsing-dot" />
-              <span>STUDY GROUPS</span>
+            <div className="rooms-header-kicker">
+              <span>Live Study Rooms</span>
+              <span aria-hidden="true">·</span>
+              <span>{connectionState === 'connected' ? 'Connected' : 'Connecting'}</span>
             </div>
-            <h2 className="rooms-title">Focus together</h2>
-            <p className="rooms-subtitle">Join a public group or create a private room for your study circle.</p>
+            <h2 className="rooms-title">Focus together in real time</h2>
+            <p className="rooms-subtitle">
+              Join a shared study hall with a synchronized timer, or create a private room with an invite code.
+            </p>
           </div>
           <button
             type="button"
@@ -102,104 +317,190 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
           </button>
         </div>
 
-        {/* Room Grid Selector */}
-        {rooms.length > 0 ? (
-          <div className="rooms-selector-grid">
-            {rooms.map((room) => {
-              const isSelected = room.id === selectedRoomId && !joinedCustom;
-              return (
-                <button
-                  key={room.id}
-                  type="button"
-                  className={`room-card-btn ${isSelected ? 'active' : ''}`}
-                  onClick={() => {
-                    setSelectedRoomId(room.id);
-                    setJoinedCustom(false);
-                  }}
-                >
-                  <div className="room-card-top">
-                    <span className="room-card-icon">{room.icon || '💬'}</span>
-                    <span className="room-online-pill">
-                      <span className="rooms-live-indicator" /> {room.onlineCount || 0} online
-                    </span>
-                  </div>
-                  <div className="room-card-name">{room.name}</div>
-                  <div className="room-card-meta">
-                    <span>⏱️ {room.pomodoro || '25 / 5'}</span> · <span>{room.tag || 'General'}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            No active public study rooms right now. Create a private group below!
+        {roomError && (
+          <div className="rooms-error-banner" role="alert">
+            <span>{roomError}</span>
+            <button type="button" onClick={() => setRoomError('')} aria-label="Dismiss error">
+              ✕
+            </button>
           </div>
         )}
 
+        {/* Public Rooms Grid */}
+        <div className="rooms-selector-grid" data-testid="live-rooms-grid">
+          {rooms.map((room) => {
+            const isSelected = activeRoom?.id === room.id;
+            return (
+              <button
+                key={room.id}
+                type="button"
+                className={`room-card-btn ${isSelected ? 'active' : ''}`}
+                onClick={() => joinRoomById(room.id)}
+                data-testid={`room-card-${room.id}`}
+              >
+                <div className="room-card-top">
+                  <span className="room-card-name">{room.name}</span>
+                  <span className="room-online-count tabular-nums">
+                    {room.onlineCount || 0} online
+                  </span>
+                </div>
+                <div className="room-card-meta tabular-nums">
+                  <span>{room.pomodoro} min</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{room.timer?.isRunning ? 'Running' : room.tag}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Active Room Detail Panel */}
-        {activeRoom || joinedCustom ? (
-          <div className="active-room-panel">
+        {activeRoom && (
+          <div className="active-room-panel" data-testid="active-room-panel">
             <div className="active-room-header">
               <div className="active-room-title-block">
-                <div className="active-room-icon-wrap">{activeRoom?.icon || '🔒'}</div>
                 <div>
-                  <h3 className="active-room-heading">
-                    {joinedCustom ? `Private Room: ${customRoomCode.toUpperCase()}` : activeRoom?.name}
+                  <h3 className="active-room-heading" data-testid="active-room-heading">
+                    {activeRoom.name}
+                    {activeRoom.isPrivate && (
+                      <span className="room-private-code-tag">{activeRoom.code}</span>
+                    )}
                   </h3>
                   <span className="active-room-sub">
-                    🎧 Recommended Ambience: <strong>{activeRoom?.ambience || 'Lofi Beats'}</strong>
+                    {activeRoom.ambience || 'Lofi Beats'} · {activeRoom.pomodoro} cadence
                   </span>
                 </div>
               </div>
 
-              {/* Sync Timer Button */}
               <button
                 type="button"
                 className={`room-sync-timer-btn ${synced ? 'synced' : ''}`}
                 onClick={handleSyncClick}
-                title="Synchronize your Pomodoro timer with this room"
+                title="Sync your personal Flowstate timer to this room"
+                data-testid="room-sync-timer-btn"
               >
-                {synced ? '✅ Synced to Room!' : '⏱️ Sync My Timer'}
+                {synced ? 'Synced to Timer' : 'Sync My Timer'}
               </button>
             </div>
 
-            {/* Active Members List */}
+            {/* Shared Authoritative Room Timer */}
+            <div className="room-shared-timer-bar">
+              <div className="room-shared-timer-left">
+                <span className={`room-phase-label ${timerPhase === 'break' ? 'is-break' : ''}`}>
+                  {timerPhase === 'focus' ? 'Focus' : 'Break'}
+                </span>
+                <span className="room-shared-countdown tabular-nums" data-testid="room-timer-countdown">
+                  {formatCountdown(remainingSec)}
+                </span>
+                <span className="room-shared-meta">
+                  {timerRunning
+                    ? `Running${activeRoom.timer?.startedBy ? ` · started by ${activeRoom.timer.startedBy}` : ''}`
+                    : 'Ready to start together'}
+                </span>
+              </div>
+              <div className="room-shared-timer-actions">
+                <button
+                  type="button"
+                  className="room-timer-btn room-timer-btn--primary"
+                  onClick={() => sendWs({ type: timerRunning ? 'timer:pause' : 'timer:start' })}
+                  data-testid="room-timer-toggle-btn"
+                >
+                  {timerRunning ? <IconPause size={13} /> : <IconPlay size={13} />}
+                  <span>{timerRunning ? 'Pause' : 'Start Room'}</span>
+                </button>
+                <button
+                  type="button"
+                  className="room-timer-btn"
+                  onClick={() => sendWs({ type: 'timer:reset' })}
+                  title="Reset room timer"
+                >
+                  <IconRotateCcw size={13} />
+                </button>
+                <button
+                  type="button"
+                  className="room-timer-btn"
+                  onClick={() => sendWs({ type: 'timer:switchPhase' })}
+                  title="Switch between Focus and Break"
+                >
+                  {timerPhase === 'focus' ? 'Break' : 'Focus'}
+                </button>
+              </div>
+            </div>
+
+            {/* Active Members + Personal Focus Topic */}
             <div className="active-room-members-section">
               <div className="members-section-header">
-                <span>👥 STUDYING RIGHT NOW ({joinedCustom ? 1 : (activeRoom?.onlineCount || 1)} STUDENTS)</span>
-                <span className="members-muted-tip">Soundless presence · Keep going</span>
+                <span>
+                  In this room ({activeRoom.members?.length || 1})
+                </span>
+                <form className="room-topic-form" onSubmit={handleTopicSubmit}>
+                  <input
+                    type="text"
+                    value={myTopic}
+                    onChange={(e) => setMyTopic(e.target.value)}
+                    onBlur={handleTopicSubmit}
+                    placeholder="What are you working on?"
+                    maxLength={40}
+                    aria-label="Your current study topic"
+                  />
+                </form>
               </div>
 
               <div className="members-chips-list">
-                {/* Current user */}
-                <div className="member-chip member-chip--you">
-                  <div className="member-avatar-box" style={{ borderColor: '#06b6d4' }}>
-                    {currentUser?.photoURL ? (
-                      <img src={currentUser.photoURL} alt="You" className="member-img" />
-                    ) : (
-                      <span>⭐</span>
-                    )}
-                  </div>
-                  <div className="member-info">
-                    <span className="member-name">{currentUser?.displayName || 'Deepesh (You)'}</span>
-                    <span className="member-status">⚡ In Flowstate</span>
-                  </div>
-                </div>
-
-                {/* Other peers */}
-                {!joinedCustom && activeRoom?.members?.map((m, idx) => (
-                  <div key={idx} className="member-chip">
-                    <div className="member-avatar-box" style={{ borderColor: m.color || '#fff' }}>
-                      <span>{m.avatar || '👤'}</span>
+                {(activeRoom.members || []).map((member) => {
+                  const isYou = member.id === myMemberId;
+                  const initial = (member.name || 'G').trim().charAt(0).toUpperCase();
+                  return (
+                    <div key={member.id} className={`member-chip ${isYou ? 'member-chip--you' : ''}`}>
+                      <div className="member-avatar-box" style={{ borderColor: isYou ? '#f4f4f6' : 'rgba(255,255,255,0.18)' }}>
+                        {member.photoURL ? (
+                          <img src={member.photoURL} alt={member.name} className="member-img" referrerPolicy="no-referrer" />
+                        ) : (
+                          <span>{initial}</span>
+                        )}
+                      </div>
+                      <div className="member-info">
+                        <span className="member-name">
+                          {member.name}
+                          {isYou ? ' (You)' : ''}
+                        </span>
+                        <span className="member-status">{member.topic || member.status || 'In Flowstate'}</span>
+                      </div>
                     </div>
-                    <div className="member-info">
-                      <span className="member-name">{m.name}</span>
-                      <span className="member-status">{m.status}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+            </div>
+
+            {/* Live Room Check-In Chat */}
+            <div className="room-checkin-section">
+              <div className="room-checkin-messages" data-testid="room-checkin-messages">
+                {(!activeRoom.messages || activeRoom.messages.length === 0) ? (
+                  <div className="room-checkin-empty">
+                    Share what you are tackling this block — check-ins stay brief and supportive.
+                  </div>
+                ) : (
+                  activeRoom.messages.map((m) => (
+                    <div key={m.id} className="room-checkin-line">
+                      <strong>{m.senderName}:</strong> <span>{m.text}</span>
+                    </div>
+                  ))
+                )}
+                <div ref={chatEndRef} />
+              </div>
+              <form className="room-checkin-form" onSubmit={handleSendChat}>
+                <input
+                  type="text"
+                  value={chatText}
+                  onChange={(e) => setChatText(e.target.value)}
+                  placeholder="Post a quick goal check-in..."
+                  maxLength={180}
+                  data-testid="room-checkin-input"
+                />
+                <button type="submit" disabled={!chatText.trim()} data-testid="room-checkin-send">
+                  Send
+                </button>
+              </form>
             </div>
 
             {/* Cheer & Reaction Bar */}
@@ -220,48 +521,55 @@ const LiveRoomsModal = ({ onClose, onSyncTimer, currentUser }) => {
               </div>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {/* Private study group controls */}
+        {/* Private Study Group Controls */}
         <div className="custom-room-footer">
           <form className="create-group-form" onSubmit={handleCreateGroup}>
-            <span className="custom-room-label">✨ Create a private group</span>
+            <span className="custom-room-label">Create a private room</span>
             <input
               type="text"
               className="custom-room-input"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              placeholder="e.g. Biology finals"
-              maxLength={24}
+              placeholder="e.g. Biology Finals"
+              maxLength={32}
+              data-testid="create-private-room-input"
             />
-            <button type="submit" className="custom-room-submit-btn">Create</button>
+            <button type="submit" className="custom-room-submit-btn" data-testid="create-private-room-btn">
+              Create
+            </button>
           </form>
+
           <form className="custom-room-form" onSubmit={handleJoinCustom}>
-            <span className="custom-room-label">🔑 Join with code</span>
+            <span className="custom-room-label">Join with invite code</span>
             <input
               type="text"
               className="custom-room-input"
               value={customRoomCode}
               onChange={(e) => setCustomRoomCode(e.target.value.toUpperCase())}
-              placeholder="e.g. FOCUS-492"
-              maxLength={12}
+              placeholder="e.g. BIOLO-492"
+              maxLength={16}
+              data-testid="join-private-room-input"
             />
-            <button type="submit" className="custom-room-submit-btn">
+            <button type="submit" className="custom-room-submit-btn" data-testid="join-private-room-btn">
               Join
             </button>
           </form>
-          {joinedCustom && customRoomCode && (
+
+          {activeRoom?.isPrivate && activeRoom?.code && (
             <button
               type="button"
               className="group-share-code"
               onClick={() => {
-                navigator.clipboard?.writeText(customRoomCode);
+                navigator.clipboard?.writeText(activeRoom.code).catch(() => {});
                 setCopiedCode(true);
                 setTimeout(() => setCopiedCode(false), 2000);
               }}
-              title="Copy group code"
+              title="Copy private room invite code"
+              data-testid="private-room-share-code"
             >
-              Share code <strong className={copiedCode ? 'code-vanish' : ''}>{copiedCode ? 'COPIED!' : customRoomCode.toUpperCase()}</strong> · {copiedCode ? 'text copied' : 'tap to copy'}
+              Invite code <strong>{copiedCode ? 'COPIED!' : activeRoom.code}</strong> · {copiedCode ? 'copied to clipboard' : 'click to copy'}
             </button>
           )}
         </div>

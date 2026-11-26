@@ -1,0 +1,6 @@
+{
+  "name": "FLOWSTATE — Get In The Zone",
+  "description": "Deep work timer, desk clock, study analytics with heatmap calendar, real-time study rooms, Gemini chatbot, and live voice partner.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

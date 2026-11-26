@@ -232,7 +232,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
     <div className="live-clock-tab-wrapper">
       {!hasWallpaper && <div className="liquid-orb" />}
 
-      {/* Top Header Mode Pills for Live Clock — Timer | Stopwatch | Clock */}
+      {/* Top Header Mode Switcher for Live Clock — Timer | Stopwatch | Clock */}
       <div className="liquid-pills-wrapper" role="group" aria-label="Clock mode navigation">
         <div className="liquid-pill-track">
           {onTabChange && (
@@ -240,9 +240,9 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
               type="button"
               className="liquid-pill-btn"
               onClick={() => onTabChange('timer', 'pomodoro')}
-              title="Switch to Timer (T)"
+              title="Switch to Timer"
             >
-              <span className="liquid-pill-label">TIMER</span>
+              <span className="liquid-pill-label">Timer</span>
             </button>
           )}
           {onTabChange && (
@@ -252,7 +252,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
               onClick={() => onTabChange('timer', 'stopwatch')}
               title="Switch to Stopwatch"
             >
-              <span className="liquid-pill-label">STOPWATCH</span>
+              <span className="liquid-pill-label">Stopwatch</span>
             </button>
           )}
           <button
@@ -260,11 +260,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
             className="liquid-pill-btn active"
             aria-pressed="true"
           >
-            <span className="liquid-pill-glaze" aria-hidden="true" />
-            <span className="liquid-pill-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span className="live-pulse-dot" aria-hidden="true" />
-              CLOCK
-            </span>
+            <span className="liquid-pill-label">Clock</span>
           </button>
         </div>
       </div>
@@ -375,7 +371,6 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
       {/* Minimal Date Strip */}
       <div className="live-date-capsule-container">
         <div className="live-date-capsule live-date-capsule--minimal">
-          <span className="live-status-pulse" />
           <span className="live-day-text">{dayName}</span>
           <span className="live-date-sep">·</span>
           <span className="live-full-date-text">
@@ -385,25 +380,23 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
       </div>
 
       {showExamDeadline && upcomingExams.length > 0 && (
-        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
           {upcomingExams.map(exam => (
             <div key={exam.id} style={{
-              background: 'rgba(0,0,0,0.4)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              padding: '8px 16px',
-              borderRadius: '24px',
+              background: '#12151c',
+              border: '1px solid #242936',
+              padding: '6px 14px',
+              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              color: '#fff',
-              fontSize: '14px',
+              color: '#f4f4f6',
+              fontSize: '13px',
               fontWeight: 500
             }}>
-              <span style={{ fontSize: '16px' }}>🗓️</span>
               <span>{exam.title}</span>
-              <span style={{ opacity: 0.6 }}>·</span>
-              <span style={{ color: 'var(--accent, #06b6d4)' }}>
+              <span style={{ opacity: 0.45 }}>·</span>
+              <span style={{ color: '#94a3b8' }}>
                 {exam.daysLeft === 0 ? 'Today' : exam.daysLeft === 1 ? 'Tomorrow' : `${exam.daysLeft} days left`}
               </span>
             </div>

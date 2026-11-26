@@ -68,6 +68,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     saveAndReset,
     skip,
     switchMode,
+    syncToRoom,
   } = useTimer(settings, toast, { linkedTaskId, onTaskComplete: handleTaskComplete });
 
   // ─── Active Recall state ───────────────────────────────────────────────────
@@ -219,7 +220,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
     }
   }, [settings?.strictMode, isRunning, mode]);
 
-  // Expose timer actions to AppShell for keyboard shortcuts
+  // Expose timer actions to AppShell for keyboard shortcuts & Live Rooms sync
   useEffect(() => {
     if (timerActionsRef) {
       timerActionsRef.current = {
@@ -228,6 +229,7 @@ const TimerTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, initi
         togglePlay: () => (isRunning ? handlePause() : handlePlay()),
         reset: handleResetClick,
         skip: mode !== 'stopwatch' ? handleSkipClick : undefined,
+        syncToRoom,
       };
     }
   });

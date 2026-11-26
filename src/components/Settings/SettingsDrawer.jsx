@@ -103,58 +103,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const [longBreak, setLongBreak]     = useState(Math.round((d.longBreak  || 900)  / 60));
   const [longBreakInterval, setLongBreakInterval] = useState(settings?.longBreakInterval || 4);
 
-  // Gemini API key
-  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('flowstate_gemini_key') || '');
-  const [showGeminiKey, setShowGeminiKey] = useState(false);
-  const [geminiSaved, setGeminiSaved] = useState(false);
-
-  const handleSaveGeminiKey = () => {
-    const trimmed = geminiKey.trim();
-    if (trimmed) {
-      localStorage.setItem('flowstate_gemini_key', trimmed);
-    } else {
-      localStorage.removeItem('flowstate_gemini_key');
-    }
-    setGeminiSaved(true);
-    setTimeout(() => setGeminiSaved(false), 2000);
-  };
-
-  const [testingKey, setTestingKey] = useState(false);
-  const [keyTestStatus, setKeyTestStatus] = useState(null);
-
-  const handleTestGeminiKey = async () => {
-    const keyToTest = geminiKey.trim() || localStorage.getItem('flowstate_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
-    if (!keyToTest) {
-      toast('Please enter or save a Gemini API key first', 'warning', 2500);
-      return;
-    }
-    setTestingKey(true);
-    setKeyTestStatus(null);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keyToTest}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'ping' }] }],
-          generationConfig: { maxOutputTokens: 1 }
-        })
-      });
-      if (res.ok) {
-        setKeyTestStatus('valid');
-        toast('✅ Gemini API key is valid & working!', 'success', 3000);
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        setKeyTestStatus('invalid');
-        toast(`❌ ${errData?.error?.message || 'Invalid API key'}`, 'error', 4000);
-      }
-    } catch (e) {
-      setKeyTestStatus('invalid');
-      toast('Network error testing API key', 'error', 3000);
-    } finally {
-      setTestingKey(false);
-    }
-  };
-
   const [notifPermission, setNotifPermission] = useState(() => {
     return typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
   });
@@ -1331,69 +1279,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </button>
               </div>
 
-              {/* Gemini AI Key */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Gemini AI Studio Key</div>
-                <p className="settings-section-subtitle">
-                  Power Active Recall Flashcards and AI Study Assistant with your personal Gemini key.{' '}
-                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
-                    Get a free API key →
-                  </a>
-                </p>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-                    <input
-                      id="settings-gemini-key"
-                      type={showGeminiKey ? 'text' : 'password'}
-                      className="settings-input"
-                      value={geminiKey}
-                      onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder="AIzaSy..."
-                      style={{ width: '100%', paddingRight: '36px', fontFamily: geminiKey ? 'monospace' : 'inherit', fontSize: '12px' }}
-                      autoComplete="off"
-                      spellCheck={false}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowGeminiKey(v => !v)}
-                      style={{
-                        position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-                        background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0
-                      }}
-                      aria-label={showGeminiKey ? 'Hide key' : 'Show key'}
-                    >
-                      {showGeminiKey ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleSaveGeminiKey}
-                    className="btn btn-primary"
-                    style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
-                  >
-                    {geminiSaved ? '✓ Saved' : 'Save Key'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTestGeminiKey}
-                    className="btn btn-secondary"
-                    disabled={testingKey}
-                    style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
-                  >
-                    {testingKey ? 'Testing...' : keyTestStatus === 'valid' ? '✓ Valid' : 'Test Key'}
-                  </button>
-                </div>
-                {geminiKey && (
-                  <button
-                    type="button"
-                    onClick={handleClearGeminiKey}
-                    style={{ fontSize: '11px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, marginTop: '6px' }}
-                  >
-                    × Clear saved key
-                  </button>
-                )}
-              </div>
-
               {/* Data Backup & Export */}
               <div className="settings-section-block">
                 <div className="settings-section-header-title">Data Backup & Export</div>
@@ -1418,27 +1303,47 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </button>
               </div>
 
-              {/* Mac Dock Install */}
+              {/* Chrome Extension & Desktop Install */}
               <div className="settings-section-block">
                 <div className="settings-section-header-title">
-                  <IconMac size={16} /> Desktop & Mac Dock
+                  <IconMac size={16} /> Chrome Extension &amp; Desktop
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    if (onOpenInstall) onOpenInstall();
-                    onClose();
-                  }}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    gap: '8px', padding: '10px 14px', fontSize: '13px', fontWeight: 600,
-                    width: '100%', borderRadius: '10px', border: '1px solid rgba(6, 182, 212, 0.3)',
-                    background: 'rgba(6, 182, 212, 0.08)'
-                  }}
-                >
-                  <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
-                </button>
+                <p className="settings-section-subtitle">
+                  Install the Manifest V3 Chrome Extension for a toolbar countdown badge, daily goal ring, and automatic distraction blocker.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      if (onOpenInstall) onOpenInstall('extension');
+                      onClose();
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: '8px', padding: '10px 14px', fontSize: '13px', fontWeight: 600,
+                      width: '100%', borderRadius: '10px'
+                    }}
+                  >
+                    🧩 Get FLOWSTATE Chrome Extension (.zip)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      if (onOpenInstall) onOpenInstall('desktop');
+                      onClose();
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: '8px', padding: '10px 14px', fontSize: '13px', fontWeight: 600,
+                      width: '100%', borderRadius: '10px', border: '1px solid rgba(6, 182, 212, 0.3)',
+                      background: 'rgba(6, 182, 212, 0.08)'
+                    }}
+                  >
+                    <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1518,7 +1423,8 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     { key: 'N',     desc: 'Toggle Scratchpad Notes' },
                     { key: 'T',     desc: 'Toggle Tasks & Todos' },
                     { key: 'M',     desc: 'Toggle Music & Ambience' },
-                    { key: 'C',     desc: 'Toggle Ask AI Chat' },
+                    { key: 'C',     desc: 'Toggle Gemini Chat' },
+                    { key: 'V',     desc: 'Toggle Live Voice Conversation' },
                   ].map(s => (
                     <div key={s.key} className="settings-shortcut-row">
                       <kbd className="settings-kbd">{s.key}</kbd>

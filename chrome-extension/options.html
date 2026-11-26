@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FLOWSTATE Extension Settings</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        min-height: 100vh;
+        background: #0b0d12;
+        color: #f4f4f6;
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        padding: 40px 20px;
+      }
+      .opt-shell {
+        max-width: 540px;
+        margin: 0 auto;
+        background: #12151c;
+        border: 1px solid #222631;
+        border-radius: 12px;
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: #ffffff; }
+      .sub { font-size: 13.5px; color: #8c94a6; margin-top: 6px; line-height: 1.5; }
+      .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: #c2c7d3; }
+      input, textarea {
+        padding: 9px 11px;
+        border-radius: 8px;
+        border: 1px solid #262b38;
+        background: #0d0f14;
+        color: #ffffff;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+      }
+      input[type="number"] {
+        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      input:focus, textarea:focus { border-color: #525d75; }
+      textarea { min-height: 128px; resize: vertical; line-height: 1.55; }
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #1e222c;
+      }
+      .status { font-size: 12.5px; color: #16a34a; font-weight: 600; }
+      button {
+        padding: 9px 18px;
+        border-radius: 8px;
+        border: none;
+        background: #f4f4f6;
+        color: #0b0d12;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover { background: #ffffff; }
+    </style>
+  </head>
+  <body>
+    <main class="opt-shell">
+      <div>
+        <h1>FLOWSTATE Extension Settings</h1>
+        <p class="sub">Configure your workspace link, focus durations, daily deep work target, and blocked distraction sites.</p>
+      </div>
+
+      <label>
+        FLOWSTATE Web App URL
+        <input id="opt-app-url" type="url" placeholder="https://your-flowstate-url.app" />
+      </label>
+
+      <div class="grid-3">
+        <label>
+          Focus (min)
+          <input id="opt-focus" type="number" min="5" max="180" value="45" />
+        </label>
+        <label>
+          Short Break (min)
+          <input id="opt-short" type="number" min="1" max="60" value="5" />
+        </label>
+        <label>
+          Long Break (min)
+          <input id="opt-long" type="number" min="5" max="90" value="15" />
+        </label>
+      </div>
+
+      <label>
+        Daily Deep Work Goal (minutes)
+        <input id="opt-goal" type="number" min="5" max="1440" step="5" value="120" />
+      </label>
+
+      <label>
+        Blocked Distraction Domains (one domain per line)
+        <textarea id="opt-domains" placeholder="youtube.com&#10;reddit.com&#10;x.com"></textarea>
+      </label>
+
+      <div class="footer">
+        <span class="status" id="opt-status"></span>
+        <button id="opt-save" type="button">Save Settings</button>
+      </div>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>

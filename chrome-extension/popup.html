@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FLOWSTATE Focus Timer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="ext-shell">
+      <header class="ext-header">
+        <span class="ext-brand">FLOWSTATE</span>
+        <div class="ext-header-actions">
+          <button id="btn-options" class="ext-ghost-btn" title="Extension Settings" type="button">
+            Settings
+          </button>
+          <button id="btn-open-app" class="ext-ghost-btn ext-ghost-btn--strong" title="Open Full FLOWSTATE Web App" type="button">
+            Open App
+          </button>
+        </div>
+      </header>
+
+      <!-- Mode Switcher -->
+      <div class="ext-mode-tabs" role="tablist">
+        <button class="ext-mode-tab active" data-mode="pomodoro" type="button">Focus</button>
+        <button class="ext-mode-tab" data-mode="shortBreak" type="button">Short Break</button>
+        <button class="ext-mode-tab" data-mode="longBreak" type="button">Long Break</button>
+      </div>
+
+      <!-- Primary Timer Stage -->
+      <section class="ext-timer-stage">
+        <div class="ext-timer-digits" id="timer-digits">45:00</div>
+
+        <div class="ext-presets" id="presets-row" role="group" aria-label="Focus duration presets">
+          <button class="ext-preset-btn" data-mins="25" type="button">25m</button>
+          <button class="ext-preset-btn active" data-mins="45" type="button">45m</button>
+          <button class="ext-preset-btn" data-mins="60" type="button">60m</button>
+          <button class="ext-preset-btn" data-mins="90" type="button">90m</button>
+        </div>
+
+        <input
+          id="subject-input"
+          class="ext-subject-input"
+          type="text"
+          maxlength="60"
+          placeholder="Focus topic (optional)"
+          aria-label="Focus topic"
+        />
+
+        <div class="ext-controls">
+          <button id="btn-start-pause" class="ext-primary-btn" type="button">Start Focus</button>
+          <button id="btn-reset" class="ext-secondary-btn" type="button" title="Reset Timer">Reset</button>
+          <button id="btn-skip" class="ext-secondary-btn" type="button" title="Skip Phase">Skip</button>
+        </div>
+      </section>
+
+      <!-- Daily Deep Work Goal Ring -->
+      <section class="ext-section ext-goal-row">
+        <svg class="ext-ring-svg" width="56" height="56" viewBox="0 0 64 64" aria-label="Daily deep work goal progress">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#222631" stroke-width="5" />
+          <circle
+            id="goal-ring-arc"
+            cx="32"
+            cy="32"
+            r="26"
+            fill="none"
+            stroke="#e4e7ef"
+            stroke-width="5"
+            stroke-linecap="round"
+            stroke-dasharray="0 163.36"
+            transform="rotate(-90 32 32)"
+          />
+          <text id="goal-ring-pct" x="32" y="36" text-anchor="middle" font-size="12" font-weight="600" fill="#f4f4f6">
+            0%
+          </text>
+        </svg>
+
+        <div class="ext-goal-body">
+          <div class="ext-goal-top">
+            <span class="ext-goal-label">Daily goal</span>
+            <span class="ext-goal-summary" id="goal-summary">0m / 120m</span>
+          </div>
+          <div class="ext-goal-input-row">
+            <label for="goal-minutes-input">Target</label>
+            <input
+              id="goal-minutes-input"
+              type="number"
+              min="5"
+              max="1440"
+              step="5"
+              value="120"
+            />
+            <span>min</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Distraction Site Blocker -->
+      <section class="ext-section ext-blocker-row">
+        <div class="ext-blocker-info">
+          <span class="ext-blocker-title">Site Blocker</span>
+          <span class="ext-blocker-sub" id="blocker-sub">Blocks 7 sites while Focus runs</span>
+        </div>
+        <label class="ext-switch">
+          <input id="blocker-toggle" type="checkbox" checked />
+          <span class="ext-slider"></span>
+        </label>
+      </section>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

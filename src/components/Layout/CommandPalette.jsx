@@ -10,6 +10,8 @@ import {
   IconEdit,
   IconSettings,
   IconChat,
+  IconMic,
+  IconDownload,
   IconX,
 } from '../Icons';
 
@@ -22,8 +24,10 @@ const COMMANDS = [
   { id: 'audio', title: 'Music & Ambient Sounds', shortcut: 'M', category: 'Workspace', icon: IconHeadphones },
   { id: 'tasks', title: 'Tasks & To-Dos', shortcut: 'T', category: 'Workspace', icon: IconTasks },
   { id: 'notepad', title: 'Quick Notepad', shortcut: 'N', category: 'Workspace', icon: IconEdit },
-  { id: 'chat', title: 'Ask AI Study Assistant', shortcut: 'C', category: 'Workspace', icon: IconChat },
+  { id: 'chat', title: 'Gemini Chat', shortcut: 'C', category: 'Workspace', icon: IconChat },
+  { id: 'voice', title: 'Live Voice Conversation', shortcut: 'V', category: 'Workspace', icon: IconMic },
   { id: 'rooms', title: 'Live Study Rooms', shortcut: '', category: 'Community', icon: IconClock },
+  { id: 'extension', title: 'Download Chrome Extension', shortcut: '', category: 'Install', icon: IconDownload },
   { id: 'settings', title: 'Settings & Preferences', shortcut: '', category: 'Customize', icon: IconSettings },
 ];
 

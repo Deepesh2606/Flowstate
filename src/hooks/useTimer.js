@@ -118,6 +118,7 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
   const stopwatchMsRef = useRef(stopwatchMs);
   const targetTimeRef = useRef(null); // Stores the absolute timestamp for calculation
   const lastTitleRef = useRef('');
+  const pendingRoomSyncRef = useRef(null);
 
   modeRef.current = mode;
   sessionCountRef.current = sessionCount;
@@ -125,6 +126,15 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
   stopwatchMsRef.current = stopwatchMs;
 
   useEffect(() => {
+    if (pendingRoomSyncRef.current) {
+      const { remainingSec, shouldRun } = pendingRoomSyncRef.current;
+      pendingRoomSyncRef.current = null;
+      clearInterval(intervalRef.current);
+      setTimeLeft(remainingSec);
+      timeLeftRef.current = remainingSec;
+      setIsRunning(Boolean(shouldRun));
+      return;
+    }
     if (mode === MODES.stopwatch) {
       setTimeLeft(0);
       setStopwatchMs(0);
@@ -366,13 +376,28 @@ export const useTimer = (settings, toast, { linkedTaskId, onTaskComplete } = {})
     setMode(newMode);
   }, []);
 
+  const syncToRoom = useCallback(({ phase = 'focus', remainingSec, isRunning: shouldRun = false, roomName = '' }) => {
+    const targetMode = phase === 'break' ? MODES.shortBreak : MODES.pomodoro;
+    const safeSec = Math.max(1, Math.round(Number(remainingSec) || (targetMode === MODES.shortBreak ? durations.shortBreak : durations.pomodoro)));
+    clearInterval(intervalRef.current);
+    pendingRoomSyncRef.current = { remainingSec: safeSec, shouldRun: Boolean(shouldRun) };
+    setMode(targetMode);
+    modeRef.current = targetMode;
+    setTimeLeft(safeSec);
+    timeLeftRef.current = safeSec;
+    setIsRunning(Boolean(shouldRun));
+    if (roomName) {
+      setSubject((prev) => prev || roomName);
+    }
+  }, [durations.pomodoro, durations.shortBreak]);
+
   const totalDuration = durations[mode] || 1;
   const progress = mode === MODES.stopwatch ? 0 : (totalDuration - timeLeft) / totalDuration;
 
   return {
     mode, timeLeft, stopwatchMs, isRunning, sessionCount,
     subject, setSubject, studyMode, setStudyMode,
-    progress, play, pause, reset, saveAndReset, skip, switchMode, MODES,
+    progress, play, pause, reset, saveAndReset, skip, switchMode, syncToRoom, MODES,
     totalDuration,
   };
 };

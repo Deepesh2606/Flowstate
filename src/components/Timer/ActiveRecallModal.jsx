@@ -1,9 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { streamGeminiResponse } from '../../utils/aiChat';
-
-const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_KEY_STORAGE = 'flowstate_gemini_key';
-const getApiKey = () => localStorage.getItem(GEMINI_KEY_STORAGE) || DEFAULT_API_KEY;
 
 export const ActiveRecallModal = ({ isOpen, onClose, notes = '', subject = '' }) => {
   const [loading, setLoading] = useState(false);
@@ -23,76 +18,30 @@ export const ActiveRecallModal = ({ isOpen, onClose, notes = '', subject = '' })
     setRatings({});
     setIsFinished(false);
 
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError('MISSING_KEY');
-      setLoading(false);
-      return;
-    }
-
-    const notesContent = notes?.trim()
-      ? `Student's study notes:\n${notes.trim()}`
-      : `No notes provided. The student is focusing on "${subject || 'General Study'}".`;
-
-    const prompt = `You are a cognitive science tutor specializing in active recall and spaced repetition.
-Based on the provided information, generate EXACTLY 3 high-yield question and answer flashcards that test the most essential concepts.
-
-Subject: ${subject || 'General Study'}
-${notesContent}
-
-Output STRICTLY as a raw JSON array of 3 objects with keys "question" and "answer". Do NOT include any markdown code fences, backticks, or other text:
-[
-  {"question": "...", "answer": "..."},
-  {"question": "...", "answer": "..."},
-  {"question": "...", "answer": "..."}
-]`;
-
-    let fullText = '';
-
-    streamGeminiResponse(
-      [{ role: 'user', content: prompt }],
-      apiKey,
-      (chunk) => {
-        fullText += chunk;
-      },
-      () => {
-        try {
-          // Clean up potential markdown formatting like ```json
-          let cleaned = fullText.trim();
-          if (cleaned.startsWith('```')) {
-            cleaned = cleaned.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
-          }
-          const parsed = JSON.parse(cleaned);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setFlashcards(parsed.slice(0, 3));
-          } else {
-            throw new Error('Invalid format');
-          }
-        } catch {
-          // Fallback if parsing failed
-          setFlashcards([
-            {
-              question: subject ? `What are the core foundational principles of ${subject}?` : 'What was the primary goal of your study session?',
-              answer: notes?.trim() ? notes.slice(0, 120) + '...' : 'Review your session notes to reinforce core understanding.',
-            },
-            {
-              question: 'How would you explain the hardest concept you encountered in simple terms?',
-              answer: 'The Feynman Technique: if you can explain it simply to a beginner, you truly understand it.',
-            },
-            {
-              question: 'What is one practical application or example of what you just studied?',
-              answer: 'Connecting abstract concepts to real-world examples creates durable mental anchors.',
-            },
-          ]);
-        }
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Active recall generation error:', err);
-        setError(err.message || 'Failed to generate flashcards');
-        setLoading(false);
+    try {
+      const response = await fetch('/api/gemini/flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: subject || 'General Study',
+          notes: notes?.trim() || '',
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to generate flashcards (${response.status})`);
       }
-    );
+      if (Array.isArray(data.flashcards) && data.flashcards.length > 0) {
+        setFlashcards(data.flashcards.slice(0, 3));
+      } else {
+        throw new Error('No flashcards returned.');
+      }
+    } catch (err) {
+      console.error('Active recall generation error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate flashcards');
+    } finally {
+      setLoading(false);
+    }
   }, [notes, subject]);
 
   useEffect(() => {
@@ -170,14 +119,12 @@ Output STRICTLY as a raw JSON array of 3 objects with keys "question" and "answe
 
           {error && !loading && (
             <div className="active-recall-error">
-              <span style={{ fontSize: '32px' }}>🔑</span>
+              <span style={{ fontSize: '32px' }}>⚡</span>
               <div style={{ fontWeight: 600, color: '#fff', marginTop: '8px' }}>
-                {error === 'MISSING_KEY' ? 'Gemini API Key Needed' : 'Could not generate flashcards'}
+                Could not generate flashcards
               </div>
               <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', maxWidth: '320px', margin: '6px auto 16px' }}>
-                {error === 'MISSING_KEY'
-                  ? 'Add your free Gemini API key in the Ask AI sidebar (bottom left) to unlock instant flashcards.'
-                  : 'Check your internet connection or try again.'}
+                {error || 'Check your connection and try again.'}
               </p>
               <button
                 type="button"

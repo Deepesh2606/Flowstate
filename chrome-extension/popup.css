@@ -1,0 +1,352 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 344px;
+  background: #0d0f14;
+  color: #f4f4f6;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ext-shell {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ext-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1e222c;
+}
+
+.ext-brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #f4f4f6;
+  white-space: nowrap;
+}
+
+.ext-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ext-ghost-btn {
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #242936;
+  background: #141720;
+  color: #a1a8b8;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+  white-space: nowrap;
+}
+
+.ext-ghost-btn--strong {
+  color: #f4f4f6;
+  border-color: #2f3545;
+}
+
+.ext-ghost-btn:hover {
+  background: #1b202c;
+  color: #ffffff;
+  border-color: #3a4154;
+}
+
+.ext-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  padding: 3px;
+  border-radius: 9px;
+  background: #141720;
+  border: 1px solid #20242f;
+}
+
+.ext-mode-tab {
+  border: none;
+  background: transparent;
+  color: #8c94a6;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+  white-space: nowrap;
+}
+
+.ext-mode-tab:hover {
+  color: #d6dae3;
+}
+
+.ext-mode-tab.active {
+  background: #222735;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ext-timer-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+.ext-timer-digits {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.ext-presets {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.ext-preset-btn {
+  padding: 5px 0;
+  border-radius: 7px;
+  border: 1px solid #222631;
+  background: transparent;
+  color: #8c94a6;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.ext-preset-btn:hover {
+  color: #f4f4f6;
+  border-color: #343b4c;
+}
+
+.ext-preset-btn.active {
+  border-color: #4b556b;
+  background: #1b202c;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ext-subject-input {
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: 8px;
+  border: 1px solid #222631;
+  background: #13161e;
+  color: #f4f4f6;
+  font-size: 12.5px;
+  text-align: center;
+  outline: none;
+  transition: border-color 140ms ease;
+}
+
+.ext-subject-input::placeholder {
+  color: #636b7d;
+}
+
+.ext-subject-input:focus {
+  border-color: #525d75;
+}
+
+.ext-controls {
+  width: 100%;
+  display: flex;
+  gap: 7px;
+}
+
+.ext-primary-btn {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #f4f4f6;
+  color: #0b0d12;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 140ms ease, background-color 140ms ease;
+}
+
+.ext-primary-btn:hover {
+  background: #ffffff;
+}
+
+.ext-primary-btn.is-running {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.ext-secondary-btn {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #262b38;
+  background: #141720;
+  color: #c2c7d3;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.ext-secondary-btn:hover {
+  background: #1d2230;
+  color: #ffffff;
+}
+
+.ext-section {
+  padding-top: 13px;
+  border-top: 1px solid #1e222c;
+}
+
+.ext-goal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ext-ring-svg {
+  flex-shrink: 0;
+}
+
+.ext-goal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.ext-goal-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ext-goal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a1a8b8;
+}
+
+.ext-goal-summary {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f4f4f6;
+  font-variant-numeric: tabular-nums;
+}
+
+.ext-goal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8c94a6;
+}
+
+.ext-goal-input-row input {
+  width: 64px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  border: 1px solid #262b38;
+  background: #13161e;
+  color: #ffffff;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  outline: none;
+}
+
+.ext-goal-input-row input:focus {
+  border-color: #525d75;
+}
+
+.ext-blocker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ext-blocker-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ext-blocker-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #f4f4f6;
+}
+
+.ext-blocker-sub {
+  font-size: 11.5px;
+  color: #8c94a6;
+}
+
+.ext-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.ext-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ext-slider {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  background: #252a37;
+  border-radius: 999px;
+  transition: background-color 150ms ease;
+}
+
+.ext-slider::before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: #f4f4f6;
+  border-radius: 50%;
+  transition: transform 150ms ease;
+}
+
+.ext-switch input:checked + .ext-slider {
+  background: #38bdf8;
+}
+
+.ext-switch input:checked + .ext-slider::before {
+  transform: translateX(16px);
+}

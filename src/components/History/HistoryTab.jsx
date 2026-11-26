@@ -38,25 +38,6 @@ const HistoryTab = ({ onTabChange }) => {
   const [editName, setEditName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  if (!currentUser) {
-    return (
-      <div className="auth-tab-gate">
-        <div className="auth-tab-card">
-          <div className="auth-tab-icon">
-            <IconHistory size={36} color="var(--accent)" />
-          </div>
-          <h2 className="auth-tab-title">Session History</h2>
-          <p className="auth-tab-desc">
-            Sign in with Google to review your completed study sessions, filter by subject, and sync logs.
-          </p>
-          <div style={{ marginTop: '20px' }}>
-            <GoogleSignInButton size="md" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const allSubjects = [...new Set(sessions.map((s) => s.subject).filter(Boolean))];
 
   const filtered = sessions.filter((s) => {
@@ -67,10 +48,16 @@ const HistoryTab = ({ onTabChange }) => {
   });
 
   const handleDelete = async (sessionId) => {
-    if (!currentUser) return;
     setDeleting(sessionId);
     try {
-      await deleteSession(currentUser.uid, sessionId);
+      if (currentUser) {
+        await deleteSession(currentUser.uid, sessionId);
+      } else {
+        const guest = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+        const next = guest.filter((s) => s.id !== sessionId);
+        localStorage.setItem('flowstate_guest_sessions', JSON.stringify(next));
+        window.dispatchEvent(new Event('flowstate_guest_sessions_updated'));
+      }
       toast?.('Session deleted', 'info', 2000);
     } catch (e) {
       console.error('Delete failed:', e);
@@ -86,11 +73,17 @@ const HistoryTab = ({ onTabChange }) => {
   };
 
   const handleSaveEdit = async (sessionId) => {
-    if (!currentUser) return;
     const trimmed = editName.trim() || 'Untitled Session';
     setSaving(true);
     try {
-      await updateSession(currentUser.uid, sessionId, { subject: trimmed });
+      if (currentUser) {
+        await updateSession(currentUser.uid, sessionId, { subject: trimmed });
+      } else {
+        const guest = JSON.parse(localStorage.getItem('flowstate_guest_sessions') || '[]');
+        const next = guest.map((s) => (s.id === sessionId ? { ...s, subject: trimmed } : s));
+        localStorage.setItem('flowstate_guest_sessions', JSON.stringify(next));
+        window.dispatchEvent(new Event('flowstate_guest_sessions_updated'));
+      }
       setEditingId(null);
       toast?.('Session renamed', 'success', 2000);
     } catch (e) {
@@ -109,14 +102,23 @@ const HistoryTab = ({ onTabChange }) => {
   if (loading) return <div className="spinner" />;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+    <div className="history-tab-shell">
+      {!currentUser && (
+        <div className="stats-guest-sync-bar" style={{ marginBottom: '16px' }}>
+          <div className="stats-guest-sync-copy">
+            <strong>Local Session Log</strong>
+            <span>Sessions save on this device. Sign in to sync history across devices.</span>
+          </div>
+          <GoogleSignInButton size="sm" label="Sign in to Sync" />
+        </div>
+      )}
       {/* Header */}
       <div className="history-header">
         <div className="history-title-group">
           <IconHistory size={20} color="var(--accent)" />
           <h2 className="history-title">Session History</h2>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onTabChange && (
             <button
               type="button"
@@ -124,10 +126,10 @@ const HistoryTab = ({ onTabChange }) => {
               onClick={() => onTabChange('stats', 'leaderboard')}
               title="View Community Leaderboard"
             >
-              <span>🏆</span> Leaderboard
+              Leaderboard
             </button>
           )}
-          <span className="history-count-badge">
+          <span className="history-count-meta tabular-nums">
             {filtered.length} {filtered.length === 1 ? 'session' : 'sessions'}
           </span>
         </div>

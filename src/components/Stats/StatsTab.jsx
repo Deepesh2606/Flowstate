@@ -13,6 +13,16 @@ import LeaderboardView from './LeaderboardView';
 import ExamPlanner from '../Planner/ExamPlanner';
 import ProUpgradeModal from '../Settings/ProUpgradeModal';
 import { IconLock } from '../Icons';
+import {
+  MIN_DAILY_GOAL_MINUTES,
+  MAX_DAILY_GOAL_MINUTES,
+  clampDailyGoalMinutes,
+  resolveDailyGoalMinutes,
+  formatGoalMinutes,
+  computeDailyGoalProgress,
+} from '../../utils/goalUtils';
+
+const GOAL_PRESET_MINUTES = [60, 120, 180, 240];
 
 const formatTime = (seconds) => {
   if (!seconds || seconds <= 0) return '0m';
@@ -23,36 +33,137 @@ const formatTime = (seconds) => {
   return `${m}m`;
 };
 
-// Daily Goal Ring (SVG)
-const GoalRing = ({ current, goal }) => {
-  const goalSecs = (goal || 8) * 3600;
-  const progress = Math.min(1, current / goalSecs);
-  const r = 36, cx = 44, cy = 44;
+// Daily Deep Work Goal Ring (SVG + live minutes input)
+const GoalRing = ({ current, goalMinutes, onChangeGoalMinutes }) => {
+  const [draftMinutes, setDraftMinutes] = useState(String(goalMinutes));
+
+  useEffect(() => {
+    setDraftMinutes(String(goalMinutes));
+  }, [goalMinutes]);
+
+  const parsedDraft = Number(draftMinutes);
+  const effectiveMinutes =
+    draftMinutes.trim() !== '' && Number.isFinite(parsedDraft) && parsedDraft > 0
+      ? clampDailyGoalMinutes(parsedDraft, goalMinutes)
+      : goalMinutes;
+
+  const { progress, percentage, remainingSeconds, isComplete } = computeDailyGoalProgress(
+    current,
+    effectiveMinutes
+  );
+
+  const r = 34;
+  const cx = 42;
+  const cy = 42;
   const circ = 2 * Math.PI * r;
   const dash = circ * progress;
-  const pct = Math.round(progress * 100);
+
+  const commitDraft = (rawValue) => {
+    const clamped = clampDailyGoalMinutes(rawValue, goalMinutes);
+    setDraftMinutes(String(clamped));
+    if (clamped !== goalMinutes) {
+      onChangeGoalMinutes(clamped);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setDraftMinutes(val);
+    const num = Number(val);
+    if (val.trim() !== '' && Number.isFinite(num) && num >= MIN_DAILY_GOAL_MINUTES && num <= MAX_DAILY_GOAL_MINUTES) {
+      onChangeGoalMinutes(Math.round(num));
+    }
+  };
 
   return (
     <div className="goal-ring-wrapper">
-      <svg width={88} height={88} viewBox="0 0 88 88" aria-label={`Daily goal: ${pct}%`}>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={8} />
+      <svg
+        width={84}
+        height={84}
+        viewBox="0 0 84 84"
+        aria-label={`Daily deep work goal: ${percentage}%`}
+        className="goal-ring-svg"
+      >
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={7} />
         <circle
-          cx={cx} cy={cy} r={r}
+          cx={cx}
+          cy={cy}
+          r={r}
           fill="none"
-          stroke={progress >= 1 ? '#10b981' : '#06b6d4'}
-          strokeWidth={8}
+          stroke={isComplete ? '#10b981' : '#06b6d4'}
+          strokeWidth={7}
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
           transform={`rotate(-90 ${cx} ${cy})`}
-          style={{ transition: 'stroke-dasharray 0.6s ease' }}
+          style={{ transition: 'stroke-dasharray 0.45s ease, stroke 0.3s ease' }}
         />
-        <text x={cx} y={cy + 5} textAnchor="middle" fontSize={14} fontWeight={700} fill="#ffffff">
-          {pct}%
+        <text
+          x={cx}
+          y={cy + 5}
+          textAnchor="middle"
+          fontSize={14}
+          fontWeight={700}
+          fill="#ffffff"
+          data-testid="goal-ring-percentage"
+        >
+          {percentage}%
         </text>
       </svg>
+
       <div className="goal-ring-label">
-        <div className="goal-ring-title">Daily Goal</div>
-        <div className="goal-ring-sub">{formatTime(current)} / {goal || 8}h</div>
+        <div className="goal-ring-header-row">
+          <div className="goal-ring-title">Daily Deep Work Goal</div>
+          <div className="goal-ring-sub tabular-nums" data-testid="goal-ring-summary">
+            {formatTime(current)} / {formatGoalMinutes(effectiveMinutes)}
+          </div>
+        </div>
+
+        <div className="goal-ring-input-row">
+          <label htmlFor="daily-goal-minutes-input" className="goal-ring-input-label">
+            Target
+          </label>
+          <div className="goal-ring-input-box">
+            <input
+              id="daily-goal-minutes-input"
+              data-testid="daily-goal-minutes-input"
+              type="number"
+              inputMode="numeric"
+              min={MIN_DAILY_GOAL_MINUTES}
+              max={MAX_DAILY_GOAL_MINUTES}
+              step={5}
+              value={draftMinutes}
+              onChange={handleInputChange}
+              onBlur={(e) => commitDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="goal-minutes-input tabular-nums"
+              aria-label="Daily deep work goal in minutes"
+            />
+            <span className="goal-minutes-unit">min</span>
+          </div>
+
+          <div className="goal-presets-row" role="group" aria-label="Quick daily goal presets">
+            {GOAL_PRESET_MINUTES.map((mins) => (
+              <button
+                key={mins}
+                type="button"
+                className={`goal-preset-btn ${effectiveMinutes === mins ? 'active' : ''}`}
+                onClick={() => commitDraft(mins)}
+              >
+                {mins}m
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="goal-ring-status">
+          {isComplete
+            ? 'Goal reached today'
+            : `${formatTime(remainingSeconds)} remaining to reach goal`}
+        </div>
       </div>
     </div>
   );
@@ -70,10 +181,9 @@ const LevelBar = ({ totalFocusTime }) => {
     <div className="level-bar-container">
       <div className="level-bar-header">
         <div className="level-badge">
-          <span className="level-icon">⭐</span>
           <span className="level-text">Level {currentLevel}</span>
         </div>
-        <div className="xp-text">{totalXP} / {xpForNextLevel} XP</div>
+        <div className="xp-text tabular-nums">{totalXP} / {xpForNextLevel} XP</div>
       </div>
       <div className="level-progress-track">
         <div className="level-progress-fill" style={{ width: `${progressPct}%` }} />
@@ -179,7 +289,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           role="tab"
           aria-selected={subTab === 'stats'}
         >
-          <span>📊</span> My Stats
+          My Stats
         </button>
         <button
           type="button"
@@ -188,7 +298,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           role="tab"
           aria-selected={subTab === 'leaderboard'}
         >
-          <span>🏆</span> Leaderboard {settings?.isPro ? '' : <IconLock size={12} style={{marginLeft: '4px'}} />}
+          Leaderboard {settings?.isPro ? '' : <IconLock size={12} style={{ marginLeft: '4px' }} />}
         </button>
         <button
           type="button"
@@ -197,7 +307,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           role="tab"
           aria-selected={subTab === 'planner'}
         >
-          <span>🗓️</span> Exam Plan
+          Exam Plan
         </button>
       </div>
     </div>
@@ -230,8 +340,7 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           onToggleShow={(val) => updateSettings({ showExamDeadline: val })}
         />
         <button type="button" className="planner-groups-btn" onClick={onOpenStudyGroups}>
-          <span>👥</span>
-          <span><strong>Study with a group</strong><small>Create a private group or join a live focus room.</small></span>
+          <span><strong>Study with a group</strong><small>Create a private room or join a live focus hall.</small></span>
           <span aria-hidden="true">→</span>
         </button>
         <ProUpgradeModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
@@ -260,17 +369,21 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
 
       {/* Top row: Goal ring + Streak */}
       <div className="stats-top-row">
-        <GoalRing current={todayFocusTime} goal={settings?.dailyGoal} />
+        <GoalRing
+          current={todayFocusTime}
+          goalMinutes={resolveDailyGoalMinutes(settings)}
+          onChangeGoalMinutes={(mins) =>
+            updateSettings({ dailyGoalMinutes: clampDailyGoalMinutes(mins) })
+          }
+        />
         <div className="streak-badge-large">
-          <span className="streak-flame">🔥</span>
           <div>
-            <div className="streak-number">{currentStreak}</div>
-            <div className="streak-label">day streak</div>
+            <div className="streak-number tabular-nums">{currentStreak}</div>
+            <div className="streak-label">Day streak</div>
           </div>
         </div>
         {bestTimeOfDay && (
           <div className="best-time-chip">
-            <div className="best-time-icon">⚡</div>
             <div>
               <div className="best-time-label">Peak Focus</div>
               <div className="best-time-value">{bestTimeOfDay.label}</div>
@@ -315,21 +428,21 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
           onClick={() => setShowReport(true)}
           id="stats-report-btn"
         >
-          📊 Weekly Report
+          Weekly Report
         </button>
         <button
           className="stats-action-btn"
           onClick={() => exportSessions(sessions, 'csv')}
           id="stats-export-csv-btn"
         >
-          ⬇ Export CSV
+          Export CSV
         </button>
         <button
           className="stats-action-btn"
           onClick={() => exportSessions(sessions, 'json')}
           id="stats-export-json-btn"
         >
-          ⬇ Export JSON
+          Export JSON
         </button>
       </div>
 
@@ -345,16 +458,21 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
 
       {showDetails && (
         <>
-
-          {/* Unlockable Badges */}
-          <UnlockableBadges currentStreak={currentStreak} totalSessions={totalSessions} totalFocusTime={totalFocusTime} />
-
-          {/* Weekly Bar Chart */}
-          <div className="glass-card">
-            <div className="section-header">
-              <span className="section-title">This Week</span>
+          {/* Weekly Bar Chart + Subject Breakdown side-by-side on desktop */}
+          <div className="stats-charts-row">
+            <div className="glass-card">
+              <div className="section-header">
+                <span className="section-title">This Week</span>
+              </div>
+              <WeeklyBarChart weeklyData={weeklyData} />
             </div>
-            <WeeklyBarChart weeklyData={weeklyData} />
+
+            <div className="glass-card">
+              <div className="section-header">
+                <span className="section-title">By Subject</span>
+              </div>
+              <SubjectBreakdown subjectBreakdown={subjectBreakdown} />
+            </div>
           </div>
 
           {/* Subject Trend */}
@@ -368,13 +486,8 @@ const StatsTab = ({ initialSubTab = 'stats', onSubTabConsumed, onOpenStudyGroups
             </div>
           )}
 
-          {/* Subject Breakdown */}
-          <div className="glass-card">
-            <div className="section-header">
-              <span className="section-title">By Subject</span>
-            </div>
-            <SubjectBreakdown subjectBreakdown={subjectBreakdown} />
-          </div>
+          {/* Unlockable Badges */}
+          <UnlockableBadges currentStreak={currentStreak} totalSessions={totalSessions} totalFocusTime={totalFocusTime} />
         </>
       )}
 

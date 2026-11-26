@@ -6,17 +6,17 @@ import TabBar from './TabBar';
 import TimerTab from '../Timer/TimerTab';
 import ClockTab from '../Timer/ClockTab';
 import { useSettings } from '../../hooks/useSettings';
-import { IconImage, IconSettings, IconUser, IconHeadphones, IconChat, IconEdit, IconMusicNote, IconDockTasks } from '../Icons';
+import { IconImage, IconSettings, IconUser, IconHeadphones, IconChat, IconMic, IconEdit, IconMusicNote, IconDockTasks } from '../Icons';
 import { getWallpaperContrast, isVideoUrl, getOptimizedWallpaperUrl } from '../../utils/imageUtils';
 import FloatingAudioWidget from '../Audio/FloatingAudioWidget';
 import WallpaperPicker from '../WallpaperPicker';
 import InstallModal from '../InstallModal';
-import AIChatSidebar from '../Chat/AIChatSidebar';
+import GeminiCompanionDrawer from '../Chat/GeminiCompanionDrawer';
 import AudioDrawer from '../Audio/AudioDrawer';
 import Notepad from '../Notepad/Notepad';
 import LiveRoomsModal from '../Rooms/LiveRoomsModal';
-import { subscribeLiveRooms } from '../../firebase/firestore';
 import CommandPalette from './CommandPalette';
+import { useToast } from '../Toast/ToastProvider';
 
 const StatsTab = lazy(() => import('../Stats/StatsTab'));
 const HistoryTab = lazy(() => import('../History/HistoryTab'));
@@ -49,7 +49,13 @@ const AppShell = () => {
   const { settings, updateSettings } = useSettings();
   const { showAudioDrawer, setShowAudioDrawer, isAnyPlaying, isPlaybackPaused, openMusicPlayer, openAudioDrawerWithTab } = useAudio();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [installModalTab, setInstallModalTab] = useState('extension');
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+
+  const openInstallWithTab = (tab = 'extension') => {
+    setInstallModalTab(tab);
+    setShowInstallModal(true);
+  };
 
   // Global hotkeys (Cmd+K)
   useEffect(() => {
@@ -62,11 +68,14 @@ const AppShell = () => {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
+  const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showAIChat, setShowAIChat] = useState(false);
+  const [showGeminiDrawer, setShowGeminiDrawer] = useState(false);
+  const [geminiDrawerMode, setGeminiDrawerMode] = useState('chat'); // 'chat' | 'voice'
   const [showLiveRooms, setShowLiveRooms] = useState(false);
   const [realOnlineCount, setRealOnlineCount] = useState(0);
-  const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip
+  const timerActionsRef = useRef(null); // ref to expose timer play/pause/reset/skip/syncToRoom
+  const contentAreaRef = useRef(null);
   const [activeTab, setActiveTab] = useState('timer');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -76,6 +85,15 @@ const AppShell = () => {
   const [legalModalTab, setLegalModalTab] = useState('privacy');
   const [pendingSwitchMode, setPendingSwitchMode] = useState(null);
   const menuRef = useRef(null);
+
+  const openGeminiMode = (targetMode) => {
+    if (showGeminiDrawer && geminiDrawerMode === targetMode) {
+      setShowGeminiDrawer(false);
+    } else {
+      setGeminiDrawerMode(targetMode);
+      setShowGeminiDrawer(true);
+    }
+  };
 
   useEffect(() => {
     const rawWallpaper = wallpaper || WALLPAPER_FALLBACK;
@@ -172,15 +190,35 @@ const AppShell = () => {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
 
-  // Fetch real online count for Live Rooms
+  // Fetch real online count for Live Rooms from Express server
   useEffect(() => {
-    const unsub = subscribeLiveRooms((rooms) => {
-      if (!rooms) return;
-      const total = rooms.reduce((acc, room) => acc + (room.onlineCount || 0), 0);
-      setRealOnlineCount(total);
-    });
-    return () => unsub();
-  }, []);
+    let active = true;
+    const fetchRoomsCount = async () => {
+      try {
+        const res = await fetch('/api/rooms');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && typeof data.totalOnline === 'number') {
+          setRealOnlineCount(data.totalOnline);
+        }
+      } catch {
+        // ignore transient errors
+      }
+    };
+    fetchRoomsCount();
+    const intervalId = setInterval(fetchRoomsCount, 15000);
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [showLiveRooms]);
+
+  // Reset scroll position cleanly when switching tabs
+  useEffect(() => {
+    if (contentAreaRef.current) {
+      contentAreaRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
 
   // Sync fullscreen state attributes on document element & body
   useEffect(() => {
@@ -232,7 +270,7 @@ const AppShell = () => {
         setShowAudioDrawer(false);
         setShowUserMenu(false);
         setShowNotepad(false);
-        setShowAIChat(false);
+        setShowGeminiDrawer(false);
         if (document.activeElement && typeof document.activeElement.blur === 'function') {
           document.activeElement.blur();
         }
@@ -268,7 +306,12 @@ const AppShell = () => {
         timerActionsRef.current?.togglePlay?.();
       } else if (key === 'c') {
         e.preventDefault();
-        setShowAIChat((v) => !v);
+        setGeminiDrawerMode('chat');
+        setShowGeminiDrawer((v) => !v);
+      } else if (key === 'v') {
+        e.preventDefault();
+        setGeminiDrawerMode('voice');
+        setShowGeminiDrawer((v) => !v);
       } else if (key === 'r') {
         timerActionsRef.current?.reset?.();
       } else if (key === 's') {
@@ -353,7 +396,7 @@ const AppShell = () => {
     if (settings?.clockFont) {
       document.documentElement.style.setProperty('--clock-font-family', settings.clockFont);
     } else {
-      document.documentElement.style.setProperty('--clock-font-family', "'Inter', system-ui, sans-serif");
+      document.documentElement.style.setProperty('--clock-font-family', "'Plus Jakarta Sans', system-ui, sans-serif");
     }
 
     if (settings?.clockFontWeight) {
@@ -393,8 +436,27 @@ const AppShell = () => {
 
 
 
+  const handleSyncRoomTimer = ({ roomName, focusMinutes, breakMinutes, phase, remainingSec, isRunning }) => {
+    updateSettings({
+      durations: {
+        ...settings?.durations,
+        pomodoro: Math.max(5, Number(focusMinutes) || 45) * 60,
+        shortBreak: Math.max(1, Number(breakMinutes) || 5) * 60,
+      },
+    });
+    timerActionsRef.current?.syncToRoom?.({
+      phase,
+      remainingSec,
+      isRunning,
+      roomName,
+    });
+    setActiveTab('timer');
+    setShowLiveRooms(false);
+    toast?.(`Synced timer with ${roomName}`, 'success', 3000);
+  };
+
   return (
-    <div className={`app-layout${showAIChat ? ' app-layout--chat-open' : ''}`}>
+    <div className={`app-layout${showGeminiDrawer ? ' app-layout--chat-open' : ''}`}>
       {/* Wallpaper Background (Video or Image) */}
       {isVideoUrl(renderedWallpaper) ? (
         <video
@@ -441,6 +503,17 @@ const AppShell = () => {
           </button>
 
           <div className="topbar-actions" ref={menuRef}>
+            <button
+              type="button"
+              className="topbar-action-btn"
+              onClick={() => openInstallWithTab('extension')}
+              title="Download FLOWSTATE Chrome Extension"
+              aria-label="Chrome Extension"
+              data-testid="topbar-extension-btn"
+            >
+              <span>Extension</span>
+            </button>
+
             <button
               type="button"
               className="topbar-action-btn topbar-rooms-btn"
@@ -672,7 +745,7 @@ const AppShell = () => {
           </div>
         )}
 
-        {/* Bottom Left Dock (Tasks, Audio, Notepad, Ask AI — each appears once) */}
+        {/* Bottom Left Dock (Tasks, Audio, Notepad, Gemini Chat, Live Voice) */}
         <div className="bottom-left-dock" role="group" aria-label="Workspace tools">
           <button
             type="button"
@@ -711,20 +784,33 @@ const AppShell = () => {
 
           <button
             type="button"
-            className={`bottom-dock-btn ai-chat-btn${showAIChat ? ' active ai-chat-btn--active' : ''}`}
-            onClick={() => setShowAIChat((v) => !v)}
-            id="chatgpt-btn-bottom"
-            title="Ask AI (C)"
-            aria-label="Ask AI (C)"
-            aria-expanded={showAIChat}
+            className={`bottom-dock-btn gemini-dock-btn${showGeminiDrawer && geminiDrawerMode === 'chat' ? ' active gemini-dock-btn--active' : ''}`}
+            onClick={() => openGeminiMode('chat')}
+            id="dock-gemini-chat-btn"
+            data-testid="dock-gemini-chat-btn"
+            title="Gemini Chat (C)"
+            aria-label="Gemini Chat (C)"
+            aria-expanded={showGeminiDrawer && geminiDrawerMode === 'chat'}
           >
-            <IconChat size={18} />
-            <span className="ai-chat-btn-text">Ask AI</span>
+            <IconChat size={17} />
+          </button>
+
+          <button
+            type="button"
+            className={`bottom-dock-btn gemini-dock-btn gemini-voice-dock-btn${showGeminiDrawer && geminiDrawerMode === 'voice' ? ' active gemini-dock-btn--active' : ''}`}
+            onClick={() => openGeminiMode('voice')}
+            id="dock-live-voice-btn"
+            data-testid="dock-live-voice-btn"
+            title="Live Voice Conversation (V)"
+            aria-label="Live Voice Conversation (V)"
+            aria-expanded={showGeminiDrawer && geminiDrawerMode === 'voice'}
+          >
+            <IconMic size={17} />
           </button>
         </div>
 
         {/* Tab Content */}
-        <main className="content-area" id={`panel-${activeTab}`}>
+        <main className="content-area" id={`panel-${activeTab}`} ref={contentAreaRef}>
           <div
             className="tab-content fs-snap-section"
             style={{ display: activeTab === 'timer' ? 'block' : 'none', animation: activeTab === 'timer' ? 'tabFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
@@ -782,9 +868,13 @@ const AppShell = () => {
         <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
 
-      {/* AI Chat — persistent left sidebar (push layout, no overlay) */}
-      {showAIChat && (
-        <AIChatSidebar onClose={() => setShowAIChat(false)} />
+      {/* Gemini Chat & Live Voice — persistent sidebar */}
+      {showGeminiDrawer && (
+        <GeminiCompanionDrawer
+          mode={geminiDrawerMode}
+          onModeChange={setGeminiDrawerMode}
+          onClose={() => setShowGeminiDrawer(false)}
+        />
       )}
 
       {/* Persistent Audio & Music Drawer */}
@@ -798,7 +888,7 @@ const AppShell = () => {
             settings={settings}
             onSave={updateSettings}
             onClose={() => setShowSettings(false)}
-            onOpenInstall={() => setShowInstallModal(true)}
+            onOpenInstall={(tab) => openInstallWithTab(tab || 'desktop')}
             onOpenLegal={handleOpenLegal}
           />
         )}
@@ -820,9 +910,15 @@ const AppShell = () => {
           } else if (id === 'notepad') {
             setShowNotepad(true);
           } else if (id === 'chat') {
-            setShowAIChat(true);
+            setGeminiDrawerMode('chat');
+            setShowGeminiDrawer(true);
+          } else if (id === 'voice') {
+            setGeminiDrawerMode('voice');
+            setShowGeminiDrawer(true);
           } else if (id === 'rooms') {
             setShowLiveRooms(true);
+          } else if (id === 'extension') {
+            openInstallWithTab('extension');
           } else {
             setShowSettings(true);
           }
@@ -834,6 +930,7 @@ const AppShell = () => {
         onClose={() => setShowInstallModal(false)}
         deferredPrompt={deferredPrompt}
         onInstalled={() => setDeferredPrompt(null)}
+        initialTab={installModalTab}
       />
 
       <LegalModal
@@ -846,6 +943,7 @@ const AppShell = () => {
       {showLiveRooms && (
         <LiveRoomsModal
           onClose={() => setShowLiveRooms(false)}
+          onSyncTimer={handleSyncRoomTimer}
           currentUser={currentUser}
         />
       )}
