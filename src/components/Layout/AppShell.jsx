@@ -477,6 +477,7 @@ const AppShell = () => {
         />
       )}
       <div className={`wallpaper-overlay${isWallpaperLoading ? ' is-wallpaper-loading' : ''}`} aria-hidden="true" />
+      <div id="clock-backdrop-host" aria-hidden="true" />
 
       {/* App Shell */}
       <div className="app-shell">

@@ -59,7 +59,14 @@ export const useSettings = () => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    const handleSettingsSync = (event) => {
+      if (event?.detail) {
+        setSettings(event.detail);
+      }
+    };
+    window.addEventListener('flowstate:settings-updated', handleSettingsSync);
     return () => {
+      window.removeEventListener('flowstate:settings-updated', handleSettingsSync);
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
   }, []);
@@ -128,6 +135,7 @@ export const useSettings = () => {
         nextState = merged;
         try {
           localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
+          window.dispatchEvent(new CustomEvent('flowstate:settings-updated', { detail: merged }));
         } catch {
           // ignore
         }

@@ -469,7 +469,11 @@ const GeminiCompanionDrawer = ({ mode = 'chat', onModeChange, onClose }) => {
         }
       };
 
+      let handledError = false;
+
       ws.onerror = () => {
+        if (handledError) return;
+        handledError = true;
         setVoiceError('Could not connect to Live Voice service.');
         setVoiceStatus('error');
         stopVoiceSession(false);
@@ -478,6 +482,11 @@ const GeminiCompanionDrawer = ({ mode = 'chat', onModeChange, onClose }) => {
       ws.onclose = () => {
         if (isConnectedRef.current) {
           stopVoiceSession(true);
+        } else if (!handledError) {
+          handledError = true;
+          setVoiceError((prev) => prev || 'Voice session closed before connecting.');
+          setVoiceStatus('error');
+          stopVoiceSession(false);
         }
       };
     } catch (err) {

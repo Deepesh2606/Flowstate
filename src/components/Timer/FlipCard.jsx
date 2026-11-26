@@ -59,8 +59,10 @@ const FlipCard = ({ value, label, pad = true, className = '', wrapperClassName =
           <span>{displayCurrent}</span>
         </div>
 
-        {/* Horizontal Seam / Groove Divider */}
-        <div className="flip-divider-seam" />
+        {/* Horizontal Seam / Mechanical Hinge Pins */}
+        <div className="flip-divider-seam" aria-hidden="true" />
+        <span className="flip-hinge flip-hinge--left" aria-hidden="true" />
+        <span className="flip-hinge flip-hinge--right" aria-hidden="true" />
       </div>
       {label && <div className="flip-card-label">{label}</div>}
     </div>

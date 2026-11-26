@@ -8,31 +8,32 @@
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         min-height: 100vh;
-        background: #0b0d12;
-        color: #f4f4f6;
+        background: linear-gradient(155deg, #1d263b 0%, #161d2f 100%);
+        color: #f8fafc;
         font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         padding: 40px 20px;
       }
       .opt-shell {
         max-width: 540px;
         margin: 0 auto;
-        background: #12151c;
-        border: 1px solid #222631;
-        border-radius: 12px;
+        background: rgba(34, 43, 66, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 16px;
         padding: 28px;
         display: flex;
         flex-direction: column;
         gap: 20px;
+        box-shadow: 0 24px 54px rgba(10, 14, 28, 0.35);
       }
       h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: #ffffff; }
-      .sub { font-size: 13.5px; color: #8c94a6; margin-top: 6px; line-height: 1.5; }
+      .sub { font-size: 13.5px; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
       .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-      label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: #c2c7d3; }
+      label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: #e2e8f0; }
       input, textarea {
         padding: 9px 11px;
-        border-radius: 8px;
-        border: 1px solid #262b38;
-        background: #0d0f14;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(15, 23, 42, 0.38);
         color: #ffffff;
         font-size: 13px;
         font-family: inherit;
@@ -41,7 +42,7 @@
       input[type="number"] {
         font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
       }
-      input:focus, textarea:focus { border-color: #525d75; }
+      input:focus, textarea:focus { border-color: rgba(56, 189, 248, 0.65); }
       textarea { min-height: 128px; resize: vertical; line-height: 1.55; }
       .footer {
         display: flex;
@@ -49,17 +50,17 @@
         justify-content: space-between;
         gap: 12px;
         padding-top: 12px;
-        border-top: 1px solid #1e222c;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
-      .status { font-size: 12.5px; color: #16a34a; font-weight: 600; }
+      .status { font-size: 12.5px; color: #6ee7b7; font-weight: 600; }
       button {
         padding: 9px 18px;
-        border-radius: 8px;
+        border-radius: 10px;
         border: none;
-        background: #f4f4f6;
-        color: #0b0d12;
+        background: #f8fafc;
+        color: #161d2f;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
       }
       button:hover { background: #ffffff; }

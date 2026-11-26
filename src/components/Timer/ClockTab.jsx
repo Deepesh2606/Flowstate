@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import FlipCard from './FlipCard';
 import { IconMaximize, IconMinimize, IconPip, IconSettings } from '../Icons';
+import clockDeskBackdrop from '../../assets/images/clock_desk_backdrop_1795734226870.jpg';
+
+const CLOCK_BACKDROPS = [
+  { id: 'studio', label: 'Studio' },
+  { id: 'slate', label: 'Nordic' },
+  { id: 'dusk', label: 'Dusk' },
+  { id: 'wallpaper', label: 'App BG' },
+];
 
 const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpenSettings, isActive = true }) => {
   const [time, setTime] = useState(() => new Date());
@@ -13,6 +22,7 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPipActive, setIsPipActive] = useState(false);
   const [showEditColor, setShowEditColor] = useState(false);
+  const [clockBackdrop, setClockBackdrop] = useState(() => settings?.clockBackdrop || 'studio');
   const pipVideoRef = useRef(null);
   const pipCanvasRef = useRef(null);
   const hoverTimerRef = useRef(null);
@@ -48,6 +58,12 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
       setShowSeconds(settings.showSeconds);
     }
   }, [settings?.showSeconds]);
+
+  useEffect(() => {
+    if (settings?.clockBackdrop) {
+      setClockBackdrop(settings.clockBackdrop);
+    }
+  }, [settings?.clockBackdrop]);
 
   // Keep live real time updated every second only when active
   useEffect(() => {
@@ -128,6 +144,13 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
     setShowSeconds(nextSec);
     if (onUpdateSettings) {
       onUpdateSettings({ showSeconds: nextSec });
+    }
+  };
+
+  const handleBackdropChange = (nextBackdrop) => {
+    setClockBackdrop(nextBackdrop);
+    if (onUpdateSettings) {
+      onUpdateSettings({ clockBackdrop: nextBackdrop });
     }
   };
 
@@ -228,9 +251,27 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
     }
   };
 
+  const backdropHost = typeof document !== 'undefined' ? document.getElementById('clock-backdrop-host') : null;
+
   return (
-    <div className="live-clock-tab-wrapper">
-      {!hasWallpaper && <div className="liquid-orb" />}
+    <div className="live-clock-tab-wrapper" data-clock-backdrop={clockBackdrop}>
+      {isActive && clockBackdrop !== 'wallpaper' && backdropHost &&
+        createPortal(
+          <div
+            className={`clock-tab-backdrop clock-tab-backdrop--${clockBackdrop}`}
+            data-clock-backdrop-layer={clockBackdrop}
+            style={
+              clockBackdrop === 'studio'
+                ? { backgroundImage: `url(${clockDeskBackdrop})` }
+                : undefined
+            }
+            aria-hidden="true"
+          >
+            <div className="clock-tab-backdrop-scrim" />
+          </div>,
+          backdropHost
+        )}
+      {!hasWallpaper && clockBackdrop === 'wallpaper' && <div className="liquid-orb" />}
 
       {/* Top Header Mode Switcher for Live Clock — Timer | Stopwatch | Clock */}
       <div className="liquid-pills-wrapper" role="group" aria-label="Clock mode navigation">
@@ -383,20 +424,20 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
           {upcomingExams.map(exam => (
             <div key={exam.id} style={{
-              background: '#12151c',
-              border: '1px solid #242936',
+              background: '#242c40',
+              border: '1px solid #3a4663',
               padding: '6px 14px',
-              borderRadius: '8px',
+              borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              color: '#f4f4f6',
+              color: '#f8fafc',
               fontSize: '13px',
               fontWeight: 500
             }}>
               <span>{exam.title}</span>
               <span style={{ opacity: 0.45 }}>·</span>
-              <span style={{ color: '#94a3b8' }}>
+              <span style={{ color: '#cbd5e1' }}>
                 {exam.daysLeft === 0 ? 'Today' : exam.daysLeft === 1 ? 'Tomorrow' : `${exam.daysLeft} days left`}
               </span>
             </div>
@@ -451,10 +492,26 @@ const ClockTab = ({ settings, onUpdateSettings, hasWallpaper, onTabChange, onOpe
         >
           <IconPip size={18} />
         </button>
+
+        {/* Clock Backdrop Switcher */}
+        <div className="clock-backdrop-switcher" role="group" aria-label="Clock background">
+          {CLOCK_BACKDROPS.map((bg) => (
+            <button
+              key={bg.id}
+              type="button"
+              className={`clock-backdrop-btn ${clockBackdrop === bg.id ? 'active' : ''}`}
+              aria-pressed={clockBackdrop === bg.id}
+              onClick={() => handleBackdropChange(bg.id)}
+              data-testid={`clock-bg-${bg.id}`}
+            >
+              {bg.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Keyboard shortcut hint */}
-      <div className="keyboard-hints" style={{ marginTop: '14px' }}>
+      <div className="keyboard-hints" style={{ marginTop: '10px' }}>
         <span>T <span className="keyboard-hint-sep">·</span> timer</span>
         <span>F <span className="keyboard-hint-sep">·</span> fullscreen</span>
       </div>

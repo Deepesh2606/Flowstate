@@ -5,7 +5,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
-import { GoogleGenAI, Modality, Type } from '@google/genai';
+import { GoogleGenAI, Modality, ThinkingLevel, Type } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +39,22 @@ const getGeminiClient = (): GoogleGenAI => {
   }
   return new GoogleGenAI({
     apiKey,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
+    },
+  });
+};
+
+const getGeminiLiveClient = (): GoogleGenAI => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured on the server.');
+  }
+  return new GoogleGenAI({
+    apiKey,
+    apiVersion: 'v1beta',
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
@@ -322,6 +338,22 @@ async function startServer() {
   const app = express();
   app.use(express.json({ limit: '2mb' }));
 
+  // Prevent browsers/proxies from caching stale HTML or the SW kill-switch
+  app.use((req, res, next) => {
+    if (
+      req.method === 'GET' &&
+      (req.path === '/' ||
+        req.path === '/index.html' ||
+        req.path === '/sw.js' ||
+        req.path.endsWith('.html'))
+    ) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    next();
+  });
+
   // ── Live Rooms REST Summary ────────────────────────────────────────────────
   app.get('/api/rooms', (_req, res) => {
     res.json({
@@ -491,23 +523,32 @@ async function startServer() {
       return;
     }
 
-    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
+    res.write(': connected\n\n');
 
     let closed = false;
-    req.on('close', () => {
-      closed = true;
+    res.on('close', () => {
+      if (!res.writableEnded) {
+        closed = true;
+      }
     });
 
     try {
+      const chatConfig: Record<string, unknown> = {
+        systemInstruction,
+      };
+      if (model === 'gemini-4-hydrogen') {
+        chatConfig.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
+      }
+
       const chat = ai.chats.create({
         model,
         history: priorHistory,
-        config: {
-          systemInstruction,
-        },
+        config: chatConfig,
       });
 
       const stream = await chat.sendMessageStream({ message: latestUserMessage });
@@ -525,7 +566,7 @@ async function startServer() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to generate Gemini response.';
       console.error('Gemini chat error:', err);
-      if (!closed) {
+      if (!closed && !res.writableEnded) {
         res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
         res.end();
       }
@@ -597,8 +638,18 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distDir = path.join(__dirname, 'dist');
-    app.use(express.static(distDir));
+    app.use(
+      express.static(distDir, {
+        index: false,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.html') || filePath.endsWith('sw.js')) {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+          }
+        },
+      })
+    );
     app.get('/{*splat}', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.sendFile(path.join(distDir, 'index.html'));
     });
   }
@@ -902,6 +953,17 @@ async function startServer() {
     let liveSession: Awaited<ReturnType<GoogleGenAI['live']['connect']>> | null = null;
     let sessionPromise: Promise<Awaited<ReturnType<GoogleGenAI['live']['connect']>>> | null = null;
     let isClosing = false;
+    let hasReportedError = false;
+
+    const pingInterval = setInterval(() => {
+      if (clientWs.readyState === WebSocket.OPEN) {
+        try {
+          clientWs.ping();
+        } catch {
+          // ignore transient ping errors
+        }
+      }
+    }, 25000);
 
     const closeLiveSession = () => {
       isClosing = true;
@@ -929,10 +991,11 @@ async function startServer() {
       if (type === 'start') {
         if (sessionPromise || liveSession) return;
         isClosing = false;
+        hasReportedError = false;
 
         let ai: GoogleGenAI;
         try {
-          ai = getGeminiClient();
+          ai = getGeminiLiveClient();
         } catch (err) {
           sendJson(clientWs, {
             type: 'error',
@@ -961,11 +1024,6 @@ async function startServer() {
               systemInstruction,
             },
             callbacks: {
-              onopen: () => {
-                if (!isClosing) {
-                  sendJson(clientWs, { type: 'ready', model: 'gemini-3.8-live', voice: voiceName });
-                }
-              },
               onmessage: (serverMsg) => {
                 if (isClosing || clientWs.readyState !== WebSocket.OPEN) return;
                 const content = serverMsg.serverContent;
@@ -1003,13 +1061,16 @@ async function startServer() {
               },
               onerror: (err) => {
                 console.error('Gemini Live session error:', err);
-                sendJson(clientWs, {
-                  type: 'error',
-                  message:
-                    err instanceof Error
-                      ? err.message
-                      : 'Voice session encountered a connection error.',
-                });
+                if (!hasReportedError && !isClosing) {
+                  hasReportedError = true;
+                  sendJson(clientWs, {
+                    type: 'error',
+                    message:
+                      err instanceof Error
+                        ? err.message
+                        : 'Voice session encountered a connection error.',
+                  });
+                }
               },
               onclose: () => {
                 liveSession = null;
@@ -1024,17 +1085,22 @@ async function startServer() {
           liveSession = await sessionPromise;
           if (isClosing) {
             closeLiveSession();
+          } else {
+            sendJson(clientWs, { type: 'ready', model: 'gemini-3.8-live', voice: voiceName });
           }
         } catch (err) {
           console.error('Failed to connect Gemini Live session:', err);
           sessionPromise = null;
-          sendJson(clientWs, {
-            type: 'error',
-            message:
-              err instanceof Error
-                ? err.message
-                : 'Could not start Gemini Live voice session.',
-          });
+          if (!hasReportedError && !isClosing) {
+            hasReportedError = true;
+            sendJson(clientWs, {
+              type: 'error',
+              message:
+                err instanceof Error
+                  ? err.message
+                  : 'Could not start Gemini Live voice session.',
+            });
+          }
         }
         return;
       }
@@ -1073,6 +1139,7 @@ async function startServer() {
     });
 
     clientWs.on('close', () => {
+      clearInterval(pingInterval);
       closeLiveSession();
     });
   });

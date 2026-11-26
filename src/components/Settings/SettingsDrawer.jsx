@@ -3,7 +3,7 @@ import { useToast } from '../Toast/ToastProvider';
 import { useWallpaper } from '../../contexts/WallpaperContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWallpaperContrast } from '../../utils/imageUtils';
-import { subscribeLeaderboard, subscribeRegisteredUsers, grantProStatus } from '../../firebase/firestore';
+import { subscribeRegisteredUsers, grantProStatus } from '../../firebase/firestore';
 import {
   IconSun,
   IconMoon,
@@ -11,61 +11,31 @@ import {
   IconClock,
   IconTimer,
   IconStats,
-  IconQuotes,
-  IconStar,
   IconUser,
-  IconHelpCircle,
-  IconRocket,
-  IconZap,
   IconX,
-  IconCoffee,
-  IconMac,
 } from '../Icons';
-import { IconShield, IconFileText, IconRefreshCcw } from '../Legal/LegalModal';
+import { IconShield } from '../Legal/LegalModal';
 import { playChimeStyle } from '../../hooks/useTimer';
 
-const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL || 'https://buymeacoffee.com/deepesh2606';
-
-// ─── App Themes ───────────────────────────────────────────────────────────────
 const APP_THEMES = [
-  { id: 'midnight', label: 'Midnight', accent: '#06b6d4', orb: 'rgba(6,182,212,0.18)', grad: '#0f172a' },
-  { id: 'ocean',    label: 'Ocean',    accent: '#38bdf8', orb: 'rgba(56,189,248,0.18)', grad: '#0c1a2e' },
-  { id: 'forest',   label: 'Forest',   accent: '#34d399', orb: 'rgba(52,211,153,0.18)', grad: '#0a1f15' },
-  { id: 'sunset',   label: 'Sunset',   accent: '#fb923c', orb: 'rgba(251,146,60,0.18)',  grad: '#1f0f08' },
-  { id: 'rose',     label: 'Rose',     accent: '#f472b6', orb: 'rgba(244,114,182,0.18)', grad: '#1f0a14' },
-  { id: 'mono',     label: 'Mono',     accent: '#94a3b8', orb: 'rgba(148,163,184,0.12)', grad: '#0f1117' },
+  { id: 'midnight', label: 'Indigo', accent: '#6366f1', orb: 'rgba(99,102,241,0.18)' },
+  { id: 'ocean',    label: 'Sky',    accent: '#38bdf8', orb: 'rgba(56,189,248,0.18)' },
+  { id: 'forest',   label: 'Sage',   accent: '#34d399', orb: 'rgba(52,211,153,0.18)' },
+  { id: 'sunset',   label: 'Amber',  accent: '#f59e0b', orb: 'rgba(245,158,11,0.18)' },
+  { id: 'rose',     label: 'Rose',   accent: '#f472b6', orb: 'rgba(244,114,182,0.18)' },
+  { id: 'mono',     label: 'Slate',  accent: '#cbd5e1', orb: 'rgba(203,213,225,0.14)' },
 ];
 
 const CHIME_OPTIONS = [
-  { id: 'classic', label: 'Classic', icon: '🎵' },
-  { id: 'bell',    label: 'Bell',    icon: '🔔' },
-  { id: 'bowl',    label: 'Bowl',    icon: '🎶' },
-  { id: 'ping',    label: 'Ping',    icon: '✨' },
-  { id: 'soft',    label: 'Soft',    icon: '🌙' },
-];
-
-const DEFAULT_PRESETS = [
-  { name: 'Deep Work', pomodoro: 50, shortBreak: 10, longBreak: 30 },
-  { name: 'Pomodoro',  pomodoro: 25, shortBreak: 5,  longBreak: 15 },
-  { name: 'Sprint',    pomodoro: 15, shortBreak: 3,  longBreak: 10 },
-];
-
-const FONT_OPTIONS = [
-  { id: "'Inter', system-ui, sans-serif", label: 'Inter (Default)' },
-  { id: "'Space Grotesk', sans-serif", label: 'Space Grotesk' },
-  { id: "'Outfit', sans-serif", label: 'Outfit' },
-  { id: "'Roboto', sans-serif", label: 'Roboto' },
-  { id: "'JetBrains Mono', monospace", label: 'JetBrains Mono' },
-  { id: "'Playfair Display', serif", label: 'Playfair Display' },
-  { id: "'DM Mono', monospace", label: 'DM Mono' },
+  { id: 'classic', label: 'Classic' },
+  { id: 'bell',    label: 'Bell' },
+  { id: 'soft',    label: 'Soft' },
 ];
 
 const Toggle = ({ id, checked, onChange, label, sub }) => (
   <div className="setting-toggle-row" id={`row-${id}`}>
     <div style={{ flex: 1, paddingRight: '12px' }}>
-      <div className="setting-toggle-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span>{label}</span>
-      </div>
+      <div className="setting-toggle-label">{label}</div>
       {sub && <div className="setting-toggle-sub">{sub}</div>}
     </div>
     <button
@@ -94,42 +64,136 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
   const { currentUser, signOut, openAuthModal } = useAuth();
   const d = settings?.durations || {};
 
-  // Active side menu category
-  const [activeTab, setActiveTab] = useState('timer'); // 'clock' | 'timer' | 'stats' | 'quotes' | 'extras' | 'account' | 'support' | 'whatsnew'
+  const [activeTab, setActiveTab] = useState('timer');
 
   // Timer durations
-  const [pomodoro, setPomodoro]       = useState(Math.round((d.pomodoro   || 2700) / 60));
-  const [shortBreak, setShortBreak]   = useState(Math.round((d.shortBreak || 300)  / 60));
-  const [longBreak, setLongBreak]     = useState(Math.round((d.longBreak  || 900)  / 60));
+  const [pomodoro, setPomodoro] = useState(Math.round((d.pomodoro || 2700) / 60));
+  const [shortBreak, setShortBreak] = useState(Math.round((d.shortBreak || 300) / 60));
+  const [longBreak, setLongBreak] = useState(Math.round((d.longBreak || 900) / 60));
   const [longBreakInterval, setLongBreakInterval] = useState(settings?.longBreakInterval || 4);
+  const [dailyGoal, setDailyGoal] = useState(settings?.dailyGoal || 8);
 
-  const [notifPermission, setNotifPermission] = useState(() => {
-    return typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
-  });
+  // Core useful behavior toggles
+  const [autoStartPomodoros, setAutoStartPomodoros] = useState(settings?.autoStartPomodoros ?? false);
+  const [soundEnabled, setSoundEnabled] = useState(settings?.soundEnabled ?? true);
+  const [chimeStyle, setChimeStyle] = useState(settings?.chimeStyle || 'classic');
+  const [notifyOnComplete, setNotifyOnComplete] = useState(settings?.notifyOnComplete ?? true);
+  const [strictMode, setStrictMode] = useState(settings?.strictMode ?? false);
+
+  // Display & Clock
+  const [timerStyle, setTimerStyle] = useState(settings?.timerStyle || 'default');
+  const [clockStyle, setClockStyle] = useState(settings?.clockStyle || 'flip');
+  const [showSeconds, setShowSeconds] = useState(settings?.showSeconds ?? true);
+  const [clockFormat, setClockFormat] = useState(settings?.clockFormat || '12h');
+  const [theme, setTheme] = useState(settings?.theme || 'dark');
+  const [appTheme, setAppTheme] = useState(settings?.appTheme || 'midnight');
+  const [showQuotes, setShowQuotes] = useState(settings?.showQuotes ?? true);
+  const [showExamDeadline, setShowExamDeadline] = useState(settings?.showExamDeadline ?? true);
+
+  // Study Targets
+  const initialTargets = (settings?.targets || []).filter((t) => t.name !== 'SSC CGL');
+  const [targetsRaw, setTargetsRaw] = useState(
+    initialTargets.map((t) => ({
+      ...t,
+      subjectsStr: (t.subjects || []).join(', '),
+    }))
+  );
+  const [newSubjectInputs, setNewSubjectInputs] = useState({});
+
+  // Admin state
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminManualUid, setAdminManualUid] = useState('');
+  const [adminDefaultWpUrl, setAdminDefaultWpUrl] = useState('');
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (settings?.autoClockColor && wallpaper) {
+      let cancelled = false;
+      getWallpaperContrast(wallpaper).then((contrast) => {
+        if (!cancelled) {
+          document.documentElement.style.setProperty('--clock-text-color', contrast.color);
+          document.documentElement.style.setProperty('--clock-text-shadow', contrast.shadow);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+    return undefined;
+  }, [settings?.autoClockColor, wallpaper]);
+
+  useEffect(() => {
+    if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
+      const unsub = subscribeRegisteredUsers((list) => {
+        const sorted = [...list].sort((a, b) =>
+          (a.displayName || a.email || '').localeCompare(b.displayName || b.email || '')
+        );
+        setAdminUsers(sorted);
+      });
+      return () => unsub();
+    }
+    return undefined;
+  }, [activeTab, currentUser]);
+
+  const applyRealtime = useCallback(
+    (partialUpdates) => {
+      onSave(partialUpdates);
+    },
+    [onSave]
+  );
+
+  const handleDurationsChange = (type, minutes) => {
+    const val = Math.max(1, Math.min(120, Number(minutes) || 1));
+    if (type === 'pomodoro') setPomodoro(val);
+    else if (type === 'shortBreak') setShortBreak(val);
+    else if (type === 'longBreak') setLongBreak(val);
+
+    applyRealtime({
+      durations: {
+        pomodoro: (type === 'pomodoro' ? val : Number(pomodoro)) * 60,
+        shortBreak: (type === 'shortBreak' ? val : Number(shortBreak)) * 60,
+        longBreak: (type === 'longBreak' ? val : Number(longBreak)) * 60,
+      },
+    });
+  };
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    applyRealtime({ theme: nextTheme });
+  };
+
+  const handleAppThemeChange = (themeId) => {
+    const t = APP_THEMES.find((x) => x.id === themeId) || APP_THEMES[0];
+    setAppTheme(themeId);
+    document.documentElement.style.setProperty('--accent', t.accent);
+    document.documentElement.style.setProperty('--accent-dim', `${t.accent}22`);
+    document.documentElement.style.setProperty('--theme-orb-color', t.orb);
+    applyRealtime({ appTheme: themeId });
+  };
 
   const handleTestNotification = async () => {
     if (typeof Notification === 'undefined') {
-      toast('Notifications are not supported in this browser', 'error', 2500);
+      toast('Notifications are not supported in this browser.', 'error', 2400);
       return;
     }
-    if (Notification.permission === 'default') {
-      const res = await Notification.requestPermission();
-      setNotifPermission(res);
-      if (res === 'granted') {
-        new Notification('FLOWSTATE', {
-          body: '🎉 Browser notifications are enabled and ready!',
-          icon: '/favicon.svg'
-        });
-        toast('Permission granted & notification sent!', 'success', 2500);
-      }
-    } else if (Notification.permission === 'granted') {
+    const perm = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+    if (perm === 'granted') {
       new Notification('FLOWSTATE', {
-        body: '🎉 Focus timer notifications are working!',
-        icon: '/favicon.svg'
+        body: 'Focus timer notifications are enabled.',
+        icon: '/favicon.svg',
       });
-      toast('Test notification sent!', 'success', 2000);
+      toast('Test notification sent.', 'success', 2000);
     } else {
-      toast('Notifications are blocked in browser settings', 'warning', 3500);
+      toast('Notifications are blocked in your browser settings.', 'warning', 3000);
     }
   };
 
@@ -149,369 +213,142 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
       a.download = `flowstate-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast('✅ Study data exported to JSON file', 'success', 2500);
-    } catch (e) {
-      toast('Failed to export data', 'error', 2000);
+      toast('Study data exported.', 'success', 2200);
+    } catch {
+      toast('Failed to export data.', 'error', 2000);
     }
   };
 
-  const [dailyGoal, setDailyGoal] = useState(settings?.dailyGoal || 8);
-
-  // Behaviour toggles
-  const [autoStartBreaks, setAutoStartBreaks]       = useState(settings?.autoStartBreaks ?? false);
-  const [autoStartPomodoros, setAutoStartPomodoros] = useState(settings?.autoStartPomodoros ?? false);
-  const [soundEnabled, setSoundEnabled]             = useState(settings?.soundEnabled ?? true);
-  const [notifyOnComplete, setNotifyOnComplete]     = useState(settings?.notifyOnComplete ?? true);
-  const [strictMode, setStrictMode]                 = useState(settings?.strictMode ?? false);
-
-  // Timer Styles & Toggles matching screenshot
-  const [timerStyle, setTimerStyle]                 = useState(settings?.timerStyle || 'default');
-  const [showTimerProgressBar, setShowTimerProgressBar] = useState(settings?.showTimerProgressBar ?? true);
-  const [showStreakCounter, setShowStreakCounter]   = useState(settings?.showStreakCounter ?? true);
-  const [showTaskInPip, setShowTaskInPip]           = useState(settings?.showTaskInPip ?? true);
-  const [showGhostPacer, setShowGhostPacer]         = useState(settings?.showGhostPacer ?? false);
-
-  // Customization
-  const [clockStyle, setClockStyle]                 = useState(settings?.clockStyle || 'flip');
-  const [showSeconds, setShowSeconds]               = useState(settings?.showSeconds ?? true);
-  const [clockFormat, setClockFormat]               = useState(settings?.clockFormat || '12h');
-  const [autoClockColor, setAutoClockColor]         = useState(settings?.autoClockColor ?? true);
-  const [clockColor, setClockColor]                 = useState(settings?.clockColor || settings?.textColor || '#ffffff');
-  const [clockFont, setClockFont]                   = useState(settings?.clockFont || "'Inter', system-ui, sans-serif");
-  const [theme, setTheme]                           = useState(settings?.theme || 'dark');
-  const [appTheme, setAppTheme]                     = useState(settings?.appTheme || 'midnight');
-  const [chimeStyle, setChimeStyle]                 = useState(settings?.chimeStyle || 'classic');
-  const [showQuotes, setShowQuotes]                 = useState(settings?.showQuotes ?? true);
-  const [showExamDeadline, setShowExamDeadline]     = useState(settings?.showExamDeadline ?? true);
-  const [presets, setPresets]                       = useState(settings?.presets || DEFAULT_PRESETS);
-
-  useEffect(() => {
-    if (settings) {
-      if (settings.timerStyle) setTimerStyle(settings.timerStyle);
-      if (settings.showTimerProgressBar !== undefined) setShowTimerProgressBar(settings.showTimerProgressBar);
-      if (settings.showStreakCounter !== undefined) setShowStreakCounter(settings.showStreakCounter);
-      if (settings.showTaskInPip !== undefined) setShowTaskInPip(settings.showTaskInPip);
-      if (settings.showGhostPacer !== undefined) setShowGhostPacer(settings.showGhostPacer);
-      if (settings.autoClockColor !== undefined) setAutoClockColor(settings.autoClockColor);
-      if (settings.clockStyle) setClockStyle(settings.clockStyle);
-      if (settings.showSeconds !== undefined) setShowSeconds(settings.showSeconds);
-      if (settings.clockFormat) setClockFormat(settings.clockFormat);
-      if (settings.clockColor || settings.textColor) setClockColor(settings.clockColor || settings.textColor);
-      if (settings.clockFont) setClockFont(settings.clockFont);
-      if (settings.theme) setTheme(settings.theme);
-      if (settings.appTheme) setAppTheme(settings.appTheme);
-      if (settings.chimeStyle) setChimeStyle(settings.chimeStyle);
-      if (settings.showQuotes !== undefined) setShowQuotes(settings.showQuotes);
-      if (settings.showExamDeadline !== undefined) setShowExamDeadline(settings.showExamDeadline);
-      if (settings.strictMode !== undefined) setStrictMode(settings.strictMode);
-      if (settings.presets) setPresets(settings.presets);
-    }
-  }, [settings]);
-
-  // Study Targets
-  const initialTargets = (settings?.targets || []).filter(t => t.name !== 'SSC CGL');
-  const [targetsRaw, setTargetsRaw] = useState(initialTargets.map(t => ({
-    ...t,
-    subjectsStr: (t.subjects || []).join(', ')
-  })));
-  const [newSubjectInputs, setNewSubjectInputs] = useState({});
-
   const handleUpdateTarget = (index, field, value) => {
-    const newTargets = [...targetsRaw];
-    newTargets[index][field] = value;
-    setTargetsRaw(newTargets);
+    const next = [...targetsRaw];
+    next[index] = { ...next[index], [field]: value };
+    setTargetsRaw(next);
   };
 
   const handleAddTarget = () => {
-    const newTargets = [...targetsRaw, { id: Date.now().toString(), name: 'New Target', subjectsStr: '' }];
-    setTargetsRaw(newTargets);
+    setTargetsRaw((prev) => [...prev, { id: Date.now().toString(), name: 'New Target', subjectsStr: '' }]);
   };
 
   const handleRemoveTarget = (index) => {
-    const newTargets = [...targetsRaw];
-    newTargets.splice(index, 1);
-    setTargetsRaw(newTargets);
+    setTargetsRaw((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddSubjectToTarget = (index, subject) => {
     const trimmed = (subject || '').trim();
     if (!trimmed) return;
-    const newTargets = [...targetsRaw];
-    const subs = newTargets[index].subjectsStr
-      ? newTargets[index].subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+    const next = [...targetsRaw];
+    const subs = next[index].subjectsStr
+      ? next[index].subjectsStr.split(',').map((s) => s.trim()).filter(Boolean)
       : [];
     if (!subs.includes(trimmed)) {
       subs.push(trimmed);
-      newTargets[index].subjectsStr = subs.join(', ');
-      setTargetsRaw(newTargets);
+      next[index] = { ...next[index], subjectsStr: subs.join(', ') };
+      setTargetsRaw(next);
     }
-    setNewSubjectInputs(prev => ({ ...prev, [index]: '' }));
+    setNewSubjectInputs((prev) => ({ ...prev, [index]: '' }));
   };
 
   const handleRemoveSubjectFromTarget = (index, subjectToRemove) => {
-    const newTargets = [...targetsRaw];
-    const subs = newTargets[index].subjectsStr
-      ? newTargets[index].subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+    const next = [...targetsRaw];
+    const subs = next[index].subjectsStr
+      ? next[index].subjectsStr.split(',').map((s) => s.trim()).filter(Boolean)
       : [];
-    const filtered = subs.filter(s => s !== subjectToRemove);
-    newTargets[index].subjectsStr = filtered.join(', ');
-    setTargetsRaw(newTargets);
+    next[index] = { ...next[index], subjectsStr: subs.filter((s) => s !== subjectToRemove).join(', ') };
+    setTargetsRaw(next);
   };
 
-  // Live Preview Effects for Wallpaper Contrast
-  useEffect(() => {
-    let cancelled = false;
-    const previewColor = async () => {
-      if (autoClockColor && wallpaper) {
-        const contrast = await getWallpaperContrast(wallpaper);
-        if (!cancelled) {
-          document.documentElement.style.setProperty('--clock-text-color', contrast.color);
-          document.documentElement.style.setProperty('--clock-text-shadow', contrast.shadow);
-        }
-      } else {
-        if (!cancelled) {
-          document.documentElement.style.setProperty('--clock-text-color', clockColor);
-          document.documentElement.style.setProperty(
-            '--clock-text-shadow',
-            `0 0 40px color-mix(in srgb, ${clockColor} 25%, transparent), 0 2px 24px rgba(0, 0, 0, 0.75)`
-          );
-        }
+  const handleGrantPro = async (inputVal) => {
+    const val = (inputVal || '').trim();
+    if (!val) return;
+    let targetUid = val;
+    if (val.includes('@')) {
+      const found = adminUsers.find((u) => u.email?.toLowerCase() === val.toLowerCase());
+      if (!found) {
+        toast('User not found by email. Enter their exact UID instead.', 'error', 3500);
+        return;
       }
-    };
-    previewColor();
-    return () => { cancelled = true; };
-  }, [clockColor, autoClockColor, wallpaper]);
-
-  // Real-time update helper
-  const applyRealtime = useCallback(
-    (partialUpdates) => {
-      onSave(partialUpdates);
-    },
-    [onSave]
-  );
-
-  const handleTimerStyleSelect = (style) => {
-    setTimerStyle(style);
-    applyRealtime({ timerStyle: style });
-  };
-
-  const handleShowSecondsChange = (val) => {
-    setShowSeconds(val);
-    applyRealtime({ showSeconds: val });
-  };
-
-  const handleClockFormatChange = (format) => {
-    setClockFormat(format);
-    applyRealtime({ clockFormat: format });
-  };
-
-  const handleAutoClockColorChange = (val) => {
-    setAutoClockColor(val);
-    applyRealtime({ autoClockColor: val });
-  };
-
-  const handleClockColorChange = (col) => {
-    setClockColor(col);
-    setAutoClockColor(false);
-    applyRealtime({ autoClockColor: false, clockColor: col, textColor: col });
-  };
-
-  const handleClockFontChange = (fontFamily) => {
-    setClockFont(fontFamily);
-    applyRealtime({ clockFont: fontFamily });
-  };
-
-  const handleDurationsChange = (type, minutes) => {
-    const val = Math.max(1, Number(minutes));
-    if (type === 'pomodoro') setPomodoro(val);
-    else if (type === 'shortBreak') setShortBreak(val);
-    else if (type === 'longBreak') setLongBreak(val);
-
-    applyRealtime({
-      durations: {
-        pomodoro: (type === 'pomodoro' ? val : Number(pomodoro)) * 60,
-        shortBreak: (type === 'shortBreak' ? val : Number(shortBreak)) * 60,
-        longBreak: (type === 'longBreak' ? val : Number(longBreak)) * 60,
-      },
-    });
-  };
-
-  const handleToggleChange = (field, setter, val) => {
-    setter(val);
-    applyRealtime({ [field]: val });
-  };
-
-  const handleToggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
-    onSave({ theme: nextTheme });
-  };
-
-  const applyAppTheme = (themeId) => {
-    const t = APP_THEMES.find(x => x.id === themeId) || APP_THEMES[0];
-    document.documentElement.style.setProperty('--accent', t.accent);
-    document.documentElement.style.setProperty('--accent-dim', t.accent + '22');
-    document.documentElement.style.setProperty('--theme-orb-color', t.orb);
-  };
-
-  const handleAppThemeChange = (themeId) => {
-    setAppTheme(themeId);
-    applyAppTheme(themeId);
-    onSave({ appTheme: themeId });
-  };
-
-  const handleChimeChange = (id) => {
-    setChimeStyle(id);
-    playChimeStyle(id, false);
-    onSave({ chimeStyle: id });
-  };
-
-  const handlePresetApply = (preset) => {
-    setPomodoro(preset.pomodoro);
-    setShortBreak(preset.shortBreak);
-    setLongBreak(preset.longBreak);
-    applyRealtime({
-      durations: {
-        pomodoro: preset.pomodoro * 60,
-        shortBreak: preset.shortBreak * 60,
-        longBreak: preset.longBreak * 60,
-      },
-    });
-    toast(`Preset "${preset.name}" applied`, 'success', 2000);
+      targetUid = found.id;
+    }
+    try {
+      await grantProStatus(targetUid);
+      toast(`PRO status granted to ${targetUid}.`, 'success', 2800);
+      setAdminManualUid('');
+    } catch {
+      toast('Failed to grant PRO status.', 'error', 2800);
+    }
   };
 
   const handleSave = async () => {
-    const finalTargets = targetsRaw.map(t => ({
+    const finalTargets = targetsRaw.map((t) => ({
       id: t.id,
       name: t.name,
-      subjects: t.subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+      subjects: t.subjectsStr.split(',').map((s) => s.trim()).filter(Boolean),
     }));
 
     await onSave({
       durations: {
-        pomodoro:   Math.max(1, Number(pomodoro))   * 60,
+        pomodoro: Math.max(1, Number(pomodoro)) * 60,
         shortBreak: Math.max(1, Number(shortBreak)) * 60,
-        longBreak:  Math.max(1, Number(longBreak))  * 60,
+        longBreak: Math.max(1, Number(longBreak)) * 60,
       },
       longBreakInterval: Math.max(1, Number(longBreakInterval)),
-      dailyGoal:         Math.max(1, Number(dailyGoal)),
-      autoStartBreaks,
+      dailyGoal: Math.max(1, Number(dailyGoal)),
+      autoStartBreaks: autoStartPomodoros,
       autoStartPomodoros,
       soundEnabled,
+      chimeStyle,
       notifyOnComplete,
       strictMode,
       timerStyle,
-      showTimerProgressBar,
-      showStreakCounter,
-      showTaskInPip,
-      showGhostPacer,
       clockStyle,
       showSeconds,
       clockFormat,
-      autoClockColor,
-      clockColor,
-      textColor: clockColor,
-      clockFont,
       theme,
       appTheme,
-      chimeStyle,
       showQuotes,
       showExamDeadline,
-      presets,
       targets: finalTargets,
     });
-    toast('Settings saved', 'success', 2000);
+    toast('Settings saved.', 'success', 1800);
     onClose();
   };
 
-  // Nav items matching user's screenshot
   const NAV_ITEMS = [
-    { id: 'clock',     label: 'Clock',       icon: IconClock },
-    { id: 'timer',     label: 'Focus Timer', icon: IconTimer },
-    { id: 'stats',     label: 'Stats',       icon: IconStats },
-    { id: 'quotes',    label: 'Quotes',      icon: IconQuotes },
-    { id: 'extras',    label: 'Extras',      icon: IconStar },
-    { id: 'account',   label: 'Account',     icon: IconUser, badgeDot: !currentUser },
-    { id: 'support',   label: 'Support',     icon: IconHelpCircle },
-    { id: 'whatsnew',  label: "What's New",  icon: IconRocket },
-    { id: 'legal',     label: 'Legal & Policies', icon: IconShield },
+    { id: 'timer', label: 'Timer', icon: IconTimer },
+    { id: 'clock', label: 'Clock & Look', icon: IconClock },
+    { id: 'study', label: 'Study & Data', icon: IconStats },
+    { id: 'account', label: 'Account', icon: IconUser },
   ];
 
   if (canSetGlobalDefault) {
-    NAV_ITEMS.push({ id: 'admin', label: 'Admin Panel', icon: IconShield });
+    NAV_ITEMS.push({ id: 'admin', label: 'Admin', icon: IconShield });
   }
-
-  // Admin Tab State
-  const [adminUsers, setAdminUsers] = useState([]);
-  const [adminManualUid, setAdminManualUid] = useState('');
-  const [adminDefaultWpUrl, setAdminDefaultWpUrl] = useState('');
-  const [adminForceDefault, setAdminForceDefault] = useState(true);
-
-  useEffect(() => {
-    if (activeTab === 'admin' && currentUser?.email === 'deepeshsingh2606@gmail.com') {
-      const unsub = subscribeRegisteredUsers((list) => {
-        // Sort users client-side, e.g. alphabetically by name or email
-        const sorted = [...list].sort((a, b) => {
-          const aName = a.displayName || a.email || '';
-          const bName = b.displayName || b.email || '';
-          return aName.localeCompare(bName);
-        });
-        setAdminUsers(sorted);
-      });
-      return () => unsub();
-    }
-  }, [activeTab, currentUser]);
-
-  const handleGrantPro = async (inputVal) => {
-    if (!inputVal) return;
-    const val = inputVal.trim();
-    let targetUid = val;
-    // If it looks like an email, try to find the user in adminUsers
-    if (val.includes('@')) {
-      const foundUser = adminUsers.find(u => u.email?.toLowerCase() === val.toLowerCase());
-      if (foundUser) {
-        targetUid = foundUser.id;
-      } else {
-        toast('User not found by email. Please enter their exact UID.', 'error', 4000);
-        return;
-      }
-    }
-
-    try {
-      await grantProStatus(targetUid);
-      toast(`PRO status granted to ${targetUid}!`, 'success', 3000);
-      setAdminManualUid('');
-    } catch (err) {
-      toast('Failed to grant PRO status.', 'error', 3000);
-    }
-  };
 
   return (
     <>
       <div className="settings-modal-overlay" onClick={onClose} aria-hidden="true" />
 
-      {/* 2-Column Side Menu Modal */}
       <aside
-        className="settings-modal-dialog"
+        className="settings-modal-dialog settings-modal-dialog--compact"
         role="dialog"
         aria-label="Flowstate Settings"
         aria-modal="true"
       >
-        {/* ═══ LEFT SIDEBAR NAVIGATION ═══ */}
+        {/* Streamlined Left Navigation */}
         <div className="settings-side-nav">
-          {/* Top Close Button */}
-          <button
-            type="button"
-            className="settings-side-close-btn"
-            onClick={onClose}
-            aria-label="Close settings"
-            title="Close (Esc)"
-          >
-            <IconX size={18} />
-          </button>
+          <div className="settings-side-top-row">
+            <span className="settings-side-heading">Settings</span>
+            <button
+              type="button"
+              className="settings-side-close-btn"
+              onClick={onClose}
+              aria-label="Close settings"
+              title="Close (Esc)"
+            >
+              <IconX size={16} />
+            </button>
+          </div>
 
-          {/* Menu Items */}
           <nav className="settings-side-menu-list" role="tablist" aria-label="Settings categories">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -528,95 +365,17 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 >
                   <Icon size={16} />
                   <span className="settings-side-nav-label">{item.label}</span>
-                  {item.badgeDot && <span className="settings-nav-orange-dot" />}
                 </button>
               );
             })}
           </nav>
-
-          {/* Version badge */}
-          <div className="settings-version-badge">
-            <span className="version-dot" /> Flowstate v2.4
-          </div>
-
-          {/* Buy Me a Coffee Button */}
-          <a
-            href={BUY_ME_A_COFFEE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="settings-coffee-btn"
-            id="settings-coffee-btn"
-            title="Buy Me a Coffee"
-          >
-            <span style={{ fontSize: '15px' }}>☕</span>
-            <span>Buy Me a Coffee</span>
-          </a>
-
-          <div style={{ flex: 1 }} />
-
-          {/* Bottom Auth Card (Signed Out vs Signed In) */}
-          <div className="settings-sidebar-auth-card">
-            {!currentUser ? (
-              <>
-                <div className="sidebar-auth-title">You're signed out!</div>
-                <div className="sidebar-auth-desc">Keep your layout, stats, and more.</div>
-                <button
-                  type="button"
-                  className="sidebar-auth-signup-btn"
-                  onClick={() => {
-                    openAuthModal('Sign up to sync your sessions and access all features.');
-                  }}
-                >
-                  Sign up with email
-                </button>
-                <button
-                  type="button"
-                  className="sidebar-auth-signin-link"
-                  onClick={() => openAuthModal('Sign in to access your cloud account.')}
-                >
-                  Already have an account? <u>Sign in</u>
-                </button>
-              </>
-            ) : (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div className="sidebar-auth-avatar">
-                    {currentUser.photoURL ? (
-                      <img src={currentUser.photoURL} alt="Avatar" />
-                    ) : (
-                      (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()
-                    )}
-                  </div>
-                  <div style={{ overflow: 'hidden' }}>
-                    <div className="sidebar-auth-user-name">
-                      {currentUser.displayName || 'Focus Explorer'}
-                    </div>
-                    <div className="sidebar-auth-user-email">
-                      {currentUser.email}
-                    </div>
-                  </div>
-                </div>
-                <div className="sidebar-auth-sync-badge">
-                  <span className="sync-pulse-dot" /> Cloud Sync Active
-                </div>
-                <button
-                  type="button"
-                  className="sidebar-auth-signout-btn"
-                  onClick={signOut}
-                >
-                  Sign Out
-                </button>
-              </>
-            )}
-          </div>
         </div>
 
-        {/* ═══ RIGHT CONTENT PANE ═══ */}
+        {/* Right Content Pane */}
         <div className="settings-content-pane">
-          {/* Top Bar inside Content Pane */}
           <div className="settings-content-header">
             <div className="settings-content-header-title">
-              {NAV_ITEMS.find(n => n.id === activeTab)?.label || 'Settings'}
+              {NAV_ITEMS.find((n) => n.id === activeTab)?.label || 'Settings'}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
@@ -624,7 +383,6 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 className="drawer-theme-toggle"
                 onClick={handleToggleTheme}
                 aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               >
                 {theme === 'dark' ? <IconSun size={14} /> : <IconMoon size={14} />}
                 <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
@@ -639,335 +397,189 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
             </div>
           </div>
 
-          {/* ════════ 1. FOCUS TIMER (Screenshot match) ════════ */}
+          {/* 1. TIMER */}
           {activeTab === 'timer' && (
             <div className="settings-tab-section">
-              {/* Custom Timer Font Banner */}
-              <div className="settings-card-banner">
-                <div className="settings-card-banner-header">
-                  <span className="settings-card-banner-title">Custom Timer Font</span>
-                </div>
-                <p className="settings-card-banner-sub">
-                  Go to{' '}
-                  <button
-                    type="button"
-                    className="settings-text-link"
-                    onClick={() => setActiveTab('clock')}
-                  >
-                    Clock settings
-                  </button>{' '}
-                  to customize your timer and clock style.
-                </p>
-              </div>
-
-              {/* Timer Style Section */}
               <div className="settings-section-block">
-                <div className="settings-section-header-row">
-                  <div className="settings-section-header-title">Timer Style</div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <span className="settings-badge-new">NEW</span>
+                <div className="settings-section-header-title">Durations (minutes)</div>
+                <div className="settings-durations-grid">
+                  <div className="setting-item">
+                    <label className="setting-label" htmlFor="setting-pomodoro">Focus</label>
+                    <input
+                      id="setting-pomodoro"
+                      className="setting-input setting-input-center tabular-nums"
+                      type="number"
+                      min="1"
+                      max="120"
+                      value={pomodoro}
+                      onChange={(e) => handleDurationsChange('pomodoro', e.target.value)}
+                    />
                   </div>
-                </div>
-                <p className="settings-section-subtitle">
-                  Choose how the time remaining is displayed.
-                </p>
-
-                {/* 6 Visual Timer Style Cards */}
-                <div className="timer-styles-grid">
-                  {/* 1. Default */}
-                  <div
-                    className={`timer-style-card ${timerStyle === 'default' ? 'active' : ''}`}
-                    onClick={() => handleTimerStyleSelect('default')}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="timer-style-preview">
-                      <div className="preview-digits-default">25:00</div>
-                    </div>
-                    <div className="timer-style-name">Default</div>
+                  <div className="setting-item">
+                    <label className="setting-label" htmlFor="setting-short-break">Short Break</label>
+                    <input
+                      id="setting-short-break"
+                      className="setting-input setting-input-center tabular-nums"
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={shortBreak}
+                      onChange={(e) => handleDurationsChange('shortBreak', e.target.value)}
+                    />
                   </div>
-
-                  {/* 2. Flip Clock */}
-                  <div
-                    className={`timer-style-card ${timerStyle === 'flip' ? 'active' : ''}`}
-                    onClick={() => handleTimerStyleSelect('flip')}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="timer-style-preview">
-                      <div className="preview-flip-wrapper">
-                        <div className="preview-flip-tile">2</div>
-                        <div className="preview-flip-tile">5</div>
-                      </div>
-                    </div>
-                    <div className="timer-style-name">Flip Clock</div>
+                  <div className="setting-item">
+                    <label className="setting-label" htmlFor="setting-long-break">Long Break</label>
+                    <input
+                      id="setting-long-break"
+                      className="setting-input setting-input-center tabular-nums"
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={longBreak}
+                      onChange={(e) => handleDurationsChange('longBreak', e.target.value)}
+                    />
                   </div>
-
-                  {/* 3. Progress Bar */}
-                  <div
-                    className={`timer-style-card ${timerStyle === 'progress' ? 'active' : ''}`}
-                    onClick={() => handleTimerStyleSelect('progress')}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="timer-style-preview">
-                      <div className="preview-progressbar-wrap">
-                        <span className="preview-mini-time">25:00</span>
-                        <div className="preview-progress-track">
-                          <div className="preview-progress-fill" style={{ width: '60%' }} />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="timer-style-name">Progress Bar</div>
-                  </div>
-
-                  {/* 4. Gauge */}
-                  <div
-                    className={`timer-style-card ${timerStyle === 'gauge' ? 'active' : ''}`}
-                    onClick={() => handleTimerStyleSelect('gauge')}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="timer-style-preview">
-                      <div className="preview-gauge-wrap">
-                        <svg viewBox="0 0 36 36" width="34" height="34">
-                          <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3" />
-                          <circle cx="18" cy="18" r="14" fill="none" stroke="var(--accent, #06b6d4)" strokeWidth="3" strokeDasharray="88" strokeDashoffset="28" transform="rotate(-90 18 18)" />
-                        </svg>
-                        <span className="preview-gauge-subtext">25:00</span>
-                      </div>
-                    </div>
-                    <div className="timer-style-name">Gauge</div>
-                  </div>
-
-                  {/* 5. Dot Matrix */}
-                  <div
-                    className={`timer-style-card ${timerStyle === 'dotmatrix' ? 'active' : ''}`}
-                    onClick={() => handleTimerStyleSelect('dotmatrix')}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="timer-style-preview">
-                      <div className="preview-dotmatrix-wrap">
-                        <div className="preview-dotmatrix-grid">
-                          {Array.from({ length: 12 }).map((_, idx) => (
-                            <span key={idx} className={`preview-dot ${idx < 8 ? 'active' : ''}`} />
-                          ))}
-                        </div>
-                        <span className="preview-dot-subtext">25:00</span>
-                      </div>
-                    </div>
-                    <div className="timer-style-name">Dot Matrix</div>
-                  </div>
-
-                  {/* 6. Pie */}
-                  <div
-                    className={`timer-style-card ${timerStyle === 'pie' ? 'active' : ''}`}
-                    onClick={() => handleTimerStyleSelect('pie')}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="timer-style-preview">
-                      <div className="preview-pie-wrap">
-                        <svg viewBox="0 0 32 32" width="32" height="32">
-                          <circle cx="16" cy="16" r="14" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-                          <circle cx="16" cy="16" r="7" fill="none" stroke="var(--accent, #06b6d4)" strokeWidth="14" strokeDasharray={2 * Math.PI * 7} strokeDashoffset={2 * Math.PI * 7 * 0.35} transform="rotate(-90 16 16)" />
-                        </svg>
-                        <span className="preview-pie-subtext">25:00</span>
-                      </div>
-                    </div>
-                    <div className="timer-style-name">Pie</div>
+                  <div className="setting-item">
+                    <label className="setting-label" htmlFor="setting-long-break-interval">Long Break Every</label>
+                    <input
+                      id="setting-long-break-interval"
+                      className="setting-input setting-input-center tabular-nums"
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={longBreakInterval}
+                      onChange={(e) => setLongBreakInterval(Math.max(1, Number(e.target.value) || 1))}
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Toggles matching screenshot */}
               <div className="settings-section-block">
-                <Toggle
-                  id="toggle-timer-progress-bar"
-                  checked={showTimerProgressBar}
-                  onChange={(val) => handleToggleChange('showTimerProgressBar', setShowTimerProgressBar, val)}
-                  label="Show timer progress bar"
-                  sub="Display a visual progress bar beneath the timer."
-                />
+                <div className="settings-section-header-title">Timer Display</div>
+                <div className="setting-segmented-group">
+                  {[
+                    { id: 'default', label: 'Clean Digits' },
+                    { id: 'flip', label: 'Flip Clock' },
+                    { id: 'progress', label: 'Progress Bar' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      className={`setting-segmented-btn ${timerStyle === opt.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setTimerStyle(opt.id);
+                        applyRealtime({ timerStyle: opt.id });
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                <Toggle
-                  id="toggle-notify-on-complete"
-                  checked={notifyOnComplete}
-                  onChange={(val) => handleToggleChange('notifyOnComplete', setNotifyOnComplete, val)}
-                  label="Show notification"
-                  sub="Beta feature: Show a browser notification when the timer ends."
-                />
-
+              <div className="settings-section-block">
+                <div className="settings-section-header-title">Behavior & Alerts</div>
                 <Toggle
                   id="toggle-auto-start"
                   checked={autoStartPomodoros}
                   onChange={(val) => {
                     setAutoStartPomodoros(val);
-                    setAutoStartBreaks(val);
                     applyRealtime({ autoStartPomodoros: val, autoStartBreaks: val });
                   }}
-                  label="Auto start timer on segment end"
-                  sub="This will run through the full focus sequence automatically. For Countdown, this will auto restart your timer upon completion."
+                  label="Auto-start next session"
+                  sub="Automatically begin breaks and next focus blocks."
                 />
-
                 <Toggle
                   id="toggle-strict-mode"
                   checked={strictMode}
-                  onChange={(val) => handleToggleChange('strictMode', setStrictMode, val)}
-                  label="Deep Work Strict Mode"
-                  sub="Automatically pauses the timer and warns you if you switch tabs during a focus session."
+                  onChange={(val) => {
+                    setStrictMode(val);
+                    applyRealtime({ strictMode: val });
+                  }}
+                  label="Strict focus mode"
+                  sub="Pause the timer if you switch away to another browser tab."
                 />
-
                 <Toggle
-                  id="toggle-streak-counter"
-                  checked={showStreakCounter}
-                  onChange={(val) => handleToggleChange('showStreakCounter', setShowStreakCounter, val)}
-                  label="Show in-dashboard streak counter"
-                  sub="Display your active study streak and flame in the timer dashboard."
+                  id="toggle-sound-enabled"
+                  checked={soundEnabled}
+                  onChange={(val) => {
+                    setSoundEnabled(val);
+                    applyRealtime({ soundEnabled: val });
+                    if (val) playChimeStyle(chimeStyle, false);
+                  }}
+                  label="Completion chime"
+                  sub="Play a gentle chime when a session finishes."
                 />
-
-                <Toggle
-                  id="toggle-task-pip"
-                  checked={showTaskInPip}
-                  onChange={(val) => handleToggleChange('showTaskInPip', setShowTaskInPip, val)}
-                  label="Show task in picture-in-picture"
-                  sub="Display your current focus topic or linked task in the floating mini window."
-                />
-
-                <Toggle
-                  id="toggle-ghost-pacer"
-                  checked={showGhostPacer}
-                  onChange={(val) => handleToggleChange('showGhostPacer', setShowGhostPacer, val)}
-                  label="Ghost Pacer"
-                  sub="Race against yesterday's focus time with a pacing bar."
-                />
-              </div>
-
-              {/* Durations & Presets */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Durations</div>
-                <div className="setting-item">
-                  <label className="setting-label" htmlFor="setting-pomodoro">Focus Time (minutes)</label>
-                  <div className="setting-input-row">
-                    <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro - 1)}>−</button>
-                    <input
-                      id="setting-pomodoro"
-                      className="setting-input setting-input-center"
-                      type="number" min="1" max="90"
-                      value={pomodoro}
-                      onChange={(e) => handleDurationsChange('pomodoro', e.target.value)}
-                    />
-                    <button className="setting-stepper" onClick={() => handleDurationsChange('pomodoro', pomodoro + 1)}>+</button>
-                  </div>
-                  <div className="setting-preset-pills">
-                    {[25, 45, 50, 60].map(mins => (
+                {soundEnabled && (
+                  <div className="chime-options-row" style={{ marginTop: '4px', marginBottom: '10px' }}>
+                    {CHIME_OPTIONS.map((c) => (
                       <button
-                        key={mins}
+                        key={c.id}
                         type="button"
-                        className={`setting-preset-pill ${pomodoro === mins ? 'active' : ''}`}
-                        onClick={() => handleDurationsChange('pomodoro', mins)}
+                        className={`chime-option-btn ${chimeStyle === c.id ? 'active' : ''}`}
+                        onClick={() => {
+                          setChimeStyle(c.id);
+                          playChimeStyle(c.id, false);
+                          applyRealtime({ chimeStyle: c.id });
+                        }}
                       >
-                        {mins}m
+                        {c.label}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                <div className="setting-item">
-                  <label className="setting-label" htmlFor="setting-short-break">Short Break (minutes)</label>
-                  <div className="setting-input-row">
-                    <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak - 1)}>−</button>
-                    <input
-                      id="setting-short-break"
-                      className="setting-input setting-input-center"
-                      type="number" min="1" max="30"
-                      value={shortBreak}
-                      onChange={(e) => handleDurationsChange('shortBreak', e.target.value)}
-                    />
-                    <button className="setting-stepper" onClick={() => handleDurationsChange('shortBreak', shortBreak + 1)}>+</button>
-                  </div>
-                  <div className="setting-preset-pills">
-                    {[5, 10, 15].map(mins => (
-                      <button
-                        key={mins}
-                        type="button"
-                        className={`setting-preset-pill ${shortBreak === mins ? 'active' : ''}`}
-                        onClick={() => handleDurationsChange('shortBreak', mins)}
-                      >
-                        {mins}m
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="setting-item">
-                  <label className="setting-label" htmlFor="setting-long-break">Long Break (minutes)</label>
-                  <div className="setting-input-row">
-                    <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak - 1)}>−</button>
-                    <input
-                      id="setting-long-break"
-                      className="setting-input setting-input-center"
-                      type="number" min="1" max="60"
-                      value={longBreak}
-                      onChange={(e) => handleDurationsChange('longBreak', e.target.value)}
-                    />
-                    <button className="setting-stepper" onClick={() => handleDurationsChange('longBreak', longBreak + 1)}>+</button>
-                  </div>
-                </div>
-
-                <div className="setting-item">
-                  <label className="setting-label" htmlFor="setting-long-break-interval">Long Break Interval (sessions)</label>
-                  <div className="setting-input-row">
-                    <button className="setting-stepper" onClick={() => setLongBreakInterval(prev => Math.max(1, Number(prev) - 1))}>−</button>
-                    <input
-                      id="setting-long-break-interval"
-                      className="setting-input setting-input-center"
-                      type="number" min="1" max="12"
-                      value={longBreakInterval}
-                      onChange={(e) => setLongBreakInterval(Math.max(1, Number(e.target.value)))}
-                    />
-                    <button className="setting-stepper" onClick={() => setLongBreakInterval(prev => Math.min(12, Number(prev) + 1))}>+</button>
-                  </div>
-                </div>
-
-                <div className="setting-item" style={{ marginTop: '12px' }}>
-                  <label className="setting-label">Quick Presets</label>
-                  <div className="setting-preset-pills">
-                    {presets.map(p => (
-                      <button
-                        key={p.name}
-                        type="button"
-                        className="setting-preset-pill"
-                        onClick={() => handlePresetApply(p)}
-                      >
-                        {p.name} ({p.pomodoro}/{p.shortBreak})
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                )}
+                <Toggle
+                  id="toggle-notify-on-complete"
+                  checked={notifyOnComplete}
+                  onChange={(val) => {
+                    setNotifyOnComplete(val);
+                    applyRealtime({ notifyOnComplete: val });
+                  }}
+                  label="Browser notifications"
+                  sub="Send a desktop alert when your timer completes."
+                />
+                {notifyOnComplete && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary settings-inline-btn"
+                    onClick={handleTestNotification}
+                  >
+                    Test Notification
+                  </button>
+                )}
               </div>
             </div>
           )}
 
-          {/* ════════ 2. CLOCK SETTINGS ════════ */}
+          {/* 2. CLOCK & APPEARANCE */}
           {activeTab === 'clock' && (
             <div className="settings-tab-section">
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Clock Typography</div>
+                <div className="settings-section-header-title">Clock</div>
                 <div className="setting-item">
-                  <label className="setting-label" htmlFor="setting-clock-font">Font Family</label>
-                  <select
-                    id="setting-clock-font"
-                    className="setting-input"
-                    value={clockFont}
-                    onChange={(e) => handleClockFontChange(e.target.value)}
-                    style={{ fontFamily: clockFont }}
-                  >
-                    {FONT_OPTIONS.map(f => (
-                      <option key={f.id} value={f.id}>{f.label}</option>
-                    ))}
-                  </select>
+                  <label className="setting-label">Clock Style</label>
+                  <div className="setting-segmented-group">
+                    <button
+                      type="button"
+                      className={`setting-segmented-btn ${clockStyle === 'flip' ? 'active' : ''}`}
+                      onClick={() => {
+                        setClockStyle('flip');
+                        applyRealtime({ clockStyle: 'flip' });
+                      }}
+                    >
+                      Flip Clock
+                    </button>
+                    <button
+                      type="button"
+                      className={`setting-segmented-btn ${clockStyle === 'digital' ? 'active' : ''}`}
+                      onClick={() => {
+                        setClockStyle('digital');
+                        applyRealtime({ clockStyle: 'digital' });
+                      }}
+                    >
+                      Minimal Digital
+                    </button>
+                  </div>
                 </div>
 
                 <div className="setting-item">
@@ -976,14 +588,20 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     <button
                       type="button"
                       className={`setting-segmented-btn ${clockFormat === '12h' ? 'active' : ''}`}
-                      onClick={() => handleClockFormatChange('12h')}
+                      onClick={() => {
+                        setClockFormat('12h');
+                        applyRealtime({ clockFormat: '12h' });
+                      }}
                     >
                       12-Hour (AM/PM)
                     </button>
                     <button
                       type="button"
                       className={`setting-segmented-btn ${clockFormat === '24h' ? 'active' : ''}`}
-                      onClick={() => handleClockFormatChange('24h')}
+                      onClick={() => {
+                        setClockFormat('24h');
+                        applyRealtime({ clockFormat: '24h' });
+                      }}
                     >
                       24-Hour
                     </button>
@@ -993,156 +611,123 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 <Toggle
                   id="toggle-show-seconds-clock"
                   checked={showSeconds}
-                  onChange={handleShowSecondsChange}
-                  label="Show Seconds"
-                  sub="Display seconds countdown on the timer and clock"
-                />
-
-                <Toggle
-                  id="toggle-show-exam-deadline"
-                  checked={showExamDeadline}
-                  onChange={(val) => handleToggleChange('showExamDeadline', setShowExamDeadline, val)}
-                  label="Show Exam Deadline"
-                  sub="Display the nearest upcoming exam deadline on the clock"
+                  onChange={(val) => {
+                    setShowSeconds(val);
+                    applyRealtime({ showSeconds: val });
+                  }}
+                  label="Show seconds"
+                  sub="Display the seconds card on the live clock."
                 />
               </div>
 
-              {/* Clock Color & Wallpaper Contrast */}
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Clock Color</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Color Mode</span>
-                  <div className="setting-segmented-group" style={{ width: '160px' }}>
-                    <button
-                      type="button"
-                      className={`setting-segmented-btn ${autoClockColor ? 'active' : ''}`}
-                      onClick={() => handleAutoClockColorChange(true)}
-                    >
-                      Auto Contrast
-                    </button>
-                    <button
-                      type="button"
-                      className={`setting-segmented-btn ${!autoClockColor ? 'active' : ''}`}
-                      onClick={() => handleAutoClockColorChange(false)}
-                    >
-                      Custom
-                    </button>
-                  </div>
-                </div>
-
-                {autoClockColor ? (
-                  <div className="auto-color-badge">
-                    <span className="auto-color-indicator" />
-                    <span>Calculates optimal readable contrast dynamically from wallpaper</span>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Pick Custom Color</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input
-                        id="setting-clock-color"
-                        type="color"
-                        value={clockColor}
-                        onChange={(e) => handleClockColorChange(e.target.value)}
-                        style={{ width: '34px', height: '34px', padding: 0, border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'none' }}
-                      />
-                      <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                        {clockColor.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* App Themes */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">App Accent Theme</div>
+                <div className="settings-section-header-title">Appearance</div>
                 <div className="theme-swatch-row">
-                  {APP_THEMES.map(t => (
+                  {APP_THEMES.map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       className={`theme-swatch ${appTheme === t.id ? 'active' : ''}`}
                       style={{ '--swatch-color': t.accent }}
                       onClick={() => handleAppThemeChange(t.id)}
-                      title={t.label}
                     >
                       <span className="theme-swatch-dot" style={{ background: t.accent }} />
                       <span className="theme-swatch-label">{t.label}</span>
                     </button>
                   ))}
                 </div>
+
+                <Toggle
+                  id="toggle-quotes"
+                  checked={showQuotes}
+                  onChange={(val) => {
+                    setShowQuotes(val);
+                    applyRealtime({ showQuotes: val });
+                  }}
+                  label="Show focus quotes"
+                  sub="Display a quiet quote below the focus timer."
+                />
+                <Toggle
+                  id="toggle-show-exam-deadline"
+                  checked={showExamDeadline}
+                  onChange={(val) => {
+                    setShowExamDeadline(val);
+                    applyRealtime({ showExamDeadline: val });
+                  }}
+                  label="Show upcoming exam deadline"
+                  sub="Display your next exam countdown beneath the clock."
+                />
               </div>
             </div>
           )}
 
-          {/* ════════ 3. STATS & TARGETS ════════ */}
-          {activeTab === 'stats' && (
+          {/* 3. STUDY & DATA */}
+          {activeTab === 'study' && (
             <div className="settings-tab-section">
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Daily Study Goal</div>
+                <div className="settings-section-header-title">Daily Session Target</div>
                 <div className="setting-item">
-                  <label className="setting-label" htmlFor="setting-goal">Target Sessions per Day</label>
+                  <label className="setting-label" htmlFor="setting-goal">Sessions per day</label>
                   <div className="setting-input-row">
-                    <button className="setting-stepper" onClick={() => setDailyGoal(Math.max(1, dailyGoal - 1))}>−</button>
+                    <button
+                      type="button"
+                      className="setting-stepper"
+                      onClick={() => setDailyGoal((g) => Math.max(1, g - 1))}
+                    >
+                      −
+                    </button>
                     <input
                       id="setting-goal"
-                      className="setting-input setting-input-center"
-                      type="number" min="1" max="24"
+                      className="setting-input setting-input-center tabular-nums"
+                      type="number"
+                      min="1"
+                      max="24"
                       value={dailyGoal}
-                      onChange={(e) => setDailyGoal(Number(e.target.value))}
+                      onChange={(e) => setDailyGoal(Math.max(1, Number(e.target.value) || 1))}
                     />
-                    <button className="setting-stepper" onClick={() => setDailyGoal(Math.min(24, dailyGoal + 1))}>+</button>
+                    <button
+                      type="button"
+                      className="setting-stepper"
+                      onClick={() => setDailyGoal((g) => Math.min(24, g + 1))}
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               </div>
 
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Study Targets & Subjects</div>
-                <p className="settings-section-subtitle">
-                  Configure your target exams or degrees and the subjects you want to study.
-                </p>
-
+                <div className="settings-section-header-title">Study Subjects</div>
                 {targetsRaw.length === 0 ? (
-                  <div className="settings-empty-targets">
-                    <div className="settings-empty-icon">🎯</div>
-                    <div className="settings-empty-title">No Study Targets Yet</div>
-                    <div className="settings-empty-desc">
-                      Add your study goals (e.g. MCAT, USMLE, Finals, CFA) and tag subjects to track progress.
-                    </div>
-                  </div>
+                  <p className="settings-section-subtitle">
+                    Organize focus sessions by exam or project subjects.
+                  </p>
                 ) : (
                   <div className="settings-targets-list">
                     {targetsRaw.map((t, i) => {
                       const subjectList = t.subjectsStr
-                        ? t.subjectsStr.split(',').map(s => s.trim()).filter(Boolean)
+                        ? t.subjectsStr.split(',').map((s) => s.trim()).filter(Boolean)
                         : [];
                       const currentInput = newSubjectInputs[i] || '';
-
                       return (
                         <div key={t.id || i} className="settings-target-card">
                           <div className="settings-target-card-header">
-                            <div className="settings-target-name-wrap">
-                              <span className="settings-target-badge-icon">🎯</span>
-                              <input
-                                className="settings-target-name-input"
-                                value={t.name}
-                                onChange={(e) => handleUpdateTarget(i, 'name', e.target.value)}
-                                placeholder="Target Name (e.g. Finals)"
-                                aria-label="Target Name"
-                              />
-                            </div>
+                            <input
+                              className="settings-target-name-input"
+                              value={t.name}
+                              onChange={(e) => handleUpdateTarget(i, 'name', e.target.value)}
+                              placeholder="Target Name"
+                              aria-label="Target Name"
+                            />
                             <button
                               type="button"
                               className="settings-target-remove-btn"
                               onClick={() => handleRemoveTarget(i)}
                               aria-label="Delete target"
-                              title="Delete target"
                             >
                               <IconTrash size={14} />
                             </button>
                           </div>
-
                           <div className="settings-target-subjects-block">
                             <div className="settings-subject-chips">
                               {subjectList.map((subj) => (
@@ -1152,20 +737,20 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                                     type="button"
                                     className="settings-subject-chip-del"
                                     onClick={() => handleRemoveSubjectFromTarget(i, subj)}
-                                    title={`Remove ${subj}`}
                                   >
                                     ✕
                                   </button>
                                 </span>
                               ))}
                             </div>
-
                             <div className="settings-add-subject-row">
                               <input
                                 className="settings-add-subject-input"
-                                placeholder="Add subject (press Enter)..."
+                                placeholder="Add subject..."
                                 value={currentInput}
-                                onChange={(e) => setNewSubjectInputs(prev => ({ ...prev, [i]: e.target.value }))}
+                                onChange={(e) =>
+                                  setNewSubjectInputs((prev) => ({ ...prev, [i]: e.target.value }))
+                                }
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
                                     e.preventDefault();
@@ -1179,7 +764,7 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                                 onClick={() => handleAddSubjectToTarget(i, currentInput)}
                                 disabled={!currentInput.trim()}
                               >
-                                + Add
+                                Add
                               </button>
                             </div>
                           </div>
@@ -1188,216 +773,63 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     })}
                   </div>
                 )}
-
-                <button
-                  type="button"
-                  className="settings-add-target-btn"
-                  onClick={handleAddTarget}
-                >
+                <button type="button" className="settings-add-target-btn" onClick={handleAddTarget}>
                   + Add Target
                 </button>
               </div>
-            </div>
-          )}
 
-          {/* ════════ 4. QUOTES ════════ */}
-          {activeTab === 'quotes' && (
-            <div className="settings-tab-section">
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Daily Quotes</div>
-                <Toggle
-                  id="toggle-quotes"
-                  checked={showQuotes}
-                  onChange={(val) => { setShowQuotes(val); applyRealtime({ showQuotes: val }); }}
-                  label="Show Motivational Quotes"
-                  sub="Display an inspiring study quote before and during your focus sessions."
-                />
-              </div>
-            </div>
-          )}
-
-          {/* ════════ 5. EXTRAS ════════ */}
-          {activeTab === 'extras' && (
-            <div className="settings-tab-section">
-              {/* Chime Sound */}
-              <div className="settings-section-block">
-                <Toggle
-                  id="toggle-sound-enabled"
-                  checked={soundEnabled}
-                  onChange={(val) => {
-                    handleToggleChange('soundEnabled', setSoundEnabled, val);
-                    if (val) playChimeStyle(chimeStyle, false);
-                  }}
-                  label="Timer Chime Sound"
-                  sub="Play sound chime when your session or break completes."
-                />
-                <div className="settings-section-header-title" style={{ marginTop: '16px' }}>Timer Chime Style</div>
-                <p className="settings-section-subtitle">Click to preview and select your completion chime.</p>
-                <div className="chime-options-row">
-                  {CHIME_OPTIONS.map(c => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className={`chime-option-btn ${chimeStyle === c.id ? 'active' : ''}`}
-                      onClick={() => handleChimeChange(c.id)}
-                      title={`Preview ${c.label} chime`}
-                    >
-                      <span>{c.icon}</span>
-                      <span>{c.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Browser Notifications Test */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Browser Notifications</div>
-                <p className="settings-section-subtitle">
-                  Status: {notifPermission === 'granted' ? (
-                    <span style={{ color: '#34d399', fontWeight: 600 }}>● Allowed</span>
-                  ) : notifPermission === 'denied' ? (
-                    <span style={{ color: '#ef4444', fontWeight: 600 }}>● Blocked in Browser</span>
-                  ) : (
-                    <span style={{ color: '#fbbf24', fontWeight: 600 }}>● Not Prompted Yet</span>
-                  )}
-                </p>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleTestNotification}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                    fontWeight: 600
-                  }}
-                >
-                  🔔 {notifPermission === 'granted' ? 'Send Test Notification' : 'Enable & Test Notifications'}
-                </button>
-              </div>
-
-              {/* Data Backup & Export */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Data Backup & Export</div>
-                <p className="settings-section-subtitle">
-                  Download a complete backup of your study logs, settings, and tasks as a JSON file.
-                </p>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleExportData}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                    fontWeight: 600
-                  }}
-                >
-                  📥 Export Study Data (.json)
-                </button>
-              </div>
-
-              {/* Chrome Extension & Desktop Install */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">
-                  <IconMac size={16} /> Chrome Extension &amp; Desktop
-                </div>
-                <p className="settings-section-subtitle">
-                  Install the Manifest V3 Chrome Extension for a toolbar countdown badge, daily goal ring, and automatic distraction blocker.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="settings-section-header-title">Backup & Extension</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  <button type="button" className="btn btn-secondary settings-inline-btn" onClick={handleExportData}>
+                    Export Backup (.json)
+                  </button>
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-secondary settings-inline-btn"
                     onClick={() => {
                       if (onOpenInstall) onOpenInstall('extension');
                       onClose();
                     }}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      gap: '8px', padding: '10px 14px', fontSize: '13px', fontWeight: 600,
-                      width: '100%', borderRadius: '10px'
-                    }}
                   >
-                    🧩 Get FLOWSTATE Chrome Extension (.zip)
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      if (onOpenInstall) onOpenInstall('desktop');
-                      onClose();
-                    }}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      gap: '8px', padding: '10px 14px', fontSize: '13px', fontWeight: 600,
-                      width: '100%', borderRadius: '10px', border: '1px solid rgba(6, 182, 212, 0.3)',
-                      background: 'rgba(6, 182, 212, 0.08)'
-                    }}
-                  >
-                    <img src="/favicon.svg" alt="Flowstate Icon" style={{ width: 18, height: 18, borderRadius: 4 }} /> Add FLOWSTATE to Mac Dock
+                    Chrome Extension (.zip)
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ════════ 6. ACCOUNT ════════ */}
+          {/* 4. ACCOUNT & SHORTCUTS */}
           {activeTab === 'account' && (
             <div className="settings-tab-section">
               <div className="settings-section-block">
-                <div className="settings-section-header-title">Account Profile</div>
+                <div className="settings-section-header-title">Account</div>
                 {currentUser ? (
                   <div className="settings-account-profile-card">
                     <div className="settings-account-avatar-large">
                       {currentUser.photoURL ? (
-                        <img src={currentUser.photoURL} alt="Avatar" />
+                        <img src={currentUser.photoURL} alt="Avatar" referrerPolicy="no-referrer" />
                       ) : (
                         (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()
                       )}
                     </div>
                     <div className="settings-account-details">
-                      <div className="settings-account-name">{currentUser.displayName || 'Focus Student'}</div>
+                      <div className="settings-account-name">{currentUser.displayName || 'Focus Scholar'}</div>
                       <div className="settings-account-email">{currentUser.email}</div>
-                      <div className="settings-account-pill">Pro Member • Cloud Synced</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {currentUser?.email === 'deepeshsingh2606@gmail.com' && (
-                        <button
-                          type="button"
-                          className="btn"
-                          style={{ padding: '8px 14px', borderRadius: '8px', fontWeight: 700, background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.3)', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '13px' }}
-                          onClick={() => setActiveTab('admin')}
-                        >
-                          👑 Admin Panel
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="settings-account-signout-btn"
-                        onClick={signOut}
-                      >
-                        Sign Out
-                      </button>
-                    </div>
+                    <button type="button" className="settings-account-signout-btn" onClick={signOut}>
+                      Sign Out
+                    </button>
                   </div>
                 ) : (
                   <div className="settings-account-guest-card">
-                    <div className="settings-account-guest-icon">👤</div>
-                    <div className="settings-account-guest-title">Guest Profile</div>
+                    <div className="settings-account-guest-title">Guest Mode</div>
                     <div className="settings-account-guest-desc">
-                      You are currently using Flowstate in local guest mode. Sign in to save your session history, streak, and community leaderboard rank across all your devices.
+                      Sign in with Google to sync sessions, streaks, and stats across devices.
                     </div>
                     <button
                       type="button"
-                      className="btn btn-primary"
-                      style={{ padding: '10px 20px', borderRadius: '12px', fontWeight: 600 }}
+                      className="btn btn-primary settings-inline-btn"
                       onClick={() => openAuthModal('Sign in with Google to sync your study history.')}
                     >
                       Sign In with Google
@@ -1405,27 +837,20 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                   </div>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* ════════ 7. SUPPORT ════════ */}
-          {activeTab === 'support' && (
-            <div className="settings-tab-section">
-              {/* Keyboard Shortcuts */}
               <div className="settings-section-block">
                 <div className="settings-section-header-title">Keyboard Shortcuts</div>
                 <div className="settings-shortcuts-list">
                   {[
                     { key: 'Space', desc: 'Start / Pause Timer' },
-                    { key: 'R',     desc: 'Reset Timer (with Save option)' },
-                    { key: 'S',     desc: 'Skip to Next Break / Focus' },
-                    { key: 'F',     desc: 'Toggle Fullscreen Mode' },
-                    { key: 'N',     desc: 'Toggle Scratchpad Notes' },
-                    { key: 'T',     desc: 'Toggle Tasks & Todos' },
-                    { key: 'M',     desc: 'Toggle Music & Ambience' },
-                    { key: 'C',     desc: 'Toggle Gemini Chat' },
-                    { key: 'V',     desc: 'Toggle Live Voice Conversation' },
-                  ].map(s => (
+                    { key: 'R', desc: 'Reset Timer' },
+                    { key: 'S', desc: 'Skip Phase' },
+                    { key: 'F', desc: 'Fullscreen' },
+                    { key: 'T', desc: 'Tasks' },
+                    { key: 'M', desc: 'Music' },
+                    { key: 'N', desc: 'Notepad' },
+                    { key: 'C / V', desc: 'Gemini Chat / Voice' },
+                  ].map((s) => (
                     <div key={s.key} className="settings-shortcut-row">
                       <kbd className="settings-kbd">{s.key}</kbd>
                       <span className="settings-shortcut-desc">{s.desc}</span>
@@ -1434,281 +859,63 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                 </div>
               </div>
 
-              {/* FAQ */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Frequently Asked Questions</div>
-                <div className="settings-faq-item">
-                  <div className="settings-faq-q">How do Video Backgrounds work?</div>
-                  <div className="settings-faq-a">Click the Wallpaper button in the top bar to choose between 4 curated ambient video loops, paste direct MP4/WebM URLs, or upload your own videos up to 50MB.</div>
-                </div>
-                <div className="settings-faq-item">
-                  <div className="settings-faq-q">What is the Mario Kart "Ghost Pacer"?</div>
-                  <div className="settings-faq-a">The Ghost Pacer tracks how much you studied yesterday at this exact minute of the day and shows whether you are ahead (⚡ Ahead of Ghost) or behind yesterday's pace.</div>
-                </div>
-                <div className="settings-faq-item">
-                  <div className="settings-faq-q">How does Active Recall Flashcards work?</div>
-                  <div className="settings-faq-a">Take quick notes in the floating scratchpad during your session. When the timer finishes, Gemini AI automatically generates 3 interactive 3D flip-cards from your notes to lock in your learning.</div>
-                </div>
-              </div>
-
-              {/* Community & Feedback */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Feedback & GitHub</div>
-                <p className="settings-section-subtitle">
-                  Built with ❤️ for focused students and builders worldwide.
-                </p>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <a
-                    href="https://github.com/Deepesh2606/Flowstate"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px', textDecoration: 'none' }}
-                  >
-                    ⭐ Star on GitHub
-                  </a>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px' }}
-                    onClick={() => onOpenLegal && onOpenLegal('privacy')}
-                  >
-                    <IconShield size={15} />
-                    <span>Legal & Privacy</span>
+              {onOpenLegal && (
+                <div className="settings-legal-inline">
+                  <button type="button" className="settings-text-link" onClick={() => onOpenLegal('privacy')}>
+                    Privacy
+                  </button>
+                  <span aria-hidden="true">·</span>
+                  <button type="button" className="settings-text-link" onClick={() => onOpenLegal('terms')}>
+                    Terms
+                  </button>
+                  <span aria-hidden="true">·</span>
+                  <button type="button" className="settings-text-link" onClick={() => onOpenLegal('refund')}>
+                    Refund Policy
                   </button>
                 </div>
-              </div>
-
-              {/* Support the Creator */}
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">☕ Support Flowstate</div>
-                <p className="settings-section-subtitle">
-                  Flowstate is 100% free to use. If it helps you stay focused, beat procrastination, or ace your exams, consider buying me a coffee to support development and server costs!
-                </p>
-                <div>
-                  <a
-                    href={BUY_ME_A_COFFEE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-coffee"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 20px',
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                      color: '#ffffff',
-                      fontWeight: '600',
-                      textDecoration: 'none',
-                      boxShadow: '0 4px 16px rgba(245, 158, 11, 0.28)',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <IconCoffee size={18} />
-                    <span>Buy Me a Coffee</span>
-                  </a>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
-          {/* ════════ 8. WHAT'S NEW ════════ */}
-          {activeTab === 'whatsnew' && (
-            <div className="settings-tab-section">
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">What's New in Flowstate</div>
-                <div className="whatsnew-timeline">
-                  {/* Item 1 */}
-                  <div className="whatsnew-card">
-                    <div className="whatsnew-card-badge">LATEST</div>
-                    <div className="whatsnew-card-title">🎨 6 Distinct Timer Display Styles</div>
-                    <div className="whatsnew-card-desc">
-                      Customize how time is displayed: Choose between <strong>Default</strong>, <strong>Flip Clock</strong>, <strong>Progress Bar</strong>, <strong>Gauge</strong>, <strong>Dot Matrix</strong>, and <strong>Pie</strong> in Focus Timer settings.
-                    </div>
-                  </div>
-
-                  {/* Item 2 */}
-                  <div className="whatsnew-card">
-                    <div className="whatsnew-card-badge">NEW</div>
-                    <div className="whatsnew-card-title">🎬 4K Video Backgrounds & Custom Uploads</div>
-                    <div className="whatsnew-card-desc">
-                      Immerse yourself in cinematic looping video wallpapers: Rain, Fireplace, Ocean Waves, and Starry Night. Plus upload your own MP4/WebM videos via Cloudinary.
-                    </div>
-                  </div>
-
-                  {/* Item 3 */}
-                  <div className="whatsnew-card">
-                    <div className="whatsnew-card-badge">FEATURE</div>
-                    <div className="whatsnew-card-title">👻 The "Mario Kart" Ghost Pacer</div>
-                    <div className="whatsnew-card-desc">
-                      Race against yourself! The Ghost Pacer dynamically compares today's study minutes against your exact progress at this same minute yesterday.
-                    </div>
-                  </div>
-
-                  {/* Item 4 */}
-                  <div className="whatsnew-card">
-                    <div className="whatsnew-card-badge">AI</div>
-                    <div className="whatsnew-card-title">⚡ Instant Active Recall Flashcards</div>
-                    <div className="whatsnew-card-desc">
-                      Jot notes in the Session Scratchpad. At session end, Gemini AI synthesizes your notes into 3 interactive 3D flip-cards for rapid retention testing.
-                    </div>
-                  </div>
-
-                  {/* Item 5 */}
-                  <div className="whatsnew-card">
-                    <div className="whatsnew-card-badge">COMMUNITY</div>
-                    <div className="whatsnew-card-title">🏆 Real-Time Community Leaderboard</div>
-                    <div className="whatsnew-card-desc">
-                      Compete with focusers worldwide on the podium! Filter by Today, This Week, or All-Time with live overtaking pace alerts.
-                    </div>
-                  </div>
-
-                  {/* Item 6 */}
-                  <div className="whatsnew-card">
-                    <div className="whatsnew-card-badge">POLISH</div>
-                    <div className="whatsnew-card-title">↺ Redesigned Reset & Safety UI</div>
-                    <div className="whatsnew-card-desc">
-                      Accidental resets are a thing of the past. Choose "Save & Reset" to log partial study minutes directly to your stats and streak before starting over.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ════════ 9. LEGAL & POLICIES ════════ */}
-          {activeTab === 'legal' && (
-            <div className="settings-tab-section">
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Legal & Policies</div>
-                <p className="settings-section-subtitle">
-                  Review our legal commitments, privacy protections, and user agreements.
-                </p>
-
-                <div className="settings-legal-cards-grid">
-                  {/* Privacy Policy Card */}
-                  <div className="settings-legal-card">
-                    <div className="settings-legal-card-header">
-                      <IconShield size={20} style={{ color: '#38bdf8' }} />
-                      <h4>Privacy Policy</h4>
-                    </div>
-                    <p>How we handle and protect your Google account, study logs, cloud sync, and AI interactions.</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
-                      onClick={() => onOpenLegal && onOpenLegal('privacy')}
-                    >
-                      View Privacy Policy
-                    </button>
-                  </div>
-
-                  {/* Terms of Service Card */}
-                  <div className="settings-legal-card">
-                    <div className="settings-legal-card-header">
-                      <IconFileText size={20} style={{ color: '#818cf8' }} />
-                      <h4>Terms of Service</h4>
-                    </div>
-                    <p>The terms and conditions governing the use of FLOWSTATE and acceptable conduct.</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
-                      onClick={() => onOpenLegal && onOpenLegal('terms')}
-                    >
-                      View Terms of Service
-                    </button>
-                  </div>
-
-                  {/* Refund Policy Card */}
-                  <div className="settings-legal-card">
-                    <div className="settings-legal-card-header">
-                      <IconRefreshCcw size={20} style={{ color: '#34d399' }} />
-                      <h4>Refund & Cancellation Policy</h4>
-                    </div>
-                    <p>Our 14-day money-back guarantee, refund process, and subscription cancellation terms.</p>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      style={{ width: '100%', justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
-                      onClick={() => onOpenLegal && onOpenLegal('refund')}
-                    >
-                      View Refund Policy
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="settings-section-block">
-                <div className="settings-section-header-title">Contact & Support</div>
-                <p className="settings-section-subtitle">
-                  Questions about our policies or need data assistance? We are here to help.
-                </p>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <a
-                    href="mailto:support@flowstate.study"
-                    className="btn btn-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '10px', textDecoration: 'none' }}
-                  >
-                    ✉️ Contact Support
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-          {/* ════════ 9. ADMIN PANEL ════════ */}
+          {/* 5. ADMIN (only visible to admin) */}
           {activeTab === 'admin' && canSetGlobalDefault && (
             <div className="settings-tab-section">
-              <div className="settings-card-banner" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
-                <div className="settings-card-banner-header">
-                  <span className="settings-card-banner-title" style={{ color: '#fbbf24' }}>Admin Controls</span>
-                </div>
-                <p className="settings-card-banner-sub">
-                  Set the site-wide default wallpaper for all visitors and manage PRO access.
-                </p>
-              </div>
-
-              {/* Site-Wide Default Wallpaper Control */}
               <div className="settings-section-block">
-                <div className="settings-section-header-row">
-                  <div className="settings-section-header-title">Default Wallpaper for Everyone</div>
-                </div>
+                <div className="settings-section-header-title">Site Default Wallpaper</div>
                 <p className="settings-section-subtitle">
-                  Choose the background every visitor sees by default when opening Flowstate.
+                  Set the default background shown every time visitors enter Flowstate.
                 </p>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
                   <img
                     src={globalDefault || '/defaultpreset.jpg'}
                     alt="Current default wallpaper"
                     referrerPolicy="no-referrer"
-                    style={{ width: '72px', height: '44px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,0.12)' }}
+                    style={{ width: '68px', height: '42px', borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }}
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Current Site Default</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: '12.5px', fontWeight: 600 }}>Active Default</div>
+                    <div style={{ fontSize: '11.5px', opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {globalDefault || '/defaultpreset.jpg'}
                     </div>
                   </div>
                   <button
                     type="button"
-                    className="btn btn-secondary"
-                    style={{ padding: '7px 12px', fontSize: '12px', borderRadius: '8px', whiteSpace: 'nowrap' }}
+                    className="btn btn-secondary settings-inline-btn"
                     onClick={() => {
                       onClose();
                       setShowPicker(true);
                     }}
                   >
-                    Open Gallery
+                    Gallery
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                   <input
                     type="text"
                     className="settings-input"
-                    placeholder="Paste image/video URL or /defaultpreset.jpg"
+                    placeholder="Paste URL or /defaultpreset.jpg"
                     value={adminDefaultWpUrl}
                     onChange={(e) => setAdminDefaultWpUrl(e.target.value)}
                     style={{ flex: 1 }}
@@ -1719,37 +926,26 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     disabled={!adminDefaultWpUrl.trim()}
                     onClick={async () => {
                       try {
-                        await setAsGlobalDefault(adminDefaultWpUrl.trim(), { forceForExisting: adminForceDefault });
-                        toast('Default wallpaper updated for everyone!', 'success', 3000);
+                        await setAsGlobalDefault(adminDefaultWpUrl.trim(), { forceForExisting: true });
+                        toast('Default wallpaper updated for everyone.', 'success', 2600);
                         setAdminDefaultWpUrl('');
                       } catch (err) {
-                        toast(err?.message || 'Could not update default wallpaper.', 'error', 3000);
+                        toast(err?.message || 'Could not update default wallpaper.', 'error', 2600);
                       }
                     }}
                   >
                     Set Default
                   </button>
                 </div>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={adminForceDefault}
-                    onChange={(e) => setAdminForceDefault(e.target.checked)}
-                  />
-                  <span>Also update existing users who have not picked a newer wallpaper</span>
-                </label>
               </div>
 
               <div className="settings-section-block">
-                <div className="settings-section-header-row">
-                  <div className="settings-section-header-title">Manual Grant via Email or UID</div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <div className="settings-section-header-title">Grant PRO Access</div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                   <input
                     type="text"
                     className="settings-input"
-                    placeholder="Enter User Email or UID"
+                    placeholder="User email or UID"
                     value={adminManualUid}
                     onChange={(e) => setAdminManualUid(e.target.value)}
                     style={{ flex: 1 }}
@@ -1760,55 +956,12 @@ const SettingsDrawer = ({ settings, onSave, onClose, onOpenInstall, onOpenLegal 
                     onClick={() => handleGrantPro(adminManualUid)}
                     disabled={!adminManualUid.trim()}
                   >
-                    Grant PRO
+                    Grant
                   </button>
-                </div>
-              </div>
-
-              <div className="settings-section-block">
-                <div className="settings-section-header-row">
-                  <div className="settings-section-header-title">Recent Active Users (Registered)</div>
-                </div>
-                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {adminUsers.map(u => (
-                    <div 
-                      key={u.id} 
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--glass-bg)', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
-                      onClick={() => setAdminManualUid(u.id)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {u.photoURL ? (
-                          <img src={u.photoURL} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-                        ) : (
-                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {u.displayName?.charAt(0) || 'U'}
-                          </div>
-                        )}
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{u.displayName}</div>
-                          {u.email && <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Email: {u.email}</div>}
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>UID: {u.id}</div>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        style={{ background: '#fbbf24', color: '#78350f', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer' }}
-                        onClick={(e) => { e.stopPropagation(); handleGrantPro(u.id); }}
-                      >
-                        Grant PRO
-                      </button>
-                    </div>
-                  ))}
-                  {adminUsers.length === 0 && (
-                    <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      No users found.
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           )}
-
         </div>
       </aside>
     </>

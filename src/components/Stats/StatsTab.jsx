@@ -14,15 +14,12 @@ import ExamPlanner from '../Planner/ExamPlanner';
 import ProUpgradeModal from '../Settings/ProUpgradeModal';
 import { IconLock } from '../Icons';
 import {
-  MIN_DAILY_GOAL_MINUTES,
-  MAX_DAILY_GOAL_MINUTES,
   clampDailyGoalMinutes,
   resolveDailyGoalMinutes,
   formatGoalMinutes,
   computeDailyGoalProgress,
 } from '../../utils/goalUtils';
-
-const GOAL_PRESET_MINUTES = [60, 120, 180, 240];
+import DailyGoalInput from './DailyGoalInput';
 
 const formatTime = (seconds) => {
   if (!seconds || seconds <= 0) return '0m';
@@ -33,77 +30,56 @@ const formatTime = (seconds) => {
   return `${m}m`;
 };
 
-// Daily Deep Work Goal Ring (SVG + live minutes input)
+// Daily Deep Work Goal Ring (SVG progress bar synced with DailyGoalInput)
 const GoalRing = ({ current, goalMinutes, onChangeGoalMinutes }) => {
-  const [draftMinutes, setDraftMinutes] = useState(String(goalMinutes));
-
-  useEffect(() => {
-    setDraftMinutes(String(goalMinutes));
-  }, [goalMinutes]);
-
-  const parsedDraft = Number(draftMinutes);
-  const effectiveMinutes =
-    draftMinutes.trim() !== '' && Number.isFinite(parsedDraft) && parsedDraft > 0
-      ? clampDailyGoalMinutes(parsedDraft, goalMinutes)
-      : goalMinutes;
-
+  const safeMinutes = clampDailyGoalMinutes(goalMinutes);
   const { progress, percentage, remainingSeconds, isComplete } = computeDailyGoalProgress(
     current,
-    effectiveMinutes
+    safeMinutes
   );
 
-  const r = 34;
-  const cx = 42;
-  const cy = 42;
+  const r = 36;
+  const cx = 44;
+  const cy = 44;
   const circ = 2 * Math.PI * r;
   const dash = circ * progress;
 
-  const commitDraft = (rawValue) => {
-    const clamped = clampDailyGoalMinutes(rawValue, goalMinutes);
-    setDraftMinutes(String(clamped));
-    if (clamped !== goalMinutes) {
-      onChangeGoalMinutes(clamped);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const val = e.target.value;
-    setDraftMinutes(val);
-    const num = Number(val);
-    if (val.trim() !== '' && Number.isFinite(num) && num >= MIN_DAILY_GOAL_MINUTES && num <= MAX_DAILY_GOAL_MINUTES) {
-      onChangeGoalMinutes(Math.round(num));
-    }
-  };
-
   return (
-    <div className="goal-ring-wrapper">
+    <div className="goal-ring-wrapper" data-testid="goal-ring-card">
       <svg
-        width={84}
-        height={84}
-        viewBox="0 0 84 84"
-        aria-label={`Daily deep work goal: ${percentage}%`}
+        width={88}
+        height={88}
+        viewBox="0 0 88 88"
+        role="progressbar"
+        aria-label="Daily deep work goal progress"
+        aria-valuemin={0}
+        aria-valuemax={safeMinutes}
+        aria-valuenow={Math.min(safeMinutes, Math.round((current || 0) / 60))}
+        aria-valuetext={`${percentage}% (${formatTime(current)} of ${formatGoalMinutes(safeMinutes)})`}
         className="goal-ring-svg"
       >
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={7} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={7} />
         <circle
           cx={cx}
           cy={cy}
           r={r}
           fill="none"
-          stroke={isComplete ? '#10b981' : '#06b6d4'}
+          stroke={isComplete ? '#10b981' : '#38bdf8'}
           strokeWidth={7}
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
           transform={`rotate(-90 ${cx} ${cy})`}
-          style={{ transition: 'stroke-dasharray 0.45s ease, stroke 0.3s ease' }}
+          data-testid="goal-ring-arc"
+          style={{ transition: 'stroke-dasharray 0.35s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease' }}
         />
         <text
           x={cx}
           y={cy + 5}
           textAnchor="middle"
-          fontSize={14}
+          fontSize={15}
           fontWeight={700}
           fill="#ffffff"
+          className="tabular-nums"
           data-testid="goal-ring-percentage"
         >
           {percentage}%
@@ -114,52 +90,16 @@ const GoalRing = ({ current, goalMinutes, onChangeGoalMinutes }) => {
         <div className="goal-ring-header-row">
           <div className="goal-ring-title">Daily Deep Work Goal</div>
           <div className="goal-ring-sub tabular-nums" data-testid="goal-ring-summary">
-            {formatTime(current)} / {formatGoalMinutes(effectiveMinutes)}
+            {formatTime(current)} / {formatGoalMinutes(safeMinutes)}
           </div>
         </div>
 
-        <div className="goal-ring-input-row">
-          <label htmlFor="daily-goal-minutes-input" className="goal-ring-input-label">
-            Target
-          </label>
-          <div className="goal-ring-input-box">
-            <input
-              id="daily-goal-minutes-input"
-              data-testid="daily-goal-minutes-input"
-              type="number"
-              inputMode="numeric"
-              min={MIN_DAILY_GOAL_MINUTES}
-              max={MAX_DAILY_GOAL_MINUTES}
-              step={5}
-              value={draftMinutes}
-              onChange={handleInputChange}
-              onBlur={(e) => commitDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.currentTarget.blur();
-                }
-              }}
-              className="goal-minutes-input tabular-nums"
-              aria-label="Daily deep work goal in minutes"
-            />
-            <span className="goal-minutes-unit">min</span>
-          </div>
+        <DailyGoalInput
+          goalMinutes={safeMinutes}
+          onChangeGoalMinutes={onChangeGoalMinutes}
+        />
 
-          <div className="goal-presets-row" role="group" aria-label="Quick daily goal presets">
-            {GOAL_PRESET_MINUTES.map((mins) => (
-              <button
-                key={mins}
-                type="button"
-                className={`goal-preset-btn ${effectiveMinutes === mins ? 'active' : ''}`}
-                onClick={() => commitDraft(mins)}
-              >
-                {mins}m
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="goal-ring-status">
+        <div className={`goal-ring-status ${isComplete ? 'is-complete' : ''}`} data-testid="goal-ring-status">
           {isComplete
             ? 'Goal reached today'
             : `${formatTime(remainingSeconds)} remaining to reach goal`}

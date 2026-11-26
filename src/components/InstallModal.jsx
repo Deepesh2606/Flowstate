@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { IconDownload, IconCheck } from './Icons';
+import { IconDownload, IconCheck, IconX } from './Icons';
 import { useToast } from './Toast/ToastProvider';
+
+const PREVIEW_PRESETS = [25, 45, 60, 90];
 
 const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab = 'extension' }) => {
   const { toast } = useToast();
@@ -9,9 +11,16 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab
   const [isSafari, setIsSafari] = useState(false);
   const [isChrome, setIsChrome] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [copiedExtAddr, setCopiedExtAddr] = useState(false);
   const [installing, setInstalling] = useState(false);
   const [downloadingExt, setDownloadingExt] = useState(false);
+
+  // Interactive miniature popup preview state
+  const [previewMinutes, setPreviewMinutes] = useState(45);
+  const [previewMode, setPreviewMode] = useState('focus');
+  const [previewRunning, setPreviewRunning] = useState(false);
+  const [previewBlocker, setPreviewBlocker] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -33,6 +42,15 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab
     setIsChrome(chromeDetected);
     setIsStandalone(standaloneDetected);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -68,7 +86,7 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast('Downloaded flowstate-chrome-extension.zip — load it in chrome://extensions!', 'success', 4000);
+      toast('Downloaded flowstate-chrome-extension.zip — unzip and load in chrome://extensions.', 'success', 4000);
     } catch (err) {
       console.error('Chrome extension download error:', err);
       toast('Could not download extension package. Try again.', 'error', 3000);
@@ -77,12 +95,26 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab
     }
   };
 
+  const handleCopyExtAddress = () => {
+    navigator.clipboard?.writeText('chrome://extensions');
+    setCopiedExtAddr(true);
+    toast('Copied chrome://extensions — paste in a new tab.', 'info', 2400);
+    setTimeout(() => setCopiedExtAddr(false), 2400);
+  };
+
   const handleCopyUrl = () => {
     navigator.clipboard?.writeText(window.location.origin);
-    setCopied(true);
-    toast('App link copied to clipboard!', 'info', 2500);
-    setTimeout(() => setCopied(false), 2500);
+    setCopiedUrl(true);
+    toast('App link copied to clipboard.', 'info', 2400);
+    setTimeout(() => setCopiedUrl(false), 2400);
   };
+
+  const previewTimeLabel =
+    previewMode === 'focus'
+      ? `${String(previewMinutes).padStart(2, '0')}:00`
+      : previewMode === 'short'
+        ? '05:00'
+        : '15:00';
 
   return (
     <>
@@ -94,132 +126,216 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab
         aria-labelledby="install-modal-title"
         data-testid="install-modal"
       >
-        <div className="install-modal-card">
-          <div className="install-modal-header">
-            <div className="install-modal-badge-group">
-              <div
-                className="install-mac-icon-badge"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
-              >
-                <img src="/favicon.svg" alt="App Icon" style={{ width: 28, height: 28, borderRadius: 6 }} />
+        <div className={`install-modal-card ext-showcase-card ${activeTab === 'extension' ? 'is-wide' : ''}`}>
+          {/* Top Header */}
+          <div className="ext-modal-header">
+            <div className="ext-modal-brand">
+              <div className="ext-modal-icon">
+                <img src="/favicon.svg" alt="FLOWSTATE" width={24} height={24} />
               </div>
               <div>
-                <h3 id="install-modal-title" className="install-modal-title">
+                <h3 id="install-modal-title" className="ext-modal-title">
                   {activeTab === 'extension'
                     ? 'FLOWSTATE Chrome Extension'
                     : isMac
                       ? 'Add to Mac Dock'
                       : 'Install Desktop App'}
                 </h3>
-                <span className="install-modal-subtitle">
+                <p className="ext-modal-sub">
                   {activeTab === 'extension'
-                    ? 'Manifest V3 · Toolbar countdown, goal ring & site blocker'
+                    ? 'Manifest V3 · 45m focus default · Site blocker · Goal ring'
                     : isStandalone
-                      ? 'Running in standalone mode'
-                      : isMac
-                        ? 'macOS standalone experience'
-                        : 'Quick access from your desktop'}
-                </span>
+                      ? 'Running as a standalone desktop window'
+                      : 'Pin FLOWSTATE to your dock or taskbar for distraction-free sessions'}
+                </p>
               </div>
             </div>
-            <button
-              className="drawer-close"
-              onClick={onClose}
-              aria-label="Close modal"
-              style={{ width: '32px', height: '32px' }}
-            >
-              ✕
-            </button>
+
+            <div className="ext-modal-header-right">
+              <div className="ext-modal-segmented" role="tablist" aria-label="Install options">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'extension'}
+                  className={`ext-modal-seg-btn ${activeTab === 'extension' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('extension')}
+                  data-testid="install-tab-extension"
+                >
+                  Chrome Extension
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'desktop'}
+                  className={`ext-modal-seg-btn ${activeTab === 'desktop' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('desktop')}
+                  data-testid="install-tab-desktop"
+                >
+                  {isMac ? 'Desktop App' : 'Install App'}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className="ext-modal-close"
+                onClick={onClose}
+                aria-label="Close modal"
+              >
+                <IconX size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Tab Switcher */}
-          <div style={{ padding: '0 20px 12px', display: 'flex', gap: '6px' }}>
-            <button
-              type="button"
-              className={`btn ${activeTab === 'extension' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setActiveTab('extension')}
-              style={{ flex: 1, fontSize: '12px', padding: '7px 12px' }}
-              data-testid="install-tab-extension"
-            >
-              Chrome Extension
-            </button>
-            <button
-              type="button"
-              className={`btn ${activeTab === 'desktop' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setActiveTab('desktop')}
-              style={{ flex: 1, fontSize: '12px', padding: '7px 12px' }}
-              data-testid="install-tab-desktop"
-            >
-              {isMac ? 'Mac Dock / App' : 'Desktop App'}
-            </button>
-          </div>
-
-          <div className="install-modal-body">
+          <div className="ext-modal-body">
             {activeTab === 'extension' ? (
-              <div className="install-chrome-guide">
-                <div className="install-highlight-card" style={{ marginBottom: '14px' }}>
-                  <div className="install-highlight-text">
-                    <strong>Manifest V3 Chrome Extension (45m default)</strong>
-                    <p>
-                      Includes a 45-minute focus default, live toolbar countdown badge, daily deep work goal ring, distraction site blocker, and one-click launch back to FLOWSTATE. Packaged with manifest.json at the ZIP root for both local loading and Chrome Web Store submission.
-                    </p>
+              <div className="ext-showcase-grid">
+                {/* Left Column: Live Interactive Extension Popup Preview */}
+                <div className="ext-preview-stage" aria-label="Interactive Chrome extension popup preview">
+                  <div className="ext-preview-caption">Interactive toolbar popup preview</div>
+                  <div className="ext-mini-popup">
+                    <div className="ext-mini-top">
+                      <span className="ext-mini-logo">FLOWSTATE</span>
+                      <span className="ext-mini-badge-chip">
+                        {previewMode === 'focus' ? `${previewMinutes}m` : previewMode === 'short' ? '5m' : '15m'}
+                      </span>
+                    </div>
+
+                    <div className="ext-mini-tabs">
+                      <button
+                        type="button"
+                        className={previewMode === 'focus' ? 'active' : ''}
+                        onClick={() => { setPreviewMode('focus'); setPreviewRunning(false); }}
+                      >
+                        Focus
+                      </button>
+                      <button
+                        type="button"
+                        className={previewMode === 'short' ? 'active' : ''}
+                        onClick={() => { setPreviewMode('short'); setPreviewRunning(false); }}
+                      >
+                        Short
+                      </button>
+                      <button
+                        type="button"
+                        className={previewMode === 'long' ? 'active' : ''}
+                        onClick={() => { setPreviewMode('long'); setPreviewRunning(false); }}
+                      >
+                        Long
+                      </button>
+                    </div>
+
+                    <div className="ext-mini-digits tabular-nums">{previewTimeLabel}</div>
+
+                    <div className="ext-mini-presets">
+                      {PREVIEW_PRESETS.map((m) => {
+                        const isSelected = previewMode === 'focus' && previewMinutes === m;
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            className={`ext-mini-preset-btn ${isSelected ? 'is-active' : ''}`}
+                            aria-pressed={isSelected}
+                            onClick={() => {
+                              setPreviewMode('focus');
+                              setPreviewMinutes(m);
+                            }}
+                          >
+                            {m}m
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`ext-mini-cta ${previewRunning ? 'is-running' : ''}`}
+                      onClick={() => setPreviewRunning((r) => !r)}
+                    >
+                      {previewRunning ? 'Pause Focus' : 'Start Focus'}
+                    </button>
+
+                    <div className="ext-mini-footer-row">
+                      <div className="ext-mini-goal-line">
+                        <span className="ext-mini-ring" aria-hidden="true" />
+                        <span>Daily goal · 120m</span>
+                      </div>
+                      <button
+                        type="button"
+                        className={`ext-mini-shield-toggle ${previewBlocker ? 'on' : ''}`}
+                        onClick={() => setPreviewBlocker((b) => !b)}
+                        aria-pressed={previewBlocker}
+                      >
+                        Shield {previewBlocker ? 'On' : 'Off'}
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-primary install-action-btn"
-                    onClick={handleDownloadExtension}
-                    disabled={downloadingExt}
-                    data-testid="btn-download-chrome-extension"
-                  >
-                    <IconDownload size={16} />
-                    {downloadingExt ? 'Packaging ZIP...' : 'Download Chrome Extension (.zip)'}
-                  </button>
                 </div>
 
-                <div className="install-guide-heading">
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#cbd5e1' }}>Chrome · Brave · Arc · Edge</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>4-step install</span>
-                </div>
+                {/* Right Column: Download CTA + Clean 3-Step Install */}
+                <div className="ext-install-column">
+                  <div className="ext-download-box">
+                    <div className="ext-download-copy">
+                      <h4>Ready for Chrome, Brave, Arc & Edge</h4>
+                      <p>
+                        Tracks focus blocks from your toolbar badge, blocks distracting sites automatically while a session runs, and syncs back to FLOWSTATE in one click.
+                      </p>
+                    </div>
 
-                <div className="install-steps-list">
-                  <div className="install-step-item">
-                    <span className="install-step-num">1</span>
-                    <div className="install-step-content">
-                      <span className="install-step-title">Download & Unzip</span>
-                      <span className="install-step-desc">
-                        Click the download button above and extract <kbd className="mac-kbd">flowstate-chrome-extension.zip</kbd> into a folder.
-                      </span>
+                    <button
+                      type="button"
+                      className="ext-primary-download-btn"
+                      onClick={handleDownloadExtension}
+                      disabled={downloadingExt}
+                      data-testid="btn-download-chrome-extension"
+                    >
+                      <IconDownload size={16} />
+                      <span>{downloadingExt ? 'Packaging Extension...' : 'Download Extension (.zip)'}</span>
+                    </button>
+
+                    <div className="ext-meta-strip">
+                      <span>Manifest V3</span>
+                      <span aria-hidden="true">·</span>
+                      <span>Chrome Web Store ready</span>
+                      <span aria-hidden="true">·</span>
+                      <span>No account required</span>
                     </div>
                   </div>
 
-                  <div className="install-step-item">
-                    <span className="install-step-num">2</span>
-                    <div className="install-step-content">
-                      <span className="install-step-title">Open Chrome Extensions</span>
-                      <span className="install-step-desc">
-                        Go to <kbd className="mac-kbd">chrome://extensions</kbd> in a new browser tab.
-                      </span>
+                  <div className="ext-steps-section">
+                    <div className="ext-steps-header">
+                      <span>Quick 3-step setup</span>
+                      <button
+                        type="button"
+                        className="ext-copy-addr-btn"
+                        onClick={handleCopyExtAddress}
+                      >
+                        {copiedExtAddr ? 'Copied chrome://extensions' : 'Copy chrome://extensions'}
+                      </button>
                     </div>
-                  </div>
 
-                  <div className="install-step-item">
-                    <span className="install-step-num">3</span>
-                    <div className="install-step-content">
-                      <span className="install-step-title">Enable Developer Mode</span>
-                      <span className="install-step-desc">
-                        Toggle <strong>Developer mode</strong> on in the top-right corner.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="install-step-item">
-                    <span className="install-step-num">4</span>
-                    <div className="install-step-content">
-                      <span className="install-step-title">Load Unpacked Folder</span>
-                      <span className="install-step-desc">
-                        Click <kbd className="mac-kbd">Load unpacked</kbd>, select the extracted folder containing <kbd className="mac-kbd">manifest.json</kbd>, and pin FLOWSTATE to your toolbar.
-                      </span>
-                    </div>
+                    <ol className="ext-steps-ordered">
+                      <li>
+                        <span className="ext-step-idx">1</span>
+                        <div>
+                          <strong>Download & extract</strong>
+                          <span>Unzip <kbd className="mac-kbd">flowstate-chrome-extension.zip</kbd> into a local folder.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span className="ext-step-idx">2</span>
+                        <div>
+                          <strong>Open Extensions & enable Developer mode</strong>
+                          <span>Paste <kbd className="mac-kbd">chrome://extensions</kbd> in a new tab and toggle Developer mode on.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span className="ext-step-idx">3</span>
+                        <div>
+                          <strong>Load unpacked & pin</strong>
+                          <span>Click <kbd className="mac-kbd">Load unpacked</kbd>, select the unzipped folder, and pin FLOWSTATE.</span>
+                        </div>
+                      </li>
+                    </ol>
                   </div>
                 </div>
               </div>
@@ -229,91 +345,74 @@ const InstallModal = ({ isOpen, onClose, deferredPrompt, onInstalled, initialTab
                   <IconCheck size={24} color="#10b981" />
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '14px', color: '#10b981', fontWeight: 700 }}>
-                    Already in your Mac Dock!
+                  <h4 style={{ margin: 0, fontSize: '14px', color: '#6ee7b7', fontWeight: 700 }}>
+                    Already running as a desktop app
                   </h4>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    FLOWSTATE is already running as a native standalone window.
+                  <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: 'var(--ink-secondary)' }}>
+                    FLOWSTATE is open in standalone window mode.
                   </p>
                 </div>
               </div>
             ) : deferredPrompt ? (
-              <div className="install-prompt-section">
-                <div className="install-highlight-card">
-                  <div className="install-highlight-text">
-                    <strong>One-Click Desktop Installation</strong>
-                    <p>Install FLOWSTATE into your Applications folder and pin it to your Dock or taskbar.</p>
-                  </div>
-                  <button
-                    className="btn btn-primary install-action-btn"
-                    onClick={handlePromptInstall}
-                    disabled={installing}
-                    id="btn-confirm-pwa-install"
-                  >
-                    <IconDownload size={16} />
-                    {installing ? 'Adding...' : 'Install Desktop App'}
-                  </button>
+              <div className="ext-download-box">
+                <div className="ext-download-copy">
+                  <h4>One-Click Desktop Installation</h4>
+                  <p>Install FLOWSTATE into your Applications folder and pin it to your Dock or taskbar.</p>
                 </div>
+                <button
+                  type="button"
+                  className="ext-primary-download-btn"
+                  onClick={handlePromptInstall}
+                  disabled={installing}
+                  id="btn-confirm-pwa-install"
+                >
+                  <IconDownload size={16} />
+                  <span>{installing ? 'Adding...' : 'Install Desktop App'}</span>
+                </button>
               </div>
             ) : isSafari ? (
-              <div className="install-safari-guide">
-                <div className="install-guide-heading">
-                  <span className="install-pill">Safari on macOS</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Native macOS feature</span>
+              <div className="ext-steps-section">
+                <div className="ext-steps-header">
+                  <span>Safari on macOS</span>
                 </div>
-
-                <div className="install-steps-list">
-                  <div className="install-step-item">
-                    <span className="install-step-num">1</span>
-                    <div className="install-step-content">
-                      <span className="install-step-title">Open the Safari Menu</span>
-                      <span className="install-step-desc">
+                <ol className="ext-steps-ordered">
+                  <li>
+                    <span className="ext-step-idx">1</span>
+                    <div>
+                      <strong>Add to Dock from Safari Menu</strong>
+                      <span>
                         Click <kbd className="mac-kbd">File</kbd> → <kbd className="mac-kbd">Add to Dock...</kbd> → <kbd className="mac-kbd">Add</kbd>.
                       </span>
                     </div>
-                  </div>
-                </div>
+                  </li>
+                </ol>
               </div>
             ) : (
-              <div className="install-chrome-guide">
-                <div className="install-guide-heading">
-                  <span className="install-pill">{isChrome ? 'Chrome / Arc / Edge' : 'Desktop Browser'}</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Install App</span>
+              <div className="ext-steps-section">
+                <div className="ext-steps-header">
+                  <span>{isChrome ? 'Chrome · Arc · Edge' : 'Desktop Browser'}</span>
                 </div>
-
-                <div className="install-steps-list">
-                  <div className="install-step-item">
-                    <span className="install-step-num">1</span>
-                    <div className="install-step-content">
-                      <span className="install-step-title">Use the Address Bar or Browser Menu</span>
-                      <span className="install-step-desc">
+                <ol className="ext-steps-ordered">
+                  <li>
+                    <span className="ext-step-idx">1</span>
+                    <div>
+                      <strong>Install from browser menu</strong>
+                      <span>
                         Click <kbd className="mac-kbd">⋮</kbd> → <kbd className="mac-kbd">Cast, save, and share</kbd> → <kbd className="mac-kbd">Install FLOWSTATE...</kbd>
                       </span>
                     </div>
-                  </div>
-                </div>
+                  </li>
+                </ol>
               </div>
             )}
 
-            <div className="install-modal-footer">
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCopyUrl}
-                  style={{ fontSize: '12px', padding: '6px 14px' }}
-                >
-                  {copied ? '✓ Link Copied' : 'Copy App Link'}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={onClose}
-                  style={{ fontSize: '12px', padding: '6px 14px' }}
-                >
-                  Done
-                </button>
-              </div>
+            <div className="ext-modal-footer">
+              <button type="button" className="ext-footer-btn" onClick={handleCopyUrl}>
+                {copiedUrl ? 'Link Copied' : 'Copy App Link'}
+              </button>
+              <button type="button" className="ext-footer-btn ext-footer-btn--primary" onClick={onClose}>
+                Done
+              </button>
             </div>
           </div>
         </div>
