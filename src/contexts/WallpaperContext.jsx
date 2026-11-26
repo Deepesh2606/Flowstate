@@ -27,11 +27,13 @@ export const useWallpaper = () => {
   return ctx;
 };
 
-const WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
-const PERSONAL_SELECTED_KEY = 'flowstate_wallpaper_personal_selected';
-const PERSONAL_SELECTED_AT_KEY = 'flowstate_wallpaper_personal_selected_at';
-const GLOBAL_DEFAULT_STORAGE_KEY = 'flowstate_global_default_wallpaper';
-const GLOBAL_DEFAULT_META_KEY = 'flowstate_global_default_meta';
+const LEGACY_WALLPAPER_STORAGE_KEY = 'flowstate_cached_wallpaper';
+const LEGACY_PERSONAL_SELECTED_KEY = 'flowstate_wallpaper_personal_selected';
+const LEGACY_PERSONAL_SELECTED_AT_KEY = 'flowstate_wallpaper_personal_selected_at';
+const LEGACY_GLOBAL_DEFAULT_KEY = 'flowstate_global_default_wallpaper';
+const LEGACY_GLOBAL_DEFAULT_META_KEY = 'flowstate_global_default_meta';
+const GLOBAL_DEFAULT_STORAGE_KEY = 'flowstate_site_default_wallpaper_v2';
+const GLOBAL_DEFAULT_META_KEY = 'flowstate_site_default_meta_v2';
 const GLOBAL_CURATED_CACHE_KEY = 'flowstate_global_curated_cache';
 const CUSTOM_WALLPAPERS_STORAGE_KEY = 'flowstate_custom_wallpapers';
 
@@ -77,26 +79,12 @@ export const WallpaperProvider = ({ children }) => {
   });
 
   const [globalDefaultMeta, setGlobalDefaultMeta] = useState(() =>
-    readJsonStorage(GLOBAL_DEFAULT_META_KEY, { updatedAt: 0, forceForExisting: false })
+    readJsonStorage(GLOBAL_DEFAULT_META_KEY, { updatedAt: 0, forceForExisting: true })
   );
 
-  const [personalWallpaper, setPersonalWallpaper] = useState(() => {
-    try {
-      const isPersonal = localStorage.getItem(PERSONAL_SELECTED_KEY) === 'true';
-      if (!isPersonal) return null;
-      return normalizeWallpaperUrl(localStorage.getItem(WALLPAPER_STORAGE_KEY));
-    } catch {
-      return null;
-    }
-  });
-
-  const [personalSelectedAt, setPersonalSelectedAt] = useState(() => {
-    try {
-      return Number(localStorage.getItem(PERSONAL_SELECTED_AT_KEY)) || 0;
-    } catch {
-      return 0;
-    }
-  });
+  // Always start every site visit on the configured default wallpaper (never restore stale personal overrides)
+  const [personalWallpaper, setPersonalWallpaper] = useState(null);
+  const [personalSelectedAt, setPersonalSelectedAt] = useState(0);
 
   const [hiddenCurated, setHiddenCurated] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
@@ -124,6 +112,19 @@ export const WallpaperProvider = ({ children }) => {
   );
 
   const isUsingSiteDefault = !personalWallpaper || wallpaper === globalDefault;
+
+  // Purge legacy cached personal/stale wallpaper keys on mount so every fresh visit shows the default wallpaper
+  useEffect(() => {
+    try {
+      localStorage.removeItem(LEGACY_WALLPAPER_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_PERSONAL_SELECTED_KEY);
+      localStorage.removeItem(LEGACY_PERSONAL_SELECTED_AT_KEY);
+      localStorage.removeItem(LEGACY_GLOBAL_DEFAULT_KEY);
+      localStorage.removeItem(LEGACY_GLOBAL_DEFAULT_META_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Preload the active wallpaper immediately on mount/change so it renders cleanly
   useEffect(() => {
@@ -164,9 +165,6 @@ export const WallpaperProvider = ({ children }) => {
         try {
           localStorage.setItem(GLOBAL_DEFAULT_STORAGE_KEY, cleanDefault);
           localStorage.setItem(GLOBAL_DEFAULT_META_KEY, JSON.stringify(nextMeta));
-          if (localStorage.getItem(PERSONAL_SELECTED_KEY) !== 'true') {
-            localStorage.setItem(WALLPAPER_STORAGE_KEY, cleanDefault);
-          }
         } catch {
           // ignore
         }
@@ -192,15 +190,12 @@ export const WallpaperProvider = ({ children }) => {
     return () => unsubGlobal();
   }, []);
 
-  // Subscribe to current user personal settings
+  // Subscribe to current user's custom gallery & hidden presets (do NOT override the default wallpaper on entry)
   useEffect(() => {
     if (!currentUser) return undefined;
 
     try {
-      const cachedWallpaper = normalizeWallpaperUrl(localStorage.getItem(`wallpaper_${currentUser.uid}`));
-      if (cachedWallpaper) {
-        setPersonalWallpaper(cachedWallpaper);
-      }
+      localStorage.removeItem(`wallpaper_${currentUser.uid}`);
       const cachedCustom = readJsonStorage(`custom_wallpapers_${currentUser.uid}`, null);
       if (cachedCustom) setCustomWallpapers(cachedCustom);
 
@@ -213,26 +208,6 @@ export const WallpaperProvider = ({ children }) => {
     if (!isFirebaseConfigured) return undefined;
 
     const unsub = subscribeSettings(currentUser.uid, (settings) => {
-      if (settings && Object.prototype.hasOwnProperty.call(settings, 'wallpaper')) {
-        const cleanUserWp = normalizeWallpaperUrl(settings.wallpaper);
-        setPersonalWallpaper(cleanUserWp);
-        if (settings.wallpaperSelectedAt) {
-          setPersonalSelectedAt(Number(settings.wallpaperSelectedAt) || 0);
-        }
-        try {
-          if (cleanUserWp) {
-            localStorage.setItem(WALLPAPER_STORAGE_KEY, cleanUserWp);
-            localStorage.setItem(PERSONAL_SELECTED_KEY, 'true');
-            localStorage.setItem(`wallpaper_${currentUser.uid}`, cleanUserWp);
-          } else {
-            localStorage.removeItem(PERSONAL_SELECTED_KEY);
-            localStorage.removeItem(`wallpaper_${currentUser.uid}`);
-          }
-        } catch {
-          // ignore
-        }
-      }
-
       if (settings?.customWallpapers) {
         const valid = settings.customWallpapers.map(normalizeWallpaperUrl).filter(Boolean);
         setCustomWallpapers(valid);
@@ -257,39 +232,14 @@ export const WallpaperProvider = ({ children }) => {
     return () => unsub();
   }, [currentUser]);
 
-  const setWallpaper = useCallback(
-    async (url) => {
-      const clean = normalizeWallpaperUrl(url);
-      const now = Date.now();
-      setPersonalWallpaper(clean);
-      setPersonalSelectedAt(clean ? now : 0);
-      setShowPicker(false);
-
-      try {
-        if (clean) {
-          localStorage.setItem(WALLPAPER_STORAGE_KEY, clean);
-          localStorage.setItem(PERSONAL_SELECTED_KEY, 'true');
-          localStorage.setItem(PERSONAL_SELECTED_AT_KEY, String(now));
-          if (currentUser) localStorage.setItem(`wallpaper_${currentUser.uid}`, clean);
-        } else {
-          localStorage.removeItem(PERSONAL_SELECTED_KEY);
-          localStorage.removeItem(PERSONAL_SELECTED_AT_KEY);
-          localStorage.setItem(WALLPAPER_STORAGE_KEY, globalDefault || FALLBACK_WALLPAPER);
-          if (currentUser) localStorage.removeItem(`wallpaper_${currentUser.uid}`);
-        }
-      } catch {
-        // ignore
-      }
-
-      if (currentUser && isFirebaseConfigured) {
-        await saveSettings(currentUser.uid, {
-          wallpaper: clean,
-          wallpaperSelectedAt: clean ? now : 0,
-        });
-      }
-    },
-    [currentUser, globalDefault]
-  );
+  // Apply a temporary wallpaper for the current session only; next site visit always starts on the default wallpaper
+  const setWallpaper = useCallback(async (url) => {
+    const clean = normalizeWallpaperUrl(url);
+    const now = Date.now();
+    setPersonalWallpaper(clean);
+    setPersonalSelectedAt(clean ? now : 0);
+    setShowPicker(false);
+  }, []);
 
   const resetToGlobalDefault = useCallback(async () => {
     await setWallpaper(null);
@@ -410,9 +360,11 @@ export const WallpaperProvider = ({ children }) => {
       try {
         localStorage.setItem(GLOBAL_DEFAULT_STORAGE_KEY, clean);
         localStorage.setItem(GLOBAL_DEFAULT_META_KEY, JSON.stringify(nextMeta));
-        localStorage.setItem(WALLPAPER_STORAGE_KEY, clean);
-        localStorage.removeItem(PERSONAL_SELECTED_KEY);
-        localStorage.removeItem(PERSONAL_SELECTED_AT_KEY);
+        localStorage.removeItem(LEGACY_WALLPAPER_STORAGE_KEY);
+        localStorage.removeItem(LEGACY_PERSONAL_SELECTED_KEY);
+        localStorage.removeItem(LEGACY_PERSONAL_SELECTED_AT_KEY);
+        localStorage.removeItem(LEGACY_GLOBAL_DEFAULT_KEY);
+        localStorage.removeItem(LEGACY_GLOBAL_DEFAULT_META_KEY);
         if (currentUser) localStorage.removeItem(`wallpaper_${currentUser.uid}`);
       } catch {
         // ignore
